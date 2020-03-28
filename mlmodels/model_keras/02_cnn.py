@@ -8,14 +8,14 @@ Ouput: Exeution of Script and save model storage
 This is generic mapper between JSON and Python code script.
 Execution is Asynchornous
 """
-import os, sys
+import os
+import sys
 
 import keras
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
+from keras.datasets import mnist
+from keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
+from keras.models import Sequential
 
 # Less Keras warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -47,83 +47,82 @@ def log(*s, n=0, m=1):
 
 ####################################################################################################
 class Model(object) :
-    def __init__(self, model_pars=None, compute_pars=None, data_pars=None) :
+
+    def __init__(self, model_pars=None, compute_pars=None, data_pars=None):
 
         if model_pars is None and compute_pars is None :
             self.model = None
 
-
-        if not model_pars is None and not compute_pars is None :
+        if not model_pars is None and not compute_pars is None:
             m = model_pars
             c = compute_pars
 
-   		    rows = 28
-		    cols = 28
+            rows = 28
+            cols = 28
             # rows, cols = data_pars["rows"], data_pars["cols"]
 
-			nclasses = m["nclasses"]
-			input_shape = m["input_shape"]
+            nclasses = m["nclasses"]
+            input_shape = m["input_shape"]
 
-			model = Sequential()
-			model.add(Conv2D(32, kernel_size=(3, 3), activatxion='relu', input_shape=input_shape))
-			model.add(Conv2D(64, (3, 3), activation='relu'))
+            model = Sequential()
+            model.add(Conv2D(32, kernel_size=(3, 3), activatxion='relu', input_shape=input_shape))
+            model.add(Conv2D(64, (3, 3), activation='relu'))
 
-			model.add(MaxPooling2D(pool_size=(2, 2)))
-			model.add(Dropout(0.25))
-			model.add(Flatten())
-			model.add(Dense(128, activation='relu'))
-			model.add(Dropout(0.5))
-			model.add(Dense(nclasses, activation='softmax'))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Dropout(0.25))
+            model.add(Flatten())
+            model.add(Dense(128, activation='relu'))
+            model.add(Dropout(0.5))
+            model.add(Dense(nclasses, activation='softmax'))
 
-			model.compile(loss=keras.losses.categorical_crossentropy,
-			              optimizer=keras.optimizers.Adadelta(), metrics=metrics)
+            model.compile(loss=keras.losses.categorical_crossentropy,
+                            optimizer=keras.optimizers.Adadelta(), metrics=metrics)
 
-		self.model = model
-		
+        self.model = model
+
 
 
 def get_dataset( data_params, **kw):
     if choice == 0 :
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+        data_path = os_package_root_path(__file__, sublevel=0, path_add=data_path)
         out_path = os.getcwd() + "/keras_deepAR/"
         os.makedirs(out_path, exist_ok=True)
         log(data_path, out_path)
 
 
-		(x_train, y_train), (x_test, y_test) = mnist.load_data()
+        (x_train, y_train), (x_test, y_test) = mnist.load_data()
 		
         rows, cols = data_pars["rows"], data_pars["cols"]
 
 
 		# decide on input shape (depends on backend)
-		if K.image_data_format() == 'channels_first':
-		    x_train = x_train.reshape(x_train.shape[0], 1, rows, cols)
-		    x_test = x_test.reshape(x_test.shape[0], 1, rows, cols)
-		    input_shape = (1, rows, cols)
-		else:
-		    x_train = x_train.reshape(x_train.shape[0], rows, cols, 1)
-		    x_test = x_test.reshape(x_test.shape[0], rows, cols, 1)
-		    input_shape = (rows, cols, 1)
+        if K.image_data_format() == 'channels_first':
+            x_train = x_train.reshape(x_train.shape[0], 1, rows, cols)
+            x_test = x_test.reshape(x_test.shape[0], 1, rows, cols)
+            input_shape = (1, rows, cols)
+        else:
+            x_train = x_train.reshape(x_train.shape[0], rows, cols, 1)
+            x_test = x_test.reshape(x_test.shape[0], rows, cols, 1)
+            input_shape = (rows, cols, 1)
 
-		x_train = x_train.astype('float32')
-		x_test = x_test.astype('float32')
-		x_train /= 255
-		x_test /= 255
+        x_train = x_train.astype('float32')
+        x_test = x_test.astype('float32')
+        x_train /= 255
+        x_test /= 255
 
-		y_train = keras.utils.to_categorical(y_train, nclasses)
-		y_test = keras.utils.to_categorical(y_test, nclasses)
+        y_train = keras.utils.to_categorical(y_train, nclasses)
+        y_test = keras.utils.to_categorical(y_test, nclasses)
 
         return x_train, y_train, x_test, y_test
-
+  
 
 def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None,session=None, **kwargs):
 	# def fit(self,batch_size,epochs):
         data_pars['istrain'] = 1
         x_train, y_train, x_test, ytest = get_dataset(data_pars)
 
-		mtmp =model.model.fit(x_train, y_train,
-		                      batch_size=batch_size,	epochs=epochs,verbose=1, validation_data=(x_test, y_test))
+		mtmp =model.model.fit(x_train, y_train,batch_size=batch_size,epochs=epochs,verbose=1, validation_data=(x_test, y_test))
 	    model.model = mtmp
 	    return model
 
@@ -150,7 +149,7 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kwargs):
 def get_params(choice=0, data_path="dataset/", **kw) :
     if choice == 0 :
         log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
+        data_path = os_package_root_path(__file__, sublevel=0, path_add=data_path)
         out_path = os.getcwd() + "/keras_deepAR/"
         os.makedirs(out_path, exist_ok=True)
         log(data_path, out_path)
@@ -200,7 +199,7 @@ def test2(data_path="dataset/", out_path="keras/keras.png", reset=True):
     module, model = module_load_full(model_uri, model_pars)
     print(module, model)
 
-    model=fit(model, None, data_pars, model_pars, compute_pars)
+    model= fit(model, None, data_pars, model_pars, compute_pars)
 
 
     log("#### Predict   ###################################################")
@@ -252,4 +251,3 @@ def test(data_path="dataset/"):
 if __name__ == '__main__':
     VERBOSE = True
     test()
-

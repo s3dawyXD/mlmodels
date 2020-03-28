@@ -240,6 +240,3 @@ if __name__ == "__main__":
     agent.sess = sess
     states_buy, states_sell, total_gains, invest = agent.buy(initial_money = initial_money)
     test()
-
-    
-

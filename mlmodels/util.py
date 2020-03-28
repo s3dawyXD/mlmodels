@@ -1,16 +1,26 @@
 # -*- coding: utf-8 -*-
-import toml
-import os, sys
+import os
 import re
+
+# import toml
+from pathlib import Path
+import json
+
+
+"""
+from mlmodels.util import (os_package_root_path, log, path_norm
+    config_load_root, config_path_pretrained, config_path_dataset, config_set
+    )
+"""
 
 
 ####################################################################################################
 class to_namespace(object):
-  def __init__(self, adict):
-    self.__dict__.update(adict)
-  
-  def get(self, key):
-    return self.__dict__.get(key)
+    def __init__(self, adict):
+        self.__dict__.update(adict)
+
+    def get(self, key):
+        return self.__dict__.get(key)
 
 
 def log(*s, n=0, m=1):
@@ -19,23 +29,153 @@ def log(*s, n=0, m=1):
     print(sjump, sspace, s, sspace, flush=True)
 
 
-
 ####################################################################################################
-def os_package_root_path(add_path="",n=0):
-  from pathlib import Path
-  add_path = os.path.join(Path(__file__).parent.absolute(), add_path)
-  # print("os_package_root_path,check", add_path)
-  return add_path
+def os_folder_copy(src, dst):
+    """Copy a directory structure overwriting existing files"""
+    import shutil
+    for root, dirs, files in os.walk(src):
+        if not os.path.isdir(root):
+            os.makedirs(root)
+
+        for file in files:
+            rel_path = root.replace(src, '').lstrip(os.sep)
+            dest_path = os.path.join(dst, rel_path)
+
+            if not os.path.isdir(dest_path):
+                os.makedirs(dest_path)
+
+            shutil.copyfile(os.path.join(root, file), os.path.join(dest_path, file))
+
+
+
+def os_get_file(folder=None, block_list=[], pattern=r'*.py'):
+    # Get all the model.py into folder
+    folder = os_package_root_path() if folder is None else folder
+    # print(folder)
+    module_names = get_recursive_files3(folder, pattern)
+    print(module_names)
+
+
+    NO_LIST = []
+    NO_LIST = NO_LIST + block_list
+
+    list_select = []
+    for t in module_names:
+        t = t.replace(folder, "").replace("\\", ".").replace(".py", "")
+
+        flag = False
+        for x in NO_LIST:
+            if x in t: flag = True
+
+        if not flag:
+            list_select.append(t)
+
+    return list_select
+
+
+def model_get_list(folder=None, block_list=[]):
+    # Get all the model.py into folder
+    folder = os_package_root_path(__file__) if folder is None else folder
+    # print(folder)
+    module_names = get_recursive_files(folder, r'/*model*/*.py')
+
+    NO_LIST = ["__init__", "util", "preprocess"]
+    NO_LIST = NO_LIST + block_list
+
+    list_select = []
+    for t in module_names:
+        t = t.replace(folder, "").replace("\\", ".")
+
+        flag = False
+        for x in NO_LIST:
+            if x in t: flag = True
+
+        if not flag:
+            list_select.append(t)
+
+    return list_select
+
+
+def get_recursive_files2(folderPath, ext):
+    results = os.listdir(folderPath)
+    outFiles = []
+    for file in results:
+        if os.path.isdir(os.path.join(folderPath, file)):
+            outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
+        elif re.match(ext, file):
+            outFiles.append( folderPath + "/" + file)
+
+    return outFiles
+
+
+def get_recursive_files3(folderPath, ext):
+    results = os.listdir(folderPath)
+    outFiles = []
+    for file in results:
+        if os.path.isdir(os.path.join(folderPath, file)):
+            outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
+        elif re.match(ext, file):
+            outFiles.append(file)
+    return outFiles
+
+
+
+def get_model_uri(file):
+  return Path(os.path.abspath(file)).parent.name + "." + os.path.basename(file).replace(".py", "")
+
+
+
+def get_recursive_files(folderPath, ext='/*model*/*.py'):
+    import glob
+    files = glob.glob(folderPath + ext, recursive=True)
+    return files
 
 
 
 
-def os_package_root_path(filepath, sublevel=0, path_add=""):
+def path_norm(path=""):
+    root = os_package_root_path(__file__, 0)
+
+    if len(path) == 0 or path is None:
+        path = root
+
+    tag_list = [ "model_", "//model_",  "dataset", "template", "ztest"  ]
+
+
+    for t in tag_list :
+        if path.startswith(t) :
+            path = os.path.join(root, path)
+            return path
+    return path
+
+
+def path_norm_dict(ddict):
+    for k,v in ddict.items():
+        if "path" in k :
+            ddict[k] = path_norm(v)
+    return ddict
+
+
+"""
+def os_module_path():
+    import inspect
+    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parent_dir = os.path.dirname(current_dir)
+    # sys.path.insert(0, parent_dir)
+    return parent_dir
+"""
+
+def os_package_root_path(filepath="", sublevel=0, path_add=""):
     """
        get the module package root folder
     """
     from pathlib import Path
-    path = Path(os.path.realpath(filepath)).parent
+    import mlmodels, os, inspect 
+
+    path = Path(inspect.getfile(mlmodels)).parent
+    print( path )
+
+    # path = Path(os.path.realpath(filepath)).parent
     for i in range(1, sublevel + 1):
         path = path.parent
 
@@ -43,26 +183,84 @@ def os_package_root_path(filepath, sublevel=0, path_add=""):
     return path
 
 
-
-
-
 def os_file_current_path():
-  val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-  # return current_dir + "/"
-  # Path of current file
-  # from pathlib import Path
+    import inspect
+    val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    # return current_dir + "/"
+    # Path of current file
+    # from pathlib import Path
 
-  # val = Path().absolute()
-  val = str(os.path.join(val, ""))
-  # print(val)
-  return val
+    # val = Path().absolute()
+    val = str(os.path.join(val, ""))
+    # print(val)
+    return val
+
+
+####################################################################################################
+def test_module(model_uri="model_tf/1_lstm.py", data_path="dataset/", pars_choice="json", reset=True):
+    ###loading the command line arguments
+    # model_uri = "model_xxxx/yyyy.py"
+
+    log("#### Module init   #################################################")
+    from mlmodels.models import module_load
+    module = module_load(model_uri)
+    log(module)
+
+    log("#### Loading params   ##############################################")
+    param_pars = {"choice": pars_choice, "data_path": data_path}
+    model_pars, data_pars, compute_pars, out_pars = module.get_params(param_pars)
+
+    log("#### Run module test   ##############################################")
+    from mlmodels.models import test_module as test_module_global
+    test_module_global(model_uri, model_pars, data_pars, compute_pars, out_pars)
+
+
+####################################################################################################
+def config_load_root():
+    import json
+    path_user = os.path.expanduser('~')
+    path_config = path_user + "/.mlmodels/config.json"
+
+    ddict = json.load(open(path_config, mode='r'))
+    return ddict
+
+
+def config_path_pretrained():
+    ddict = config_load_root()
+    return ddict['model_trained']
+
+
+def config_path_dataset():
+    ddict = config_load_root()
+    return ddict['dataset']
+
+
+def config_set(ddict2):
+    ddict = config_load_root()
+
+    for k,x in ddict2.items():
+      ddict[k] = x
+
+    json.dump(ddict, open(ddict, mode='w'))
+   
 
 
 
-def log(*s, n=0,m=1):
-  sspace = "#" * n
-  sjump =  "\n" * m
-  print(sjump, sspace, s, sspace, flush=True)
+def params_json_load(path, config_mode="test"):
+    import json
+    pars = json.load(open(path, mode="r"))
+    pars = pars[config_mode]
+
+    ### HyperParam, model_pars, data_pars,
+    list_pars = []
+    for t in ["hypermodel_pars", "model_pars", "data_pars", "compute_pars", "out_pars"]:
+        pdict = pars.get(t)
+        if pdict:
+            list_pars.append(pdict)
+        else:
+            log("error in json, cannot load ", t)
+
+    return tuple(list_pars)
 
 
 
@@ -72,116 +270,268 @@ def load_config(args, config_file, config_mode, verbose=0):
     print(config_file) if verbose else None
 
     try:
-       pars = json.load(open(config_file, mode="r") )
-       # print(arg.param_file, model_pars)
+        pars = json.load(open(config_file, mode="r"))
+        # print(arg.param_file, model_pars)
 
+        pars = pars[config_mode]  # test / prod
+        print(config_file, pars) if verbose else None
 
-       pars = pars[config_mode]  # test / prod
-       print(config_file, pars) if verbose else None
+        ### Overwrite dict_pars from CLI input and merge with toml file
+        for key, x in vars(args).items():
+            if x is not None:  # only values NOT set by CLI
+                pars[key] = x
 
-       ### Overwrite dict_pars from CLI input and merge with toml file
-       for key, x in vars(args).items():
-          if x is not None:  # only values NOT set by CLI
-             pars[key] = x
+        # print(model_pars)
+        pars = to_namespace(pars)  # like object/namespace model_pars.instance
+        return pars
 
-       # print(model_pars)
-       pars = to_namespace(pars)  #  like object/namespace model_pars.instance
-       return pars
-       
     except Exception as e:
         print(e)
         return args
 
 
-
-def val(x,xdefault) :
-  try :
-   return x if x is not None  else xdefault
-  except :
-      return xdefault
-
+def val(x, xdefault):
+    try:
+        return x if x is not None else xdefault
+    except:
+        return xdefault
 
 
-def get_recursive_files2(folderPath, ext):
-    results = os.listdir(folderPath)
-    outFiles = []
-    for file in results:
-      if os.path.isdir(os.path.join(folderPath, file)):
-        outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
-      elif re.match(ext, file):
-        outFiles.append(file)
-  
-    return outFiles
+####################################################################################################
+####################################################################################################
+def env_conda_build(env_pars=None):
+    if env_pars is None:
+        env_pars = {'name': "test", 'python_version': '3.6.5'}
+
+    p = env_pars
+    cmd = f"conda create -n {p['name']}  python={p['python_version']}  -y"
+    print(cmd)
+    os.system(cmd)
 
 
-def get_recursive_files(folderPath, ext='/*model*/*.py'):
-  import glob
-  files = glob.glob( folderPath + ext, recursive=True) 
-  return files
+def env_pip_requirement(env_pars=None):
+    from time import sleep
+    if env_pars is None:
+        env_pars = {'name': "test", 'requirement': 'requirements.txt'}
+
+    root_path = os_package_root_path(__file__)
+    p = env_pars
+    # cmd = f"source activate {p['name']}  &&  "
+    cmd = ""
+    cmd = cmd + f"  pip install -r  {root_path}/{p['requirement']} "
+
+    print("Installing ", cmd)
+    os.system(cmd)
+    sleep(60)
 
 
+def env_pip_check(env_pars=None):
+    from importlib import import_module
+
+    if env_pars is None:
+        env_pars = {'name': "test", 'requirement': 'requirements.txt', "import": ['tensorflow', 'sklearn']}
+
+    flag = 0
+    try:
+        for f in env_pars['import']:
+            import_module(f)
+    except:
+        flag = 1
+
+    if flag:
+        env_pip_requirement(env_pars)
 
 
+def env_build(model_uri, env_pars):
+    from time import sleep
 
+    model_uri2 = model_uri.replace("/", ".")
+    root = os_package_root_path()
+    model_path = os.path.join(root, env_pars["model_path"])
 
+    env_pars['name'] = model_uri2
+    env_pars['python_version'] = "3.6.5"
+    env_pars['file_requirement'] = model_path + "/requirements.txt"
 
+    env_conda_build(env_pars=env_pars)
+    sleep(60)
 
+    env_pip_requirement(env_pars=env_pars)
 
 
 ####################################################################################################
 ########## TF specific #############################################################################
-def load_tf(foldername, filename):
+def tf_deprecation():
+    try:
+        from tensorflow.python.util import deprecation
+        deprecation._PRINT_DEPRECATION_WARNINGS = False
+        print("Deprecaton set to False")
+    except:
+        pass
+
+
+
+
+
+
+####################################################################################################
+###########  Utils #################################################################################
+class Model_empty(object):
+    def __init__(self, model_pars=None, data_pars=None, compute_pars=None
+                 ):
+        ### Model Structure        ################################
+        self.model = None
+
+
+def os_path_split(path) :
+  return str(Path( path ).parent), str(Path( path ).name)
+
+
+
+def load(load_pars):
+    p = load_pars
+
+    if "model_keras" in p['model_uri']:
+        path = os.path.abspath(p['path'] + "/../")
+        name = os.path.basename(p['path']) if ".h5" in p['path'] else "model.h5"
+        return load_keras(load_pars)
+
+
+def save(model=None, session=None, save_pars=None):
+    p = save_pars
+    if "model_keras" in p['model_uri']:
+        path = os.path.abspath( p['path'] + "/../")
+        name = os.path.basename(p['path']) if ".h5" in p['path'] else "model.h5"
+        save_keras( model, session, save_pars)
+
+
+
+
+
+def load_tf(load_pars=""):
   """
   https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
 
  """
-  import mlflow.tensorflow
   import tensorflow as tf
-  
-  model_uri = foldername + "/" + filename
   tf_graph = tf.Graph()
   tf_sess = tf.Session(graph=tf_graph)
+  model_path = os.path.join(load_pars['path'], "model")
   with tf_graph.as_default():
-    signature_def = mlflow.tensorflow.load_model(model_uri=model_uri,
-                                                 tf_sess=tf_sess)
-    input_tensors = [tf_graph.get_tensor_by_name(input_signature.name)
-                     for _, input_signature in signature_def.inputs.items()]
-    output_tensors = [tf_graph.get_tensor_by_name(output_signature.name)
-                      for _, output_signature in signature_def.outputs.items()]
-  return input_tensors, output_tensors
+    new_saver = tf.train.import_meta_graph(f"{model_path}.meta")
+    new_saver.restore(tf_sess, tf.train.latest_checkpoint(str(Path(model_path).parent)))
+
+  return tf_sess
 
 
-def save_tf(sess, file_path):
+def save_tf(model=None, sess=None, save_pars= None):
   import tensorflow as tf
   saver = tf.compat.v1.train.Saver()
-  return saver.save(sess, file_path)
+  if not os.path.exists(save_pars['path']):
+      os.makedirs(save_pars['path'], exist_ok=True)
+  return saver.save(sess, os.path.join(save_pars['path'], "model"))
 
 
 
+def load_tch(load_pars):
+    import torch
+    path, filename = load_pars['path'], load_pars['filename']
+
+    path = path + "/" + filename if "." not in path else path
+    model = Model_empty()
+    model.model = torch.load(path)
+    return model
 
 
-####################################################################################################
-########## pyTorch specific ########################################################################
-def load_tch(foldername, filename):
-  return 1
+def save_tch(model=None, optimizer=None, save_pars=None):
+    import torch
+    path, filename = os_path_split(save_pars['path'])
+    os.makedirs(path, exist_ok=True)
+
+    if save_pars.get('save_state') is not None:
+        torch.save({
+            'model_state_dict': model.model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+        }, f"{path}/{filename}" )
+
+    else:
+        torch.save(model.model, f"{path}/{filename}")
 
 
-def save_tch(foldername, filename):
-  return 1
+def save_tch_checkpoint(model, optimiser, save_pars):
+    import torch
+    path = save_pars['checkpoint_name']
+    torch.save({
+        'grad_step': save_pars["grad_step"],
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimiser.state_dict(),
+    }, path )
 
 
 
-def load_pkl(foldername, filename):
-  return 1
+# def load(model, optimiser, CHECKPOINT_NAME='nbeats-fiting-checkpoint.th'):
+def load_tch_checkpoint(model, optimiser, load_pars):
+    import torch
+    CHECKPOINT_NAME = load_pars['checkpoint_name']
+    if os.path.exists(CHECKPOINT_NAME):
+        checkpoint = torch.load(CHECKPOINT_NAME)
+
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimiser.load_state_dict(checkpoint['optimizer_state_dict'])
+        grad_step = checkpoint['grad_step']
+        print(f'Restored checkpoint from {CHECKPOINT_NAME}.')
+        return grad_step
+    return 0
 
 
 
-####################################################################################################
-########## Other model specific ####################################################################
-def load_pkl(folder_name, filename=None):
-  pass
+def load_pkl(load_pars):
+    import cloudpickle as pickle
+    return pickle.load(open( load_pars['path'], mode='rb') )
 
 
+def save_pkl(model=None, save_pars=None):
+  import cloudpickle as pickle
+  path, filename = os_path_split(save_pars['path'])
+  os.makedirs(path, exist_ok=True)
+  return pickle.dump(model, open( f"{path}/{filename}" , mode='wb') )
+
+
+
+def load_keras(load_pars, custom_pars=None):
+    from keras.models import load_model
+    path, filename = os_path_split(load_pars['path']  )
+    path_file = path + "/" + filename if ".h5" not in path else path
+    model = Model_empty()
+    if custom_pars:
+        model.model = load_model(path_file, 
+                             custom_objects={"MDN": custom_pars["MDN"],
+                                             "loss_func": custom_pars["loss"]})
+    else:
+        model.model = load_model(path_file)
+    return model
+
+
+def save_keras(model=None, session=None, save_pars=None, ):
+    path, filename = os_path_split(save_pars['path']  )
+    os.makedirs(path, exist_ok=True)
+    model.model.save(str(Path(path) / filename))
+
+
+def save_gluonts(model=None, session=None, save_pars=None):
+    path = save_pars['path']
+    os.makedirs(path, exist_ok=True)
+    model.model.serialize(Path(path))
+
+
+
+def load_gluonts(load_pars=None):
+    from gluonts.model.predictor import Predictor
+    predictor_deserialized = Predictor.deserialize(Path( load_pars['path'] ))
+
+    model = Model_empty()
+    model.model = predictor_deserialized
+    return model
 
 
 
@@ -191,203 +541,23 @@ def load_pkl(folder_name, filename=None):
 
 
 """
+def path_local_setup(current_file=None, out_folder="", sublevel=0, data_path="dataset/"):
+    root = os_package_root_path(__file__, sublevel=0, path_add="")
 
+    out_path = path_norm(out_folder)
+    data_path = path_norm(data_path)
 
-import glob
+    model_path = f"{out_path}/model/"
+    os.makedirs(out_path, exist_ok=True)
+    os.makedirs(model_path, exist_ok=True)
 
-path = "."
-files = glob.glob(path + '/*model*/*.py', recursive=True)
-files
-
-
-
-
-from datetime import datetime, timedelt
-
-
-a
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
-from sklearn.preprocessing import MinMaxScaler
-
-import tensorflow as tf
-
-sns.set()
-
-
-class ModelFactory():
-    def model_create(self, model_name, datasampler, hyper_parameters={'epoch':5}):
-        if model_name == 'lstm':
-            datasampler = DataSampler() # the reader object for the input data
-            model =  LSTM(datasampler)
-            model.set_pars(hyper_parameters)
-            return model
-
-# example usage
-# data = DataSampler(file_name='x.csv', timestamp=5)
-# this datasampler is sent to the model
-class DataSampler():
-    def __init__(self, file_name = '../dataset/GOOG-year.csv', timestamp =5):
-        self.data_pars = pd.read_csv()
-        self.date_ori = pd.to_datetime(data_pars.iloc[:, 0]).tolist()
-        self.minmax = MinMaxScaler()
-        self.timestamp = timestamp
-        self.df_log = self.preprocess_df()
-    
-    def preprocess_df(self):
-        self.minmax.fit(self.data_pars.iloc[:, 1:].astype('float32'))
-        df_log = minmax.transform(data_pars.iloc[:, 1:].astype('float32'))
-        df_log = pd.DataFrame(df_log)
-        return df_log
-
-    def batch_sampler(self, start, end):
-        # sampler for training set
-        for k in range(0, start, end):
-            index   = min(k + timestamp, df_log.shape[0] -1)
-            batch_x = np.expand_dims( df_log.iloc[k : index, :].values, axis = 0)
-            batch_y = df_log.iloc[k + 1 : index + 1, :].values
-            yield (batch_x, batch_y)
-    
-    def train_batch_sampler(self):
-        return batch_sampler(self.df_log.shape[0] - 1, self.timestamp)
-    
-    def test_batch_sampler(self):
-        return batch_sampler((self.df_log.shape[0] // self.timestamp) * self.timestamp, self.timestamp)
-    
-    def get_n_samples_per_batch(self):
-        return self.df_log.shape[0] // self.timestamp
-        
-
-
-class BaseModelDl(object):
-    
-    #Base Model class used for models under Dl class 
-    #acting as parent class
-
-    def __init__(self):
-        self.datasampler = None
-        self.name = ''
-        self.epoch = 5
-        self.learning_rate = 0.01
-        self.sess = None
-
-    def get_pars(self):
-        # epoch and learning rate exists in all models
-        return {
-            'epoch': self.epoch,
-            'learning_rate': self.learning_rate
-        }
-
-    def set_pars(self, **parameters):
-        # this function is common for all children classes
-        for parameter, value in parameters.items():
-            if hasattr(self,parameter):
-               setattr(self, parameter, value)
-            else:
-                raise AttributeError('Class {} does not have parameter {}'.format(
-                 self.name, parameter  
-                ))
-        return self
-
-    def build_model(self):
-        # used to create placeholders and optimizer based on parameters set
-        # called after setting the parameters
-        pass
-
-    def fit(self):
-        pass
-
-
-    def predict(self,X):
-        pass
-
-    def load(self, model_path):
-        # model_path=parent_folder/model.ckpt
-        saver = tf.train.Saver()
-        saver.load(self.sess, model_path)
-
-    def save(self, model_path):
-        # model_path=parent_folder/model.ckpt
-        saver = tf.train.Saver()
-        saver.save(self.sess, model_path)
-
-
-class LSTM(BaseModelDl):
-    def __init__(self, datasampler):
-        super(LSTM, self).__init__()
-        self.datasampler = datasampler
-        self.name = 'lstm'
-        self.num_layers = 1
-        self.size_layer = 128
-        self.timestamp = 5
-        self.dropout_rate = 0.7
-        self.future_day = 50
-        self.learning_rate = 0.01
-        self.feat_size = 1
-        self.output_size = 1
-        self.forget_bias = 0.1
-        self.model = None
-
-
-    def get_pars(self):
-        return {
-            'num_layers': self.num_layers,
-            'size_layer': self.size_layer,
-            'dropout_rate': self.dropout_rate,
-            'epoch': self.epoch,
-            'learning_rate': 0.01 ,
-            'output_size': self.output_size,
-            'feat_size': self.feat_size,
-            'forget_bias': self.forget_bias
-        }
-
-
-    def build_model(self):
-        def lstm_cell(size_layer):
-            return tf.nn.rnn_cell.LSTMCell(size_layer, state_is_tuple = False)
-
-        rnn_cells = tf.nn.rnn_cell.MultiRNNCell(
-                    [lstm_cell(self.size_layer) for _ in range(self.num_layers)],
-                    state_is_tuple = False,)
-                    
-        self.X = tf.placeholder(tf.float32, (None, None, self.feat_size))
-        self.Y = tf.placeholder(tf.float32, (None, self.output_size))
-        drop   = tf.contrib.rnn.DropoutWrapper(rnn_cells, output_keep_prob = self.forget_bias)
-        self.hidden_layer = tf.placeholder( tf.float32, 
-                                            (None, num_layers * 2 * size_layer))
-        self.outputs, self.last_state = tf.nn.dynamic_rnn(
-            drop, self.X, initial_state = self.hidden_layer, dtype = tf.float32
-        )
-        self.logits    = tf.layers.dense(self.outputs[-1], output_size)
-        self.cost      = tf.reduce_mean(tf.square(self.Y - self.logits))
-        self.optimizer = tf.train.AdamOptimizer(learning_rate).minimize(self.cost)
-
-        self.sess    = tf.InteractiveSession()
-        self.sess.run(tf.global_variables_initializer())
-
-    
-    def fit(self):
-        for i in range(self.epoch):
-            init_value = np.zeros((1, self.num_layers * 2 * self.size_layer))
-            for batch_x, batch_y in self.datasampler.train_batch_sampler():
-                last_state, _, loss = sess.run(
-                    [self.last_state, self.optimizer, self.cost],
-                    feed_dict = {
-                        self.X: batch_x,
-                        self.Y: batch_y,
-                        self.hidden_layer: init_value,
-                    },
-                )
-                init_value = last_state
-                total_loss += loss
-            total_loss /= self.datasampler.get_n_samples_per_batch()
-            if (i + 1) % 100 == 0:
-                print('epoch:', i + 1, 'avg loss:', total_loss)
-
-    def predict(self,):
-        # takes a sampler as the one in datasampler class
-        # in this function it should take a sampler 
+    log(data_path, out_path, model_path)
+    return data_path, out_path, model_path
 """
+
+
+
+
+
+
+

@@ -2,6 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+zsublime*
+ztest/
+mlmodels/ztest/*
+.idea/*
+
 
 # C extensions
 *.so
@@ -116,3 +121,16 @@ venv.bak/
 /zarchive/mlmodels-0.6.1.tar.gz
 /zarchive/mlmodels-0.7.1-py3-none-any.whl
 /zarchive/mlmodels-0.7.1.tar.gz
+/.tgitconfig
+/zzzarchive
+
+# torchtext cache
+.vector_cache
+
+# misc
+example/dask*
+example/dataset
+example/exp
+/functions.json
+.idea
+/classes.json

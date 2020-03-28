@@ -4,18 +4,21 @@
 # In[1]:
 
 
+import random
+from collections import deque
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import matplotlib.pyplot as plt
+
 import seaborn as sns
+
 sns.set()
 
 # In[3]:
 
 
-from collections import deque
-import random
 
 
 class Model:
@@ -265,7 +268,3 @@ if __name__ == "__main__":
 
 
     # In[ ]:
-
-
-
-

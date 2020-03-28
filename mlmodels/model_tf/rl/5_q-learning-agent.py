@@ -4,15 +4,16 @@
 # In[1]:
 
 
+import copy
 import random
 from collections import deque
-import copy 
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
+
+import seaborn as sns
 
 
 class Model:

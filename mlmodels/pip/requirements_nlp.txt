@@ -1,0 +1,18 @@
+#### DL framework
+git+https://www.github.com/keras-team/keras-contrib.git
+
+
+
+### transformers
+pytorch-transformers
+###transformers==2.4.1 #### fix issue #23 could not run on macos
+transformers==2.3.0 #### due to sentence transformers
+sentence-transformers==0.2.4
+
+
+#### NLP
+torchtext
+nltk
+spacy
+gensim 
+

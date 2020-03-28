@@ -1,10 +1,12 @@
-from flask import Flask, flash, request, redirect, url_for, render_template
 # from flask_ngrok import run_with_ngrok
 import os
+
+import numpy as np
 import torch
 import torch.nn.functional as F
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, GPT2Config
-import numpy as np
+from transformers import GPT2Config, GPT2LMHeadModel, GPT2Tokenizer
+
+from flask import Flask, flash, redirect, render_template, request, url_for
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 # weights = torch.load('large_ft.pkl')

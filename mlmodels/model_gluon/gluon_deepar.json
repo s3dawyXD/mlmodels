@@ -36,7 +36,9 @@
             "time_limits": 120,
             "num_trials": 5,
             "search_strategy": "skopt"
-        }
+        },
+
+        "out_pars": {}
     },
 
 

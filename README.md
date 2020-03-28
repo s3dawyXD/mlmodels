@@ -1,243 +1,682 @@
-# mlmodels
+# mlmodels : Model ZOO for Pytorch, Tensorflow, Keras, Gluon, sklearn, LightGBM models...
 
-```
-Lightweight Functional interface to wrap access to Deep Learning, ML models
-and Hyper Params Search, cross platforms ; tensorflow, pytorch, gluon, keras,...
+- Model ZOO with Lightweight Functional interface to wrap access to Recent and State o Art Deep Learning, ML models and Hyper-Parameter Search, cross platforms such as Tensorflow, Pytorch, Gluon, Keras, sklearn, light-GBM,...
 
-Logic follows Scikit Learn API: fit, predict, transform, metrics, save, load
+- Logic follows sklearn : fit, predict, transform, metrics, save, load
 
-*Goal is to facilitate POC script code to Semi-Prod code with a minimal amount of code refactoring ... *
+- Goal is to transform Jupyter/research code into Semi-Prod (batch,..) code with minimal code change ...
 
 
-#### Docs here:   https://mlmodels.readthedocs.io/en/latest/  (incomplete docs)
-#### Pypi here :  https://pypi.org/project/mlmodels/
+- Model list is available here :
+  https://github.com/arita37/mlmodels/blob/dev/README_model_list.md
 
-#################################################################################################
-Install as editable package   ONLY dev branch
+- Why Functional interface instead of OOP ?
+  Functional reduces the amount of code needed, focus more on the computing part (vs design part),
+  a bit easier maintenability for medium size project, good for scientific computing process.
+
+
+*  Colab demo :
+https://colab.research.google.com/drive/1sYbrXNZh9nTeizS-AuCA8RSu94B_B-RF54d8dce15108f5fe94bf448fceb519dce07a6d2d
+
+
+## Model List :
+
+
+### Time Series:
+Nbeats: 2019, Time Series NNetwork,  https://arxiv.org/abs/1905.10437
+
+Amazon Deep AR: 2019, Time Series NNetwork,  https://arxiv.org/abs/1905.10437
+
+Facebook Prophet 2017, Time Series prediction,
+
+ARMDN Advanced Time series Prediction :  2019, Associative and Recurrent Mixture Density Networks for time series.
+
+LSTM prediction 
+
+
+
+### NLP :
+Sentence Transformers : 2019, Embedding of full sentences using BERT, https://arxiv.org/pdf/1908.10084.pdf
+
+Transformers Classifier : Using Transformer for Text Classification, https://arxiv.org/abs/1905.05583
+
+TextCNN Pytorch : 2016, Text CNN Classifier, https://arxiv.org/abs/1801.06287
+
+TextCNN Keras : 2016, Text CNN Classifier, https://arxiv.org/abs/1801.06287
+
+charCNN Keras : Text Character Classifier,
+
+
+### TABULAR :
+AutoML Gluon  :  2020, AutoML in Gluon, MxNet using LightGBM, CatBoost
+
+All sklearn models, LighGBM
+
+
+
+### VISION :
+  Vision Models (pre-trained) :  
+        alexnet, densenet121, densenet169, densenet201,
+        densenet161, inception_v3, resnet18, resnet34, 
+        resnet50, resnet101, resnet152,
+        resnext50_32x4d, resnext101_32x8d, 
+        wide_resnet50_2, wide_resnet101_2, squeezenet1_0,
+        squeezenet1_1, vgg11, vgg13, vgg16, vgg19, vgg11_bn,
+        vgg13_bn, vgg16_bn, vgg19_bn,googlenet, shufflenet_v2_x0_5, 
+        shufflenet_v2_x1_0, mobilenet_v2
+
+A lot more...
+
+
+
+......
+
+https://github.com/arita37/mlmodels/blob/dev/README_model_list.md
+
+######################################################################################
+
+## ① Installation
+
+Install as editable package (ONLY dev branch), in Linux
+
+conda create -n py36 python=3.6.5 -y
+source activate py36
 
 cd yourfolder
 git clone https://github.com/arita37/mlmodels.git mlmodels
 cd mlmodels
-git checkout dev     
-pip install -e .  --no-deps  
+git checkout dev
+
+    ### On Linux/MacOS
+    pip install numpy<1.17.0
+    pip install -e .  -r requirements.txt
+    pip install   -r requirements_fake.txt
 
 
-### Test, in CLI type :
-ml_models
-ml_optim    
+    ### On Windows
+    VC 14   https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019
+    pip install  numpy<1.17.0
+    pip install torch==1.0.1 -f https://download.pytorch.org/whl/torch_stable.html
+    pip install -e .  -r requirements_wi.txt
+    pip install   -r requirements_fake.txt
 
 
-####  dependencies
-numpy>=1.16.4
-pandas>=0.24.2
-scipy>=1.3.0
-numexpr>=2.6.8 
-scikit-learn>=0.21.2
-
-tensorflow>=1.14.0
-pytorch>=0.4.0
-optuna
-gluon
-gluonts
-
-#################################################################################################
-######### Entry CLI  ############################################################################
-ml_models  :  mlmodels/models.py
-              Lightweight Functional interface to execute models
-
-ml_models --do  
-    model_list  :  list all models in the repo                            
-    testall     :  test all modules inside model_tf
-    test        :  test a certain module inside model_tf
-    fit         :  wrap fit generic m    ethod
-    predict     :  predict  using a pre-trained model and some data
-    generate_config  :  generate config file from code source
+    ### No Deps
+    # pip install -e .  --no-deps
 
 
-ml_optim   :  mlmodels/optim.py
-              Lightweight Functional interface to wrap Hyper-parameter Optimization
-              
-ml_optim --do
-   test      :  Test the hyperparameter optimization for a specific model
-   test_all  :  TODO, Test all
-   search    :  search for the best hyperparameters of a specific model
+    ### Check this Colab for install :
+https://colab.research.google.com/drive/1sYbrXNZh9nTeizS-AuCA8RSu94B_B-RF
 
-ml_test      :  A lot of tests
+    ##### Initialize
+    Will copy template, dataset, example to your folder
+
+    ml_models --init  /yourworkingFolder/
 
 
-##################################################################################################
-######### Command line sample        #############################################################
+    ##### To test :
+    ml_optim
 
-#### generate config file
-ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig\"
+    ##### To test model fitting
+    ml_models
 
+#### Dependencies
 
-#### TF LSTM model
-ml_models  --model_uri model_tf/1_lstm.py  --do test
+https://github.com/arita37/mlmodels/blob/dev/requirements.txt
 
+#### Actual test runs
 
-#### Custom  Models
-ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf\1_lstm.py"
+https://github.com/arita37/mlmodels/actions
 
+![test_fast_linux](https://github.com/arita37/mlmodels/workflows/test_fast_linux/badge.svg)
 
-#### PyTorch models
-ml_models  --model_uri model_tch/mlp.py  --do test
+![test_fast_windows](https://github.com/arita37/mlmodels/workflows/test_fast_windows/badge.svg?branch=dev)
 
+![ All model testing (Linux) ](https://github.com/arita37/mlmodels/workflows/code_structure_linux/badge.svg)
 
-#### Model param search test
-ml_optim --do test
+#######################################################################################
 
+## Usage in Jupyter
 
-#### For normal optimization search method
-ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
-ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
+https://github.com/arita37/mlmodels/blob/dev/README_usage.md
 
+#######################################################################################
 
-#### HyperParam standalone run
-ml_optim --modelname model_tf.1_lstm.py  --do test
-ml_optim --modelname model_tf.1_lstm.py  --do search
+## CLI tools:
 
+https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md
 
+```
+- ml_models    :  mlmodels/models.py
+- ml_optim     :  mlmodels/optim.py
+- ml_test      :  mlmodels/ztest.py
 
+```
 
-#################################################################################################### 
-########## How to add a new model ################################################################## 
-*How to define a custom model ?*
-   Create a folder,
-   Create a file mymodel.py
+####################################################################################
 
-   Include those classes/functions :
-      Class Model()                  :   Model definition
-            __init__(model_param):
-                                  
-      def fit(model, data_pars, model_pars, compute_pars, )     : Train the model
-      def predict(model, sess, data_pars, compute_pars, out_pars )         : Predict the results
-      def metric(ypred, data_pars, compute_pars, out_pars )         : Measure the results
+## Model List
 
-      def get_params()                  : example of parameters of the model
-      def get_dataset(data_pars)        : load dataset
-      def test()                        : example running the model     
-      def test2()                       : example running the model in global settings  
+https://github.com/arita37/mlmodels/blob/dev/README_model_list.md
 
-      def save()                        : save the model
-      def load()                        : load the trained model
+#######################################################################################
 
+## How to add a new model
 
-  Template is available in mlmodels/template/model_XXXX.py
+https://github.com/arita37/mlmodels/blob/dev/README_addmodel.md
 
+#######################################################################################
 
+## Index of functions/methods
 
-####################################################################################################
-#########  Interface ###############################################################################
-models.py 
-   module_load(model_uri)
-   model_create(module)
-   fit(model, module, session, data_pars, out_pars   )
-   metrics(model, module, session, data_pars, out_pars)
-   predict(model, module, session, data_pars, out_pars)
-   save(model, path)
-   load(model)
+https://github.com/arita37/mlmodels/blob/dev/README_index_doc.txt
 
+####################################################################################
 
-optim.py
-   optim(modelname="model_tf.1_lstm.py",  model_pars= {}, data_pars = {}, compute_pars={"method": "normal/prune"}
-       , save_folder="/mymodel/", log_folder="", ntrials=2) 
+## In Jupyter
 
-   optim_optuna(modelname="model_tf.1_lstm.py", model_pars= {}, data_pars = {}, compute_pars={"method" : "normal/prune"},
-                save_folder="/mymodel/", log_folder="", ntrials=2) 
+### LSTM example in TensorFlow ([Example notebook](example/1_lstm.ipynb))
 
+#### Import library and functions
 
-### Generic parameters :
-   Define in models_config.json
-   model_params      :  Relative to model definition 
-   compute_pars      :  Relative to  the compute process
-   data_pars         :  Relative to the input data
-   out_pars          :  Relative to outout data
+```python
+# import library
+import mlmodels
+```
 
-   Sometimes, data_pars is required to setup the model (ie CNN with image size...)
-   
+#### Define model and data definitions
 
-
-
-####################################################################################################
-######### Code sample  #############################################################################
-from mlmodels.models import module_load, data_loader, create_model, fit, predict, stats
-from mlmodels.models import load #Load model weights
-
-#### Training
+```python
+model_uri    = "model_tf.1_lstm.py"
 model_pars   =  {  "num_layers": 1,
                   "size": ncol_input, "size_layer": 128, "output_size": ncol_output, "timestep": 4,
                 }
-data_pars    =  {}
+data_pars    =  {"data_path": "/folder/myfile.csv"  , "data_type": "pandas" }
 compute_pars =  { "learning_rate": 0.001, }
 
-module        =  module_load( model_uri="model_tf.1_lstm.py" )  #Load file definition
-model         =  model_create(module, model_pars)    # Create Model instance
-model, sess   =  fit(model, module, data_pars)       # fit the model
-metrics_val   =  metrics( model, sess, ["loss"])     # get stats
-model.save( "myfolder/", model, module, sess,)
+out_pars     =  { "path": "ztest_1lstm/", "model_path" : "ztest_1lstm/model/"}
+save_pars = { "path" : "ztest_1lstm/model/" }
+load_pars = { "path" : "ztest_1lstm/model/" }
 
+```
+
+#### Load Parameters and Train
+
+```python
+from mlmodels.models import module_load
+
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
 
 #### Inference
-model = load(folder)    #Create Model instance
-ypred = module.predict(model, module, data_pars, compute_pars)     # predict pipeline
 
-
-
-
-
-
-###############################################################################
-###############################################################################
-Naming convention for functions, arguments :
-
-## Function naming   ##################################################
-pd_   :  input is pandas dataframe
-np_   :  input is numpy
-sk_   :  inout is related to sklearn (ie sklearn model), input is numpy array
-plot_
-
-
-_col_  :  name for colums
-_colcat_  :  name for category columns
-_colnum_  :  name for numerical columns (folat)
-_coltext_  : name for text data
-_colid_  : for unique ID columns\
-
-_stat_ : show statistics
-_df_  : dataframe
-_num_ : statistics
-
-col_ :  function name for column list related.
-
-
-
-### Argument Variables naming  ###############################################
-df     :  variable name for dataframe
-colname  : for list of columns
-colexclude
-colcat : For category column
-colnum :  For numerical columns
-coldate : for date columns
-coltext : for raw text columns
-
-
-
-#########Conda install    ##################################################
-conda create -n py36_tf13 python=3.6.5  -y
-source activate py36_tf13
-
-
-pip install tensorflow=1.13.1
-pip install  ipykernel spyder-kernels=0.* -y
-conda install  -c anaconda  tensorflow=1.13.1
-conda install -c anaconda scikit-learn pandas matplotlib seaborn -y
-conda install -c anaconda  ipykernel spyder-kernels=0.* -y
-
+```python
+metrics_val   =  module.fit_metrics( model, sess, data_pars, compute_pars, out_pars) # get stats
+ypred         = module.predict(model, sess,  data_pars, compute_pars, out_pars)     # predict pipeline
 
 
 ```
 
+---
+
+### AutoML example in Gluon ([Example notebook](example/gluon_automl.ipynb))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+import autogluon as ag
+```
+
+#### Define model and data definitions
+
+```python
+model_uri = "model_gluon.gluon_automl.py"
+data_pars = {"train": True, "uri_type": "amazon_aws", "dt_name": "Inc"}
+
+model_pars = {"model_type": "tabular",
+              "learning_rate": ag.space.Real(1e-4, 1e-2, default=5e-4, log=True),
+              "activation": ag.space.Categorical(*tuple(["relu", "softrelu", "tanh"])),
+              "layers": ag.space.Categorical(
+                          *tuple([[100], [1000], [200, 100], [300, 200, 100]])),
+              'dropout_prob': ag.space.Real(0.0, 0.5, default=0.1),
+              'num_boost_round': 10,
+              'num_leaves': ag.space.Int(lower=26, upper=30, default=36)
+             }
+
+
+compute_pars = {
+    "hp_tune": True,
+    "num_epochs": 10,
+    "time_limits": 120,
+    "num_trials": 5,
+    "search_strategy": "skopt"
+}
+
+out_pars = {
+    "out_path": "dataset/"
+}
+
+```
+
+#### Load Parameters and Train
+
+```python
+from mlmodels.models import module_load
+
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+model         =  module.Model(model_pars=model_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, model_pars=model_pars, compute_pars=compute_pars, out_pars=out_pars)
+```
+
+#### Inference
+
+```python
+ypred       = module.predict(model, data_pars, compute_pars, out_pars)     # predict pipeline
+
+
+```
+
+---
+
+### RandomForest example in Scikit-learn ([Example notebook](example/sklearn.ipynb))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Define model and data definitions
+
+```python
+model_uri    = "model_sklearn.sklearn.py"
+
+model_pars   = {"model_name":  "RandomForestClassifier", "max_depth" : 4 , "random_state":0}
+
+data_pars    = {'mode': 'test', 'path': "../mlmodels/dataset", 'data_type' : 'pandas' }
+
+compute_pars = {'return_pred_not': False}
+
+out_pars    = {'path' : "../ztest"}
+```
+
+#### Load Parameters and Train
+
+```python
+from mlmodels.models import module_load
+
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Inference
+
+```python
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+```
+
+---
+
+### ARMDN in Keras
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Define model and data definitions
+
+```python
+
+model_uri    = "model_keras.armdn.py"
+
+model_pars   = {"lstm_h_list": [300, 200, 24], "last_lstm_neuron": 12,
+                      "timesteps": 12, "dropout_rate": 0.1, "n_mixes": 3,
+                      "dense_neuron": 10,
+                      }
+
+data_pars    = {"train_data_path": train_data_path,
+                     "train": False,
+                     "prediction_length": 12,
+                     "col_Xinput": ["milk_production_pounds"],
+                     "col_ytarget": "milk_production_pounds"}
+
+compute_pars = {"batch_size": 32, "epochs": 1000,
+                "learning_rate": 0.05, "patience": 50}
+
+out_pars    = {'outpath' : "ztest/model_keras/textcnn/"}
+```
+
+#### Load Parameters and Train
+
+```python
+from mlmodels.models import module_load
+
+module = module_load( model_uri= model_uri )                           # Load file definition
+model = module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess = module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Inference
+
+```python
+ypred = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+```
+
+---
+
+### TextCNN example in keras ([Example notebook](example/textcnn.ipynb))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Define model and data definitions
+
+```python
+model_uri    = "model_keras.textcnn.py"
+
+data_pars    = {"path" : "../mlmodels/dataset/text/imdb.csv", "train": 1, "maxlen":400, "max_features": 10}
+
+model_pars   = {"maxlen":400, "max_features": 10, "embedding_dims":50}
+
+compute_pars = {"engine": "adam", "loss": "binary_crossentropy", "metrics": ["accuracy"] ,
+                        "batch_size": 32, "epochs":1, 'return_pred_not':False}
+
+out_pars     = {"path": "ztest/model_keras/textcnn/"}
+
+```
+
+#### Load Parameters and Train
+
+```python
+from mlmodels.models import module_load
+
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Inference
+
+```python
+data_pars['train'] = 0
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
+```
+
+---
+
+### Using json config file for input ([Example notebook](example/1_lstm_json.ipynb), [JSON file](mlmodels/dataset/json/1_lstm.json))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Load model and data definitions from json
+
+```python
+from mlmodels.models import module_load
+from mlmodels.util import load_config
+
+model_uri    = "model_tf.1_lstm.py"
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+
+model_pars, data_pars, compute_pars, out_pars = module.get_params(param_pars={
+    'choice':'json',
+    'config_mode':'test',
+    'data_path':'../mlmodels/dataset/json/1_lstm.json'
+})
+```
+
+#### Load parameters and train
+
+```python
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Check inference
+
+```python
+ypred       = module.predict(model, sess=sess,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+```
+
+---
+
+### Using Scikit-learn's SVM for Titanic Problem from json file ([Example notebook](example/sklearn_titanic_svm.ipynb), [JSON file](mlmodels/dataset/json/sklearn_titanic_svm.json))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Load model and data definitions from json
+
+```python
+from mlmodels.models import module_load
+from mlmodels.util import load_config
+
+model_uri    = "model_sklearn.sklearn.py"
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+
+model_pars, data_pars, compute_pars, out_pars = module.get_params(param_pars={
+    'choice':'json',
+    'config_mode':'test',
+    'data_path':'../mlmodels/dataset/json/sklearn_titanic_svm.json'
+})
+```
+
+#### Load Parameters and Train
+
+```python
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Inference
+
+```python
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+ypred
+```
+
+#### Check metrics
+
+```python
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+
+y = pd.read_csv('../mlmodels/dataset/tabular/titanic_train_preprocessed.csv')['Survived'].values
+roc_auc_score(y, ypred)
+```
+
+---
+
+### Using Scikit-learn's Random Forest for Titanic Problem from json file ([Example notebook](example/sklearn_titanic_randomForest.ipynb), [JSON file](mlmodels/dataset/json/sklearn_titanic_randomForest.json))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Load model and data definitions from json
+
+```python
+from mlmodels.models import module_load
+from mlmodels.util import load_config
+
+model_uri    = "model_sklearn.sklearn.py"
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+
+model_pars, data_pars, compute_pars, out_pars = module.get_params(param_pars={
+    'choice':'json',
+    'config_mode':'test',
+    'data_path':'../mlmodels/dataset/json/sklearn_titanic_randomForest.json'
+})
+```
+
+#### Load Parameters and Train
+
+```python
+model         =  module.Model(model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Inference
+
+```python
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+ypred
+```
+
+#### Check metrics
+
+```python
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+
+y = pd.read_csv('../mlmodels/dataset/tabular/titanic_train_preprocessed.csv')['Survived'].values
+roc_auc_score(y, ypred)
+```
+
+---
+
+### Using Autogluon for Titanic Problem from json file ([Example notebook](example/gluon_automl_titanic.ipynb), [JSON file](mlmodels/dataset/json/gluon_automl.json))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Load model and data definitions from json
+
+```python
+from mlmodels.models import module_load
+from mlmodels.util import load_config
+
+model_uri    = "model_gluon.gluon_automl.py"
+module        =  module_load( model_uri= model_uri )                           # Load file definition
+
+model_pars, data_pars, compute_pars, out_pars = module.get_params(
+    choice='json',
+    config_mode= 'test',
+    data_path= '../mlmodels/dataset/json/gluon_automl.json'
+)
+```
+
+#### Load Parameters and Train
+
+```python
+model         =  module.Model(model_pars=model_pars, compute_pars=compute_pars)             # Create Model instance
+model   =  module.fit(model, model_pars=model_pars, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+model.model.fit_summary()
+```
+
+#### Check inference
+
+```python
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+```
+
+#### Check metrics
+
+```python
+model.model.model_performance
+
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+
+y = pd.read_csv('../mlmodels/dataset/tabular/titanic_train_preprocessed.csv')['Survived'].values
+roc_auc_score(y, ypred)
+```
+
+---
+
+---
+
+### Using hyper-params (optuna) for Titanic Problem from json file ([Example notebook](example/sklearn_titanic_randomForest_example2.ipynb), [JSON file](mlmodels/dataset/json/hyper_titanic_randomForest.json))
+
+#### Import library and functions
+
+```python
+# import library
+import mlmodels
+```
+
+#### Load model and data definitions from json
+
+```python
+from mlmodels.models import module_load
+from mlmodels.optim import optim
+import json
+
+###  hypermodel_pars, model_pars, ....
+data_path = '../mlmodels/dataset/json/hyper_titanic_randomForest.json'
+pars = json.load(open( data_path , mode='r'))
+for key, pdict in  pars.items() :
+  print(key)
+  globals()[key] = pdict
+
+
+model_uri    = "model_sklearn.sklearn.py"
+module       =  module_load( model_uri= model_uri )
+
+model_pars_update = optim(
+    model_uri       = model_uri,
+    hypermodel_pars = hypermodel_pars,
+    model_pars      = model_pars,
+    data_pars       = data_pars,
+    compute_pars    = compute_pars,
+    out_pars        = out_pars
+)
+
+```
+
+#### Load Parameters and Train
+
+```python
+model         =  module.Model(model_pars=model_pars_update, data_pars=data_pars, compute_pars=compute_pars)             # Create Model instance
+model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)          # fit the model
+```
+
+#### Check inference
+
+```python
+ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
+ypred
+```
+
+#### Check metrics
+
+```python
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+
+y = pd.read_csv('../mlmodels/dataset/tabular/titanic_train_preprocessed.csv')['Survived'].values
+roc_auc_score(y, ypred)
+```
+
+---
 
 
 
@@ -248,3 +687,5 @@ conda install -c anaconda  ipykernel spyder-kernels=0.* -y
 
 
 
+
+54d8dce15108f5fe94bf448fceb519dce07a6d2d

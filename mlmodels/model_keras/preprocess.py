@@ -34,15 +34,13 @@ import os
 
 import numpy as np
 import pandas as pd
-
-from deepctr.inputs import SparseFeat, VarLenSparseFeat, DenseFeat, get_feature_names
-from deepctr.layers import custom_objects
-
-
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
+from deepctr.inputs import (DenseFeat, SparseFeat, VarLenSparseFeat,
+                            get_feature_names)
+from deepctr.layers import custom_objects
 
 
 ####################################################################################################
@@ -249,5 +247,3 @@ def test(data_path="dataset/", pars_choice=0):
 if __name__ == '__main__':
     VERBOSE = True
     test(pars_choice=0)
-
-

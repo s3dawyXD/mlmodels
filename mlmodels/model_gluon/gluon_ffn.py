@@ -1,7 +1,26 @@
+# -*- coding: utf-8 -*-
+"""
+GluonTS
+# First install package from terminal:  pip install mxnet autogluon
+https://autogluon.mxnet.io/tutorials/tabular_prediction/tabular-quickstart.html
+
+
+
+"""
+import json
+import os
+from pathlib import Path
+
+import pandas as pd
 
 from gluonts.model.simple_feedforward import SimpleFeedForwardEstimator
 from gluonts.trainer import Trainer
-from mlmodels.model_gluon.util import *
+from mlmodels.model_gluon.util import (
+    _config_process, fit, get_dataset, load, metrics,
+    plot_predict, plot_prob_forecasts, predict, save)
+
+
+from mlmodels.util import path_norm, os_package_root_path, log
 
 VERBOSE = False
 
@@ -12,7 +31,7 @@ VERBOSE = False
 ########################################################################################################################
 #### Model defintion
 class Model(object) :
-    def __init__(self, model_pars=None, compute_pars=None) :
+    def __init__(self, model_pars=None, data_pars=None, compute_pars=None, **kwargs) :
         ## Empty model for Seaialization
         if model_pars is None and compute_pars is None :
            self.model = None
@@ -32,25 +51,36 @@ class Model(object) :
 
 
 
-########################################################################################################################
-def get_params(choice=0, data_path="dataset/", **kw):
-    if choice == 0:
-        log("#### Path params   ################################################")
-        data_path = os_package_root_path(__file__, sublevel=1, path_add=data_path)
-        out_path = os.getcwd() + "/GLUON_ffn/"
-        os.makedirs(out_path, exist_ok=True)
-
-        model_path = os.getcwd() + "/GLUON/model_ffn/"
-        os.makedirs(model_path, exist_ok=True)
-        log(data_path, out_path,model_path)
+def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", **kw):
+    import json
+    #pp = param_pars
+    #choice = pp['choice']
+    #config_mode = pp['config_mode']
+    #data_path = pp['data_path']
 
 
-        train_data_path = data_path + "GLUON-GLUON-train.csv"
+    if choice == "json":
+        data_path = path_norm(data_path)
+        cf = json.load(open(data_path, 'rb'))
+        cf = cf[config_mode]
+        return cf['model_pars'], cf['data_pars'], cf['compute_pars'], cf['out_pars']
+
+
+    if choice == "test01":
+        log("#### Path params   #####################################################")
+        data_path  = path_norm("dataset/timeseries/")
+        out_path   = path_norm("ztest/model_gluon/gluon_prophet/" )
+        model_path = os.path.join(out_path, "model")
+
+
+        train_data_path = data_path + "GLUON-train.csv"
         test_data_path = data_path + "GLUON-test.csv"
         start = pd.Timestamp("01-01-1750", freq='1H')
 
-        data_pars = {"train_data_path": train_data_path, "test_data_path": test_data_path, "train": False,
-                     'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 245,
+        data_pars = {"train_data_path": train_data_path, 
+                     "test_data_path": test_data_path, 
+                     "train": False,
+                     'prediction_length': 48, 'freq': '1H', "start": start, "num_series": 37,
                      "save_fig": "./series.png","modelpath":model_path}
 
 
@@ -62,8 +92,7 @@ def get_params(choice=0, data_path="dataset/", **kw):
         compute_pars = {"ctx":"cpu","epochs":5,"learning_rate":1e-3,"hybridize":False,
                       "num_batches_per_epoch":100,'num_samples':100}
 
-        outpath=out_path+"result"
-
+        outpath = out_path+"result"
         out_pars = {"outpath": outpath, "plot_prob": True, "quantiles": [0.1, 0.5, 0.9]}
 
     return model_pars, data_pars, compute_pars, out_pars
@@ -71,70 +100,30 @@ def get_params(choice=0, data_path="dataset/", **kw):
 
 
 
-def test2(data_path="dataset/", out_path="GLUON/gluon.png", reset=True):
-    ###loading the command line arguments
-    # arg = load_arguments()
+########################################################################################################################
+def test(data_path="dataset/", choice="test01"):
+    ### Local test
 
     log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
-    model_uri = "model_gluon/gluon_ffn.py"
-
+    model_pars, data_pars, compute_pars, out_pars = get_params(choice=choice, data_path=data_path)
+    print(model_pars, data_pars, compute_pars, out_pars)
 
     log("#### Loading dataset   #############################################")
-    gluont_ds = get_dataset(**data_pars)
+    gluont_ds = get_dataset(data_pars)
 
 
     log("#### Model init, fit   ###########################################")
     from mlmodels.models import module_load_full, fit, predict
-    module, model = module_load_full(model_uri, model_pars)
-    print(module, model)
-
-    model=fit(model, None, data_pars, model_pars, compute_pars)
-
-    log("#### save the trained model  #############################################")
-    save(model, data_pars["modelpath"])
-
-
-    log("#### Predict   ###################################################")
-    ypred = predict(model, data_pars, compute_pars, out_pars)
-    print(ypred)
-
-
-    log("###Get  metrics   ################################################")
-    metrics_val = metrics(model, data_pars, compute_pars, out_pars)
-
-
-    log("#### Plot   ######################################################")
-    forecast_entry = ypred["forecast"][0]
-    ts_entry = ypred["tss"][0]
-    plot_prob_forecasts(ts_entry, forecast_entry)
-    plot_predict(out_pars)
-
-
-
-
-def test(data_path="dataset/"):
-    ### Local test
-
-    log("#### Loading params   ##############################################")
-    model_pars, data_pars, compute_pars, out_pars = get_params(choice=0, data_path=data_path)
-
-
-    log("#### Loading dataset   #############################################")
-    gluont_ds = get_dataset(**data_pars)
-
-
-    log("#### Model init, fit   ###########################################")
-    model = Model(model_pars, compute_pars)
+    module, model = module_load_full("model_gluon.gluon_ffn", model_pars, data_pars, compute_pars)
     #model=m.model    ### WE WORK WITH THE CLASS (not the attribute GLUON )
-    model=fit(model, data_pars, model_pars, compute_pars)
+    model= fit(module, model, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
 
-    log("#### save the trained model  #############################################")
+    log("#### save the trained model  ######################################")
     save(model, data_pars["modelpath"])
 
 
     log("#### Predict   ###################################################")
-    ypred = predict(model, data_pars, compute_pars, out_pars)
+    ypred = predict(module, model, data_pars=data_pars, out_pars=out_pars, compute_pars=compute_pars)
     print(ypred)
 
 
@@ -151,11 +140,8 @@ def test(data_path="dataset/"):
                         
 if __name__ == '__main__':
     VERBOSE=True
-    test()
-    
-    
-    
-    
-    
-    
- 
+    test(data_path="dataset/timeseries/", choice="test01")
+    # test(data_path="dataset/", choice="json")
+
+
+

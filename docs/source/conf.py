@@ -23,6 +23,8 @@
 import os
 import sys
 
+import sphinx.apidoc
+
 sys.path.insert(0, os.path.abspath("../.."))
 sys.setrecursionlimit(1500)
 
@@ -40,7 +42,6 @@ release = "0.0.1"
 
 
 
-import sphinx.apidoc
 
 """
 def setup(app):

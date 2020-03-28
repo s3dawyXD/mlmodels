@@ -22,9 +22,11 @@ A file called .pypirc that has to contain login credentials.
 """
 
 
-import subprocess
-import re, os, sys
+import os
 import os.path as op
+import re
+import subprocess
+import sys
 
 curdir = op.abspath(op.curdir)
 setup_file = op.join(curdir, 'setup.py')
@@ -122,9 +124,3 @@ if __name__ == '__main__':
     #    print (f'Usage: python {sys.argv[0]} "commmit message"'); sys.exit()
     #
     #main(*sys.argv[1:3])
-
-
-
-
-
-

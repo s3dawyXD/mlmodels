@@ -1,7 +1,7 @@
 {
     "test": {
         "data_pars": {
-            "train": true, "dt_source": "amazon_aws", "dt_name": "Inc"},
+            "train": true, "uri_type": "amazon_aws", "dt_name": "Inc"},
 
 
         "model_pars": {
@@ -36,6 +36,9 @@
             "time_limits": 120,
             "num_trials": 5,
             "search_strategy": "skopt"
+        },
+        "out_pars": {
+            "out_path": "dataset/"
         }
     },
 
