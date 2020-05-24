@@ -374,19 +374,19 @@ def test_run_model():
 
     ll = [
         #### Keras
-        "dataset/json/refactor/charcnn.json",
-        "dataset/json/refactor/charcnn_zhang.json",
-        "dataset/json/refactor/keras_textcnn.json",
-        "dataset/json/refactor/namentity_crm_bilstm_new.json",
+        "model_keras/charcnn.json",
+        "model_keras/charcnn_zhang.json",
+        "model_keras/textcnn.json",
+        "model_keras/namentity_crm_bilstm.json",
 
 
         ### Torch
-        'dataset/json/refactor/resnet18_benchmark_mnist.json',
-        'dataset/json/refactor/resnet34_benchmark_mnist.json',
-        'dataset/json/refactor/model_list_CIFAR.json',
-        'dataset/json/refactor/torchhub_cnn_dataloader.json',
-        'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
-        'dataset/json/refactor/model_list_KMNIST.json',
+        # 'dataset/json/refactor/resnet18_benchmark_mnist.json',
+        # 'dataset/json/refactor/resnet34_benchmark_mnist.json',
+        # 'dataset/json/refactor/model_list_CIFAR.json',
+        # 'dataset/json/refactor/torchhub_cnn_dataloader.json',
+        # 'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
+        # 'dataset/json/refactor/model_list_KMNIST.json',
 
 
 
@@ -469,16 +469,14 @@ def test_dataloader(path='dataset/json/refactor/'):
 
 
     data_pars_list  =  [
-        path_norm('dataset/json/refactor/charcnn.json'),
-        # path_norm('dataset/json/refactor/charcnn_zhang.json'),
+        path_norm('model_keras/charcnn.json'),
+        path_norm('model_keras/charcnn_zhang.json'),
+        path_norm('model_keras/textcnn.json'),
+        path_norm('model_keras/namentity_crm_bilstm.json'),
         # path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
-        # path_norm('dataset/json/refactor/namentity_crm_bilstm_dataloader_new.json' ),
         # path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
         # path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
-        # path_norm('dataset/json/refactor/keras_textcnn.json'),
-        # path_norm('dataset/json/refactor/namentity_crm_bilstm_new.json' )
-
-    ] 
+    ]
 
 
     for f in data_pars_list:
