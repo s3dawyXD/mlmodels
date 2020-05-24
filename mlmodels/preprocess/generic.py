@@ -41,21 +41,23 @@ def torch_datasets_wrapper(sets, args_list = None, **args):
 
 
 
+
+from mlmodels.util import load_function_uri as load_function
+"""
 def load_function(uri_name="path_norm"):
-    """
-    load dynamically function from URI
+    #load dynamically function from URI
 
-    ##### Pandas CSV case : Custom MLMODELS One
-    "dataset"        : "mlmodels.preprocess.generic:pandasDataset"
+    ###### Pandas CSV case : Custom MLMODELS One
+    #"dataset"        : "mlmodels.preprocess.generic:pandasDataset"
 
-    ##### External File processor :
-    "dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
+    ###### External File processor :
+    #"dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
 
-      Absolute drive path
-     "MyFolder/mlmodels/preprocess/generic.py:pandasDataset"
+    #Absolute drive path
+    #"MyFolder/mlmodels/preprocess/generic.py:pandasDataset"
 
 
-  """
+
     import importlib, sys
     from pathlib import Path
     pkg = uri_name.split(":")
@@ -82,7 +84,7 @@ def load_function(uri_name="path_norm"):
             raise NameError(f"Module {pkg} notfound, {e1}, {e2}")
 
 
-
+???
 
 def tf_dataset_download(data_info, **args):
     """
