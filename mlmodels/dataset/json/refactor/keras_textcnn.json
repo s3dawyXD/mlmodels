@@ -20,7 +20,7 @@
 			"preprocessors": [
 				{
 					"name": "loader",
-					"uri": "mlmodels/preprocess/generic.py::NumpyDataset",
+					"uri": "mlmodels.preprocess.generic:NumpyDataset",
 					"args": {
                         "numpy_loader_args":{
                             "allow_pickle":true
@@ -30,7 +30,7 @@
 				},
 				{
 					"name": "imdb_process",
-					"uri": "mlmodels/preprocess/text_keras.py::IMDBDataset",
+					"uri": "mlmodels.preprocess.text_keras:IMDBDataset",
 					"args": {
 						"num_words": 5
 					}

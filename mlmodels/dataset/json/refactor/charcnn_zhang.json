@@ -25,7 +25,7 @@
 		  "preprocessors": [
 			{
 				"name": "loader",
-				"uri": "mlmodels/preprocess/generic.py::pandasDataset",
+				"uri": "mlmodels.preprocess.generic:pandasDataset",
 				"args": {
 					"colX": ["colX"],
 					"coly": ["coly"],
@@ -38,7 +38,7 @@
 			},
 			{
 			  "name": "tokenizer",
-			  "uri": "mlmodels/model_keras/raw/char_cnn/data_utils.py::Data",
+			  "uri": "mlmodels.model_keras.raw.char_cnn.data_utils:Data",
 			  "args": {
 				"data_source": "",
 				"alphabet": "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",

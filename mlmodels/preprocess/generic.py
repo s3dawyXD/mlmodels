@@ -60,7 +60,6 @@ def load_function(uri_name="path_norm"):
     from pathlib import Path
     pkg = uri_name.split(":")
     package, name = pkg[0], pkg[1]
-    
     try:
         #### Import from package mlmodels sub-folder
         return  getattr(importlib.import_module(package), name)
@@ -377,6 +376,8 @@ class pandasDataset(Dataset):
         file_path = path_norm(os.path.join(path, filename))
         if not os.path.exists(file_path):
             file_path = path_norm(os.path.join(path, dataset, 'train.csv' if train else 'test.csv'))
+            if not os.path.exists(file_path):
+                file_path = path_norm(os.path.join(path, dataset, 'train/train.csv' if train else 'test/test.csv'))
         df = pd.read_csv(file_path, **args.get("read_csv_parm",{}))
         self.df = df
 

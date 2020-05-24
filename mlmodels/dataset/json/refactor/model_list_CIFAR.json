@@ -31,7 +31,7 @@
         "preprocessors": [
 
            { "name" :  "tf_dataset_start",
-             "uri"  : "mlmodels/preprocess/generic.py::tf_dataset_download",
+             "uri"  : "mlmodels.preprocess.generic:tf_dataset_download",
              "arg"  : {
                       "train_samples": 2000,
                       "test_samples": 500,
@@ -39,9 +39,9 @@
                       "download" : true
                       }
             },{
-             "uri"  : "mlmodels/preprocess/generic.py::get_dataset_torch",
+             "uri"  : "mlmodels.preprocess.generic:get_dataset_torch",
                     "args"  : {
-                            "dataloader":"mlmodels/preprocess/generic.py:NumpyDataset",
+                            "dataloader":"mlmodels.preprocess.generic:NumpyDataset",
                             "to_image":true,
                             "transform":    {  "uri": "mlmodels.preprocess.image:torch_transform_generic", 
                                                 "pass_data_pars": false, 
