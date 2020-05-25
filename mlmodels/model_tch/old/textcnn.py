@@ -438,6 +438,7 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
  
 
     log("#### Loading dataset   #############################################")
+    print(">>>>> load: ", data_pars)
     Xtuple = get_dataset(data_pars)
     print(len(Xtuple))
 

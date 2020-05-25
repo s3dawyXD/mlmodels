@@ -83,9 +83,7 @@ from keras.callbacks import EarlyStopping
 
 
 #### Import EXISTING model and re-map to mlmodels
-from mlmodels.model_keras.raw.char_cnn.data_utils import Data
 from mlmodels.model_keras.raw.char_cnn.models.char_cnn_kim import CharCNNKim
-
 
 
 
@@ -94,7 +92,6 @@ from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri
 
 VERBOSE = False
 MODEL_URI = get_model_uri(__file__)
-# print( path_norm("dataset") )
 
 
 
@@ -107,12 +104,12 @@ class Model:
             self.model = None
             return None
 
-        self.model = CharCNNKim(input_size=data_pars["input_size"],
-                                alphabet_size          = data_pars["alphabet_size"],
+        self.model = CharCNNKim(input_size=data_pars["data_info"]["input_size"],
+                                alphabet_size          = data_pars["data_info"]["alphabet_size"],
                                 embedding_size         = model_pars["embedding_size"],
                                 conv_layers            = model_pars["conv_layers"],
                                 fully_connected_layers = model_pars["fully_connected_layers"],
-                                num_of_classes         = data_pars["num_of_classes"],
+                                num_of_classes         = data_pars["data_info"]["num_of_classes"],
                                 dropout_p              = model_pars["dropout_p"],
                                 optimizer              = model_pars["optimizer"],
                                 loss                   = model_pars["loss"]).model
@@ -128,7 +125,11 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     epochs = compute_pars['epochs']
 
     sess = None  #
-    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
+    dataset, internal_states = get_dataset(data_pars)
+    Xtrain, ytrain = dataset
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xtest, ytest = dataset
 
     early_stopping = EarlyStopping(monitor='val_acc', patience=3, mode='max')
     model.model.fit(Xtrain, ytrain,
@@ -143,12 +144,15 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
 
 
 
-def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
+def fit_metrics(model, session=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
     """
        Return metrics ofw the model when fitted.
     """
     from sklearn.metrics import accuracy_score
-    _,Xval,_, yval = get_dataset(data_pars)
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xval, yval = dataset
+
     ypred = model.model.predict(Xval)
     metric_score_name = compute_pars.get('metric_score') 
     if metric_score_name is None :
@@ -164,8 +168,9 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
 
 def predict(model, session=None, data_pars=None, out_pars=None, compute_pars=None, **kw):
     ##### Get Data ###############################################
-    data_pars['train'] = False
-    Xpred, ypred = get_dataset(data_pars)
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xpred, ypred = dataset
 
     #### Do prediction
     ypred = model.model.predict(Xpred)
@@ -198,46 +203,54 @@ def load(load_pars=None):
 
 
 ####################################################################################################
+def str_to_indexes(s):
+    """
+    Convert a string to character indexes based on character dictionary.
+
+    Args:
+        s (str): String to be converted to indexes
+
+    Returns:
+        str2idx (np.ndarray): Indexes of characters in s
+
+    """
+    s = s.lower()
+    max_length = min(len(s), length)
+    str2idx = np.zeros(length, dtype='int64')
+    for i in range(1, max_length + 1):
+        c = s[-i]
+        if c in dict:
+            str2idx[i - 1] = dict[c]
+    return str2idx
+
+def tokenize(data, num_of_classes=4):
+    print("data: ", data.to_numpy())
+    data = data.to_numpy()
+    data_size = len(data)
+    start_index = 0
+    end_index = data_size
+    batch_texts = data[start_index:end_index]
+    batch_indices = []
+    one_hot = np.eye(num_of_classes, dtype='int64')
+    classes = []
+    for c, s in batch_texts:
+        batch_indices.append(str_to_indexes(s))
+        c = int(c) - 1
+        classes.append(one_hot[c])
+
+    return np.asarray(batch_indices, dtype='int64'), np.asarray(classes)
+
+
 def get_dataset(data_pars=None, **kw):
     """
       JSON data_pars to get dataset
       "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
       "size": [0, 0, 6], "output_size": [0, 6] },
     """
-    from mlmodels.util import path_norm
-    
-    if data_pars['train']:
-
-        print('Loading data...')
-        train_data = Data(data_source= path_norm( data_pars["train_data_source"]) ,
-                             alphabet       = data_pars["alphabet"],
-                             input_size     = data_pars["input_size"],
-                             num_of_classes = data_pars["num_of_classes"])
-        if data_pars['type'] == "npz":
-            train_inputs,train_labels, val_inputs, val_labels = train_data.get_all_data_npz()
-        else: 
-            train_data.load_data()
-            train_inputs, train_labels = train_data.get_all_data()
-
-            # Load val data
-            val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
-                                   alphabet=data_pars["alphabet"],
-                                   input_size=data_pars["input_size"],
-                                   num_of_classes=data_pars["num_of_classes"])
-            val_data.load_data()
-            val_inputs, val_labels = val_data.get_all_data()
-
-        return train_inputs, val_inputs, train_labels, val_labels
-
-
-    else:
-        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
-                               alphabet=data_pars["alphabet"],
-                               input_size=data_pars["input_size"],
-                               num_of_classes=data_pars["num_of_classes"])
-        val_data.load_data()
-        Xtest, ytest = val_data.get_all_data()
-        return Xtest, ytest
+    from mlmodels.dataloader import DataLoader
+    loader = DataLoader(data_pars)
+    loader.compute()
+    return loader.get_data()
 
 
 def get_params(param_pars={}, **kw):
@@ -339,7 +352,7 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
 
     log("#### Save/Load   ###################################################")
     save_pars = {"path": out_pars['path']}
-    save(model, session, save_pars=save_pars)
+    save(model, session=session, save_pars=save_pars)
     model2, session2 = load(save_pars)
 
     log("#### Save/Load - Predict   #########################################")
@@ -354,10 +367,10 @@ if __name__ == '__main__':
     root_path = os_package_root_path()
 
     ### Local fixed params
-    test(pars_choice="test01")
+    # test(pars_choice="test01")
 
     #### Local json file
-    test(pars_choice="json", data_path= f"model_keras/charcnn.json")
+    test(pars_choice="json", data_path= f"dataset/json/refactor/charcnn.json")
 
 
     # ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
