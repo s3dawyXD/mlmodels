@@ -110,14 +110,60 @@ def get_data_file():
         os_package_root_path(__file__), 'dataset', 'IMDB_Dataset.txt')
 
 
-def split_train_valid(path_data, path_train, path_valid, frac=0.7):
-    df = pd.read_csv(path_data)
+def analyze_datainfo_paths(data_info):
+    data_path  = path_norm(data_info.get("data_path", None))
+    dataset    = data_info.get("dataset", None)
+
+    if not dataset or not data_path:
+        raise Exception("please add these 'data_path','dataset' in data_info")
+    
+    try:
+        dataset_name = dataset.split('.')[0]
+    except:
+        raise Exception("please add dataset Extension like that : dataset.txt")
+    
+    path_train = os.path.join(data_path, 'train')
+    os.makedirs(path_train, exist_ok=True)
+
+    path_train_dataset = os.path.join(path_train, dataset_name + '.csv')
+    
+
+    path_valid = os.path.join(data_path, 'test')
+    os.makedirs(path_valid, exist_ok=True)
+
+    path_valid_dataset = os.path.join(path_valid, dataset_name + '.csv')
+
+    dataset_path = os.path.join(data_path, dataset)
+
+    return dataset_path, path_train_dataset, path_valid_dataset
+
+# def split_train_valid(path_data, path_train, path_valid, frac=0.7):
+#     df = pd.read_csv(path_data)
+#     rng = RandomState()
+#     tr = df.sample(frac=0.7, random_state=rng)
+#     tst = df.loc[~df.index.isin(tr.index)]
+#     print("Spliting original file to train/valid set...")
+#     tr.to_csv(path_train, index=False)
+#     tst.to_csv(path_valid, index=False)
+
+
+def split_train_valid(data_info, **args):
+    frac= args.get("frac", 0.7)
+
+    dataset_path, path_train_dataset, path_valid_dataset = analyze_datainfo_paths(data_info)
+
+    df = pd.read_csv(dataset_path)
+
     rng = RandomState()
-    tr = df.sample(frac=0.7, random_state=rng)
-    tst = df.loc[~df.index.isin(tr.index)]
+    train_data = df.sample(frac=frac, random_state=rng)
+    test_data = df.loc[~df.index.isin(train_data.index)]
+
     print("Spliting original file to train/valid set...")
-    tr.to_csv(path_train, index=False)
-    tst.to_csv(path_valid, index=False)
+    train_data.to_csv(path_train_dataset, index=False)
+    test_data.to_csv(path_valid_dataset, index=False)
+
+    return train_data, test_data
+
 
 
 def clean_str(string):
@@ -141,14 +187,18 @@ def clean_str(string):
     return string.strip()
 
 
-def create_tabular_dataset(path_train, path_valid, 
-                           lang='en', pretrained_emb='glove.6B.300d'):
-
+def create_tabular_dataset(data_info, **args):
     disable = [
         'tagger', 'parser', 'ner', 'textcat'
         'entity_ruler', 'sentencizer', 
         'merge_noun_chunks', 'merge_entities',
         'merge_subtokens']
+    
+    lang= args.get('lang','en')
+    pretrained_emb= args.get('pretrained_emb', 'glove.6B.300d')
+
+    _, path_train_dataset, path_valid_dataset = analyze_datainfo_paths(data_info)
+
     try :
       spacy_en = spacy.load( f'{lang}_core_web_sm', disable= disable)
 
@@ -173,12 +223,12 @@ def create_tabular_dataset(path_train, path_valid,
     print('Creating tabular datasets...It might take a while to finish!')
     train_datafield = [('text', TEXT), ('label', LABEL)]
     tabular_train = TabularDataset(
-        path=path_train, format='csv',
+        path=path_train_dataset, format='csv',
         skip_header=True, fields=train_datafield)
 
     valid_datafield = [('text', TEXT), ('label', LABEL)]
 
-    tabular_valid = TabularDataset(path=path_valid, 
+    tabular_valid = TabularDataset(path=path_valid_dataset, 
                                    format='csv',
                                    skip_header=True,
                                    fields=valid_datafield)
@@ -190,11 +240,20 @@ def create_tabular_dataset(path_train, path_valid,
     return tabular_train, tabular_valid, TEXT.vocab
 
 
-def create_data_iterator(tr_batch_size, val_batch_size, tabular_train, tabular_valid, d):
+# def create_data_iterator(tr_batch_size, val_batch_size, tabular_train, tabular_valid, d):
+#     # Create the Iterator for datasets (Iterator works like dataloader)
+
+#     train_iter = Iterator(tabular_train, batch_size=tr_batch_size, device=d, sort_within_batch=False, repeat=False)
+#     valid_iter = Iterator(tabular_valid, batch_size=val_batch_size, device=d, sort_within_batch=False, repeat=False) 
+
+#     return train_iter, valid_iter
+
+
+def create_data_iterator(batch_size, tabular_train, tabular_valid, d):
     # Create the Iterator for datasets (Iterator works like dataloader)
 
-    train_iter = Iterator(tabular_train, batch_size=tr_batch_size, device=d, sort_within_batch=False, repeat=False)
-    valid_iter = Iterator(tabular_valid, batch_size=val_batch_size, device=d, sort_within_batch=False, repeat=False) 
+    train_iter = Iterator(tabular_train, batch_size=batch_size, device=d, sort_within_batch=False, repeat=False)
+    valid_iter = Iterator(tabular_valid, batch_size=batch_size, device=d, sort_within_batch=False, repeat=False) 
 
     return train_iter, valid_iter
 
@@ -232,6 +291,8 @@ class TextCNN(nn.Module):
     def rebuild_embed(self, vocab_built):
         self.embed = nn.Embedding(*vocab_built.vectors.shape)
         self.embed.weight.data.copy_(vocab_built.vectors)
+
+        # print("vocab_built.vectors shape : ", *vocab_built.vectors.shape)
 
 
     def forward(self, x):
@@ -289,6 +350,7 @@ def fit(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw
     best_test_acc = -1
     optimizer     = optim.Adam(model0.parameters(), lr=lr)
     train_iter, valid_iter, vocab = get_dataset(data_pars, out_pars)
+    
     # load word embeddings to model
     model0.rebuild_embed(vocab)
 
@@ -319,23 +381,49 @@ def fit(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw
 
 
 
+# def get_dataset(data_pars=None, out_pars=None, **kwargs):
+#     device         = _get_device()
+#     path           = path_norm( data_pars['data_path'])
+#     frac           = data_pars['frac']
+#     lang           = data_pars['lang']
+#     pretrained_emb = data_pars['pretrained_emb']
+#     train_exists   = os.path.isfile(data_pars['train_path'])
+#     valid_exists   = os.path.isfile(data_pars['valid_path'])
+
+#     if not (train_exists and valid_exists) or data_pars['split_if_exists']:
+#         split_train_valid( path, data_pars['train_path'], data_pars['valid_path'], frac )
+
+#     trainset, validset, vocab = create_tabular_dataset( data_pars['train_path'], data_pars['valid_path'], lang, pretrained_emb)
+#     train_iter, valid_iter = create_data_iterator( data_pars['batch_size'], data_pars['val_batch_size'],
+#         trainset, validset, device
+#     )
+#     return train_iter, valid_iter, vocab
+
+
 def get_dataset(data_pars=None, out_pars=None, **kwargs):
     device         = _get_device()
-    path           = path_norm( data_pars['data_path'])
-    frac           = data_pars['frac']
-    lang           = data_pars['lang']
-    pretrained_emb = data_pars['pretrained_emb']
-    train_exists   = os.path.isfile(data_pars['train_path'])
-    valid_exists   = os.path.isfile(data_pars['valid_path'])
+    dataset        = data_pars['data_info'].get('dataset', None)
+    batch_size     = data_pars['data_info'].get('batch_size', 64)
 
-    if not (train_exists and valid_exists) or data_pars['split_if_exists']:
-        split_train_valid( path, data_pars['train_path'], data_pars['valid_path'], frac )
+    from mlmodels.dataloader import DataLoader
 
-    trainset, validset, vocab = create_tabular_dataset( data_pars['train_path'], data_pars['valid_path'], lang, pretrained_emb)
-    train_iter, valid_iter = create_data_iterator( data_pars['batch_size'], data_pars['val_batch_size'],
-        trainset, validset, device
-    )
-    return train_iter, valid_iter, vocab
+    loader = DataLoader(data_pars)
+
+    if dataset:
+        loader.compute()
+        try:
+            dataset, internal_states  = loader.get_data()
+            trainset, validset, vocab = dataset
+            train_iter, valid_iter = create_data_iterator(batch_size, trainset, validset, device)
+
+        except:
+            raise Exception("the last Preprocessor have to return (trainset, validset, vocab), internal_states.")
+            
+        return train_iter, valid_iter, vocab
+
+    else:
+        raise Exception("dataset not provided ")
+        return 0
 
 
 
@@ -346,9 +434,16 @@ def predict(model, session=None, data_pars=None, compute_pars=None, out_pars=Non
     test_iter, _, vocab = get_dataset(data_pars, out_pars)
     # get a batch of data
     it = next(iter(test_iter))
+    # print("Test data:", it)
+
     x_test = it.text
+    # print("x_test shape: ", x_test.shape)
+    
     x_test = torch.transpose(x_test, 0, 1)
+    # print("transpose x_test shape: ", x_test.shape)
+
     model0 = model.model
+    model0.rebuild_embed(vocab)
     ypred = model0(x_test)
     ypred = torch.max(ypred, 1)[1]
     if return_ytrue:
@@ -430,12 +525,14 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ### Local test
     from mlmodels.util import path_norm
     data_path = path_norm(data_path)
+    print("Json file path: ", data_path)
 
     log("#### Loading params   ##############################################")
     param_pars = {"choice": pars_choice, "data_path": data_path, "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
     print(out_pars)
- 
+    print(data_pars)
+
 
     log("#### Loading dataset   #############################################")
     Xtuple = get_dataset(data_pars)
@@ -461,6 +558,8 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     log("#### Predict   #####################################################")
     data_pars["train"] = 0
     ypred, _ = predict(model, session, data_pars, compute_pars, out_pars)
+    # print("ypred : ", ypred)
+    # print("ypred shape: ", ypred.shape)
 
 
     log("#### metrics   #####################################################")
@@ -473,7 +572,8 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
 
 
 if __name__ == '__main__':
-    test( data_path="model_tch/textcnn.json", pars_choice = "test01" )
+    # test( data_path="model_tch/textcnn.json", pars_choice = "test01" )
+    test( data_path="dataset/json/refactor/textcnn.json", pars_choice="json", config_mode="test" )
 
 
 
