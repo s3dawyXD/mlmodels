@@ -16,11 +16,6 @@ def get_dataset(data_pars):
     return data
 
 
-
-
-
-
-
 """
 #### System utilities
 import os
@@ -381,12 +376,12 @@ def test_run_model():
 
 
         ### Torch
-        # 'dataset/json/refactor/resnet18_benchmark_mnist.json',
-        # 'dataset/json/refactor/resnet34_benchmark_mnist.json',
-        # 'dataset/json/refactor/model_list_CIFAR.json',
-        # 'dataset/json/refactor/torchhub_cnn_dataloader.json',
-        # 'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
-        # 'dataset/json/refactor/model_list_KMNIST.json',
+        'dataset/json/refactor/resnet18_benchmark_mnist.json',
+        'dataset/json/refactor/resnet34_benchmark_mnist.json',
+        'dataset/json/refactor/model_list_CIFAR.json',
+        'dataset/json/refactor/torchhub_cnn_dataloader.json',
+        'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
+        'dataset/json/refactor/model_list_KMNIST.json',
 
 
 
@@ -473,9 +468,12 @@ def test_dataloader(path='dataset/json/refactor/'):
         path_norm('model_keras/charcnn_zhang.json'),
         path_norm('model_keras/textcnn.json'),
         path_norm('model_keras/namentity_crm_bilstm.json'),
-        # path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
-        # path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
-        # path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
+        
+
+        ### DO NOT remove the torch examples
+        path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
+        path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
+        path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
     ]
 
 
