@@ -374,10 +374,10 @@ def test_run_model():
 
     ll = [
         #### Keras
-        "model_keras/charcnn.json",
-        "model_keras/charcnn_zhang.json",
-        "model_keras/textcnn.json",
-        "model_keras/namentity_crm_bilstm.json",
+        # "model_keras/charcnn.json",
+        # "model_keras/charcnn_zhang.json",
+        # "model_keras/textcnn.json",
+        # "model_keras/namentity_crm_bilstm.json",
 
 
         ### Torch
@@ -388,6 +388,8 @@ def test_run_model():
         # 'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
         # 'dataset/json/refactor/model_list_KMNIST.json',
 
+        ### textcnn
+        'dataset/json/refactor/textcnn.json',
 
 
     ]
