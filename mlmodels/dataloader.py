@@ -6,7 +6,7 @@ def get_dataset(data_pars):
     loader = DataLoader(data_pars)
     loader.compute()
     data = loader.get_data()
-    [print(x.shape) for x in data]
+    [log(x.shape) for x in data]
     return data
 
 
@@ -220,13 +220,13 @@ class DataLoader:
         for preprocessor in self.preprocessors:
             uri = preprocessor.get("uri", None)
             if not uri:
-                print(f"Preprocessor {preprocessor} missing uri")
+                log(f"Preprocessor {preprocessor} missing uri")
 
 
             ### Compare date type for COMPATIBILITY
             input_type = preprocessor.get("input_type", "")   ### Automatic ???
             if input_type != input_type_prev :
-                print(f"Mismatch input / output data type {preprocessor} ")                  
+                log(f"Mismatch input / output data type {preprocessor} ")                  
 
             input_type_prev = preprocessor.get('output_type', "")
        
@@ -245,12 +245,12 @@ class DataLoader:
        
             # preprocessor_func = load_callable_from_uri(uri)
             preprocessor_func = load_function(uri)
-            print("\n###### load_callable_from_uri LOADED",  preprocessor_func)
+            log("\n###### load_callable_from_uri LOADED",  preprocessor_func)
             if inspect.isclass(preprocessor_func):
                 ### Should match PytorchDataloader, KerasDataloader, PandasDataset, ....
                 ## A class : muti-steps compute
                 cls_name = preprocessor_func.__name__
-                print("cls_name :", cls_name, flush=True)
+                log("cls_name :", cls_name, flush=True)
 
 
                 if cls_name in DATASET_TYPES:  # dataset object
@@ -264,14 +264,14 @@ class DataLoader:
 
 
                 else:  # pre-process object defined in preprocessor.py
-                    print("\n", "Object Creation")
+                    log("\n", "Object Creation")
                     obj_preprocessor = preprocessor_func(**args)
 
-                    print("\n", "Object Compute")
+                    log("\n", "Object Compute")
                     obj_preprocessor.compute(input_tmp)
 
 
-                    print("\n", "Object get_data")                    
+                    log("\n", "Object get_data")                    
                     out_tmp = obj_preprocessor.get_data()
 
 
@@ -279,12 +279,12 @@ class DataLoader:
             else:
                 ### Only a function, not a Class : Directly COMPUTED.
 
-                # print("input_tmp: ",input_tmp['X'].shape,input_tmp['y'].shape)
-                # print("input_tmp: ",input_tmp.keys())
+                # log("input_tmp: ",input_tmp['X'].shape,input_tmp['y'].shape)
+                # log("input_tmp: ",input_tmp.keys())
                 pos_params = inspect.getfullargspec(preprocessor_func)[0]
 
-                print("\n ######### postional parameters : ", pos_params)
-                print("\n ######### Execute : preprocessor_func", preprocessor_func)
+                log("\n ######### postional parameters : ", pos_params)
+                log("\n ######### Execute : preprocessor_func", preprocessor_func)
 
                 if isinstance(input_tmp, (tuple, list)) and len(input_tmp) > 0 and len(pos_params) == 0:
                     out_tmp = preprocessor_func(*input_tmp, **args)
@@ -325,7 +325,7 @@ def split_xy_from_dict(out, **kwargs):
 
 
 def test_run_model():
-    print("\n\n\n###### Test_run_model  #############################################################")
+    log("\n\n\n###### Test_run_model  #############################################################")
     from mlmodels.models import test_module
 
     ll = [
@@ -355,22 +355,22 @@ def test_run_model():
 
     for x in ll :
          try :
-            print("\n\n\n", "#" * 100)
-            print(x )
+            log("\n\n\n", "#" * 100)
+            log(x )
 
             data_path = path_norm(x)
             param_pars = {"choice": "json", "data_path": data_path, "config_mode": "test"}
             with open(data_path) as json_file:
                 config = json.load(json_file)
 
-            print( json.dumps(config, indent=2))
+            log( json.dumps(config, indent=2))
             test_module(config['test']['model_pars']['model_uri'], param_pars, 
                         fittable = False if x in not_fittable_models else True)
 
          except Exception as e :
             import traceback
             traceback.print_exc()
-            print("######## Error", x,  e, flush=True)
+            log("######## Error", x,  e, flush=True)
 
 
 
@@ -386,10 +386,9 @@ def test_single(arg):
 def test_dataloader(path='dataset/json/refactor/'):
     refactor_path = path_norm( path )
     # data_pars_list = [(f,json.loads(open(refactor_path+f).read())['test']['data_pars']) for f in os.listdir(refactor_path)]
-    
 
     # data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
-    # print(data_pars_list)
+    # log(data_pars_list)
 
 
     data_pars_list  =  [
@@ -427,31 +426,31 @@ def test_json_list(data_pars_list):
 
           if os.path.isdir(f) : continue
 
-          print("\n" *5 , "#" * 100)
-          print(  f, "\n")
+          log("\n" *5 , "#" * 100)
+          log(  f, "\n")
 
-          print("#"*5, " Load JSON data_pars") 
+          log("#"*5, " Load JSON data_pars") 
           d = json.loads(open( f ).read())
           data_pars = d['test']['data_pars']
           data_pars = path_norm_dict( data_pars)
-          #print( textwrap.fill( str(data_pars), 90 ) )
-          print( json.dumps(data_pars, indent=2))
+          #log( textwrap.fill( str(data_pars), 90 ) )
+          log( json.dumps(data_pars, indent=2))
 
 
-          print( "\n", "#"*5, " Load DataLoader ") 
+          log( "\n", "#"*5, " Load DataLoader ") 
           loader    = DataLoader(data_pars)
 
 
-          print("\n", "#"*5, " compute DataLoader ")           
+          log("\n", "#"*5, " compute DataLoader ")           
           loader.compute()
 
-          print("\n", "#"*5, " get_Data DataLoader ")  
-          print(loader.get_data())
+          log("\n", "#"*5, " get_Data DataLoader ")  
+          log(loader.get_data())
 
         except Exception as e :
           import traceback
           traceback.print_exc()
-          print("Error", f,  e, flush=True)    
+          log("Error", f,  e, flush=True)    
 
 
 
