@@ -388,26 +388,26 @@ def test_dataloader(path='dataset/json/refactor/'):
     # data_pars_list = [(f,json.loads(open(refactor_path+f).read())['test']['data_pars']) for f in os.listdir(refactor_path)]
     
 
-    data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
-    print(data_pars_list)
+    # data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
+    # print(data_pars_list)
 
 
     data_pars_list  =  [
 
-        path_norm('model_keras/charcnn.json'),
-        path_norm('model_keras/charcnn_zhang.json'),
-        path_norm('model_keras/textcnn.json'),
-        path_norm('model_keras/namentity_crm_bilstm.json'),
+        'model_keras/charcnn.json',
+        'model_keras/charcnn_zhang.json',
+        'model_keras/textcnn.json',
+        'model_keras/namentity_crm_bilstm.json',
         
 
         ### DO NOT remove the torch examples
-        path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
-        path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
-        path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
+        'dataset/json/refactor/torchhub_cnn_dataloader.json',
+        'dataset/json/refactor/model_list_CIFAR.json',
+        'dataset/json/refactor/resnet34_benchmark_mnist.json',
 
 
         #### Text
-        path_norm('dataset/json/refactor/textcnn.json' ),
+        'dataset/json/refactor/textcnn.json',
 
 
     ]
@@ -423,6 +423,7 @@ def test_json_list(data_pars_list):
         try :
           #f  = refactor_path + "/" + f
           # f= f.replace("gitdev/mlmodels/",  "gitdev/mlmodels2/" )
+          f = path_norm(f)
 
           if os.path.isdir(f) : continue
 
