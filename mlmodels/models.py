@@ -263,7 +263,7 @@ def test_module(model_uri="model_xxxx/yyyy.py", param_pars=None, fittable = True
     log("#### Fit   ########################################################")
     sess = None
     if fittable:
-        model, sess = module.fit(model, data_pars, compute_pars, out_pars)
+        model, sess = module.fit(model, data_pars = data_pars, compute_pars = compute_pars, out_pars = out_pars)
 
     log("#### Predict   ####################################################")
     ypred = module.predict(model, sess, data_pars, compute_pars, out_pars)
