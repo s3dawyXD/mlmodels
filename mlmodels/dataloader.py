@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-
-https://www.tensorflow.org/api_docs/python/tf/compat/v1
-tf.compat.v1   IS ALL TF 1.0
-
-tf.compat.v2    iS TF 2.0
-
 Typical user workflow
 
 def get_dataset(data_pars):
@@ -14,6 +8,45 @@ def get_dataset(data_pars):
     data = loader.get_data()
     [print(x.shape) for x in data]
     return data
+
+
+data_pars --> Dataloader.py  :
+  sequence of pre-processors item
+       uri, args
+       return some objects in a sequence way.
+
+
+
+"data_pars": {  
+ "data_info": { 
+                  "name" : "text_dataset",   "data_path": "dataset/nlp/WIKI_QA/" , 
+                  "train": true
+                  } 
+         },
+ 
+
+"preprocessors": [ 
+                {  "uri" : "mlmodels.preprocess.generic.:train_test_val_split",
+                    "arg" : {   "split_if_exists": true, "frac": 0.99, "batch_size": 64,  "val_batch_size": 64,
+                                    "input_path" :    "dataset/nlp/WIKIQA_singleFile/" ,
+                                    "output_path" :  "dataset/nlp/WIKIQA" ,   
+                                    "format" : "csv"
+                               },
+                    "output_type" :  "file_csv"
+                } ,  
+
+
+             {  "name" : "loader"  ,
+                "uri" :  "mlmodels.model_tch.matchzoo:WIKI_QA_loader",
+                "arg" :  {  "name" : "text_dataset",   
+                                        "data_path": "dataset/nlp/WIKI_QA/"   ,
+                                         "data_pack"  : "",   "mode":"pair",  "num_dup":2,   "num_neg":1,
+                                        "batch_size":20,     "resample":true,  
+                                        "sort":false,   "callbacks":"PADDING"
+                                      },
+                 "output_type" :  "pytorch_dataset"
+             } ]
+}
 
 
 """
@@ -28,11 +61,9 @@ import pandas as pd
 import numpy as np
 from collections.abc import MutableMapping
 from functools import partial
+
 from pprint import pprint as print2
 
-# possibly replace with keras.utils.get_file down the road?
-#### It dowloads from HTTP from Dorpbox, ....  (not urgent)
-# from cli_code.cli_download import Downloader
 
 
 from sklearn.model_selection import train_test_split
@@ -48,20 +79,6 @@ from mlmodels.preprocess.generic import load_function
 from mlmodels.preprocess.generic import pandasDataset, NumpyDataset
 
 #########################################################################
-#### Specific packages   ##### Be ware of tensorflow version
-#### I fpossible, we dont use to have dependance on tensorflow, torch, ...
-
-
-"""  Not used
-import tensorflow as tf
-import torch
-import torchtext
-import keras
-
-import tensorflow.data
-"""
-
-
 VERBOSE = 0 
 DATASET_TYPES = ["csv_dataset", "text_dataset", "NumpyDataset", "pandasDataset"]
 
@@ -78,6 +95,7 @@ def pickle_dump(t, **kwargs):
 
 
 def image_dir_load(path):
+    ## TODO : implement it
     return ImageDataGenerator().flow_from_directory(path)
 
 
@@ -159,8 +177,8 @@ def _check_output_shape(self, inter_output, shape, max_len):
 
 
 def get_dataset_type(x) :
-    from mlmodel.process.generic import PandasDataset, NumpyDataset, Dataset, kerasDataset  #Pytorch
-    from mlmodel.process.generic import DataLoader  ## Pytorch
+    from mlmodels.preprocess.generic import PandasDataset, NumpyDataset, Dataset, kerasDataset  #Pytorch
+    from mlmodels.preprocess.generic import DataLoader  ## Pytorch
 
 
     if isinstance(x, PandasDataset  ) : return "PandasDataset"
@@ -169,51 +187,8 @@ def get_dataset_type(x) :
 
 
 
-"""
 
-data_pars --> Dataloader.py  :
-  sequence of pre-processors item
-       uri, args
-       return some objects in a sequence way.
-
-
-
-"data_pars": {  
- "data_info": { 
-                  "name" : "text_dataset",   "data_path": "dataset/nlp/WIKI_QA/" , 
-                  "train": true
-                  } 
-         },
- 
-
-"preprocessors": [ 
-                {  "uri" : "mlmodels.preprocess.generic.:train_test_val_split",
-                    "arg" : {   "split_if_exists": true, "frac": 0.99, "batch_size": 64,  "val_batch_size": 64,
-                                    "input_path" :    "dataset/nlp/WIKIQA_singleFile/" ,
-                                    "output_path" :  "dataset/nlp/WIKIQA" ,   
-                                    "format" : "csv"
-                               },
-                    "output_type" :  "file_csv"
-                } ,  
-
-
-             {  "name" : "loader"  ,
-                "uri" :  "mlmodels.model_tch.matchzoo:WIKI_QA_loader",
-                "arg" :  {  "name" : "text_dataset",   
-                                        "data_path": "dataset/nlp/WIKI_QA/"   ,
-                                         "data_pack"  : "",   "mode":"pair",  "num_dup":2,   "num_neg":1,
-                                        "batch_size":20,     "resample":true,  
-                                        "sort":false,   "callbacks":"PADDING"
-                                      },
-                 "output_type" :  "pytorch_dataset"
-             } ]
-}
-
-
-"""
-
-
-
+#################################################################################################
 class DataLoader:
 
     default_loaders = {
@@ -308,7 +283,7 @@ class DataLoader:
                 # print("input_tmp: ",input_tmp.keys())
                 pos_params = inspect.getfullargspec(preprocessor_func)[0]
 
-                print("\n ######### postional parameteres : ", pos_params)
+                print("\n ######### postional parameters : ", pos_params)
                 print("\n ######### Execute : preprocessor_func", preprocessor_func)
 
                 if isinstance(input_tmp, (tuple, list)) and len(input_tmp) > 0 and len(pos_params) == 0:
@@ -389,7 +364,8 @@ def test_run_model():
                 config = json.load(json_file)
 
             print( json.dumps(config, indent=2))
-            test_module(config['test']['model_pars']['model_uri'], param_pars, fittable = False if x in not_fittable_models else True)
+            test_module(config['test']['model_pars']['model_uri'], param_pars, 
+                        fittable = False if x in not_fittable_models else True)
 
          except Exception as e :
             import traceback
@@ -399,47 +375,11 @@ def test_run_model():
 
 
 def test_single(arg):
-    # refactor_path = path_norm( path )
-    # data_pars_list = [(f,json.loads(open(refactor_path+f).read())['test']['data_pars']) for f in os.listdir(refactor_path)]
-    
-    # data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
-    #print(data_pars_list)
-
     data_pars_list  =  [
             path_norm( arg.path)
     ] 
+    test_json_list(data_pars_list)
 
-
-    for f in data_pars_list:
-        try :
-          #f  = refactor_path + "/" + f
-          # f= f.replace("gitdev/mlmodels/",  "gitdev/mlmodels2/" )
-
-          if os.path.isdir(f) : continue
-
-          print("\n" *5 , "#" * 100)
-          print(  f, "\n")
-          
-
-          print("#"*5, " Load JSON data_pars") 
-          d = json.loads(open( f ).read())
-          data_pars = d['test']['data_pars']
-          data_pars = path_norm_dict( data_pars)
-          print(data_pars)
-          
-
-          print( "\n", "#"*5, " Load DataLoader ") 
-          loader    = DataLoader(data_pars)
-
-
-          print("\n", "#"*5, " compute DataLoader ")           
-          loader.compute()
-
-          print("\n", "#"*5, " get_Data DataLoader ")  
-          print(loader.get_data())
-
-        except Exception as e :
-          print("Error", f,  e, flush=True)
 
 
 
@@ -473,6 +413,12 @@ def test_dataloader(path='dataset/json/refactor/'):
     ]
 
 
+    test_json_list(data_pars_list)
+
+
+
+def test_json_list(data_pars_list):
+
     for f in data_pars_list:
         try :
           #f  = refactor_path + "/" + f
@@ -482,7 +428,6 @@ def test_dataloader(path='dataset/json/refactor/'):
 
           print("\n" *5 , "#" * 100)
           print(  f, "\n")
-          
 
           print("#"*5, " Load JSON data_pars") 
           d = json.loads(open( f ).read())
@@ -505,7 +450,10 @@ def test_dataloader(path='dataset/json/refactor/'):
         except Exception as e :
           import traceback
           traceback.print_exc()
-          print("Error", f,  e, flush=True)
+          print("Error", f,  e, flush=True)    
+
+
+
 
 
 ####################################################################################################
@@ -562,7 +510,6 @@ if __name__ == "__main__":
    main()
     
    test_run_model()
-
 
  
 
