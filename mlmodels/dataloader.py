@@ -475,6 +475,9 @@ def test_dataloader(path='dataset/json/refactor/'):
         path_norm('model_keras/charcnn_zhang.json'),
         path_norm('model_keras/textcnn.json'),
         path_norm('model_keras/namentity_crm_bilstm.json'),
+        
+        
+        path_norm('dataset/json/refactor/textcnn.json' ),
         # path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
         # path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
         # path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
