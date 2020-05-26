@@ -320,6 +320,11 @@ class TextCNN(nn.Module):
 #Model = TextCNN
 class Model:
     def __init__(self, model_pars=None, data_pars=None, compute_pars=None ):
+
+        self.model_pars   = model_pars
+        self.data_pars    = data_pars
+        self.compute_pars = compute_pars
+
         ### Model Structure        ################################
         if model_pars is None :
             self.model = None
@@ -418,7 +423,7 @@ def get_dataset(data_pars=None, out_pars=None, **kwargs):
         try:
             dataset, internal_states  = loader.get_data()
             trainset, validset, vocab = dataset
-            train_iter, valid_iter = create_data_iterator(batch_size, trainset, validset, device)
+            train_iter, valid_iter    = create_data_iterator(batch_size, trainset, validset, device)
 
         except:
             raise Exception("the last Preprocessor have to return (trainset, validset, vocab), internal_states.")
@@ -529,12 +534,12 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ### Local test
     from mlmodels.util import path_norm
     data_path = path_norm(data_path)
-    print("Json file path: ", data_path)
+    log("Json file path: ", data_path)
 
     log("#### Loading params   ##############################################")
     param_pars = {"choice": pars_choice, "data_path": data_path, "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
-    print(out_pars)
+    log(model_pars, data_pars, compute_pars, out_pars )
 
 
     log("#### Loading dataset   #############################################")
@@ -542,17 +547,26 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     print(len(Xtuple))
 
 
-    log("#### Model init, fit   #############################################")
+    log("#### Model init       #############################################")
     session = None
     model   = Model(model_pars, data_pars, compute_pars)
+
+
+    log("#### Model fit        #############################################")
+    data_pars["train"] = 1
     model, session = fit(model, session, data_pars, compute_pars, out_pars)
 
 
-
-    log("#### Save/Load   ###################################################")
+    log("#### Save   ########################################################")
     save_pars = {"path": out_pars['path'] + "/model.pkl"}
     save(model, session, save_pars=save_pars)
+
+
+    log("#### Load   ########################################################")
     model2, session2 = load(save_pars)
+
+
+    log("#### Predict from Load   ###########################################")
     data_pars["train"] = 0
     ypred, _ = predict(model2, session2, data_pars, compute_pars, out_pars)
 
@@ -567,7 +581,8 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
 
     log("#### metrics   #####################################################")
     metrics_val = fit_metrics(model, session, data_pars, compute_pars, out_pars)
-    print(metrics_val)
+    log(metrics_val)
+
 
     log("#### Plot   ########################################################")
 

@@ -648,6 +648,7 @@ def load_function(package="mlmodels.util", name="path_norm"):
 
 
 def load_function_uri(uri_name="path_norm"):
+    """
     #load dynamically function from URI
 
     ###### Pandas CSV case : Custom MLMODELS One
@@ -656,11 +657,9 @@ def load_function_uri(uri_name="path_norm"):
     ###### External File processor :
     #"dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
 
-    #Absolute drive path
-    #"MyFolder/mlmodels/preprocess/generic.py:pandasDataset"
 
-
-
+    """
+    
     import importlib, sys
     from pathlib import Path
     pkg = uri_name.split(":")

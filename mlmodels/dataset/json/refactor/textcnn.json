@@ -6,20 +6,20 @@
 
         "data_pars": {
             "data_info": {
-                    "data_path": "dataset/recommender/",
-                    "dataset":"IMDB_sample.txt",
-                    "data_type":"csv_dataset",
-                    "batch_size": 64,
-                    "train": true
+                    "data_path"  : "dataset/recommender/",
+                    "dataset"    : "IMDB_sample.txt",
+                    "data_type"  : "csv_dataset",
+                    "batch_size" : 64,
+                    "train"      : true
                 },
-                "preprocessors": [
+            "preprocessors": [
 				{"uri"  : "mlmodels.model_tch.textcnn:split_train_valid",
-                    "args"  : {
+                 "args" : {
                             "frac": 0.99
                             }
                 },
                 {"uri"  : "mlmodels.model_tch.textcnn:create_tabular_dataset",
-                    "args"  : {
+                 "args" : {
                             "lang": "en",
                             "pretrained_emb": "glove.6B.300d"
                             }
@@ -30,23 +30,23 @@
 
 
         "model_pars": {
-            "model_uri": "model_tch.textcnn.py",
-            "dim_channel": 100,
-            "kernel_height": [3,4,5],
-            "dropout_rate": 0.5,
-            "num_class": 2
+            "model_uri"     : "model_tch.textcnn.py",
+            "dim_channel"   : 100,
+            "kernel_height" : [3,4,5],
+            "dropout_rate"  : 0.5,
+            "num_class"     : 2
         },
 
 
         "compute_pars": {
-            "learning_rate": 0.001,
-            "epochs": 1,
-            "checkpointdir": "./output/text_cnn_tch/checkpoint/"
+            "learning_rate" : 0.001,
+            "epochs"        : 1,
+            "checkpointdir" : "./output/text_cnn_tch/checkpoint/"
         },
 
         "out_pars": {
-            "path":"./output/text_cnn_tch/model.h5",
-            "checkpointdir": "./output/text_cnn_tch/checkpoint/"
+            "path"          : "./output/text_cnn_tch/model.h5",
+            "checkpointdir" : "./output/text_cnn_tch/checkpoint/"
         }
     },
 

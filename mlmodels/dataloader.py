@@ -353,26 +353,12 @@ def test_run_model():
     print("\n\n\n###### Test_run_model  #############################################################")
     from mlmodels.models import test_module
 
-    # param_pars = {
-    #     "choice": "json",
-    #     "config_mode": "test",
-    #     "data_path": "dataset/json/refactor/03_nbeats_dataloader.json",
-    # }
-    # test_module("model_tch/03_nbeats_dataloader.py", param_pars)
-
-    # ll = [
-    #        {  "model_uri" : "model_tch.torchhub",
-    #           'pars':       { "choice": "json", "config_mode": "test",
-    #                           "data_path":'dataset/json/refactor/torchhub_cnn_dataloader.json'  }   }
-    # ]
-
-
     ll = [
         #### Keras
-        # "model_keras/charcnn.json",
-        # "model_keras/charcnn_zhang.json",
-        # "model_keras/textcnn.json",
-        # "model_keras/namentity_crm_bilstm.json",
+        "model_keras/charcnn.json",
+        "model_keras/charcnn_zhang.json",
+        "model_keras/textcnn.json",
+        "model_keras/namentity_crm_bilstm.json",
 
 
         ### Torch
@@ -382,6 +368,7 @@ def test_run_model():
         'dataset/json/refactor/torchhub_cnn_dataloader.json',
         'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
         'dataset/json/refactor/model_list_KMNIST.json',
+
 
         ### textcnn
         'dataset/json/refactor/textcnn.json',
@@ -466,6 +453,7 @@ def test_dataloader(path='dataset/json/refactor/'):
 
 
     data_pars_list  =  [
+
         path_norm('model_keras/charcnn.json'),
         path_norm('model_keras/charcnn_zhang.json'),
         path_norm('model_keras/textcnn.json'),
@@ -478,6 +466,7 @@ def test_dataloader(path='dataset/json/refactor/'):
         path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
 
 
+        #### Text
         path_norm('dataset/json/refactor/textcnn.json' ),
 
 
