@@ -204,9 +204,13 @@ def create_tabular_dataset(data_info, **args):
 
     except :
        log( f"Download {lang}")
+       import importlib
+
        os.system( f"python -m spacy download {lang}")
-       sleep(60)
-       spacy_en = spacy.load( f'{lang}_core_web_sm', disable= disable)  
+       spacy_en = importlib.import_module(f'{lang}_core_web_sm').load( disable= disable) 
+       
+    #    sleep(60)
+    #    spacy_en = spacy.load( f'{lang}_core_web_sm', disable= disable)  
 
 
     def tokenizer(text):
@@ -531,7 +535,6 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     param_pars = {"choice": pars_choice, "data_path": data_path, "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
     print(out_pars)
-    print(data_pars)
 
 
     log("#### Loading dataset   #############################################")
