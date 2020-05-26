@@ -476,6 +476,11 @@ def test_dataloader(path='dataset/json/refactor/'):
         path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
         path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
         path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
+
+
+        path_norm('dataset/json/refactor/textcnn.json' ),
+
+
     ]
 
 
