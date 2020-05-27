@@ -45,7 +45,80 @@ def config_model_list(folder=None):
 
     return mlist
 
-   
+  
+
+  def create_conda_env() :
+    pass
+ 
+ 
+ def process_launch(uri="mlmodels.utils:myFun", args={}, **kw):
+    """
+      Execute a function on a new python env and get back results in the current env.
+
+    """
+    
+    path      = uri_get_path(uri)
+    deps_file = uri_get_depsfile(uri)   ## deps files from the folder
+    env_name  = uri_get_envname(uri)    # conda env name
+
+    ### Meta Script which package the Execution.
+    script    = uri_get_script(uri)
+    iid       = random.randomint
+
+    if env_name is None :
+      env_name = uri_create_envname(uri)
+      bash_script = f"""
+       
+       conda create -n {env_name} python=3.6.9 -y  && \
+       pip install -r {deps_file}  && \
+       source activate {env_name} &&  \
+       python {script}
+
+       """
+
+    else :
+      bash_script = f"""       
+       source activate {env_name} &&  \
+       python {script} {iid}
+
+      """
+
+
+    bash_script_file = f"tmp/mybash_script_{iid}.sh"
+    with open(bash_script_file, mode="w") as f :
+      f.writelines(bash_script)
+
+        
+    #### Sync Launch or Asynchronous launch
+    cmd = " chmod 777 .  && {bash_script_file} "
+    myid = subprocess.run(  cmd  )
+ 
+ 
+    while not finished :
+       sleep(10)
+       
+    ddict = read_from_disk( myid, iid)
+    return ddict
+    
+
+def uri_get_script():    
+    x = """
+      script.py
+         from mlmodels.utilss import myfun
+       
+         args = read_from_disk(myid)
+       
+         res = myfun(**args)
+       
+        write_on_disk(myid, res)
+    """
+
+
+
+       
+       
+
+
  """
     ### my values = EXecute( "Myfunction" , args  ) in a separate python interpreter....
     
@@ -60,10 +133,12 @@ def config_model_list(folder=None):
     
     create_or_find_conda_env()
     
-    cmd ="
+    bash_script ="
        source activate myenv
        python mymain.py
     "
+
+
     
     #### Sync Launch or Asynchronous launch
     myid = subprocess.launch(   cmd )
@@ -87,12 +162,7 @@ def config_model_list(folder=None):
        write_on_disk(myid, res)
        
        
-       
-    
- 
- 
- 
- 
+      
  
  
  """

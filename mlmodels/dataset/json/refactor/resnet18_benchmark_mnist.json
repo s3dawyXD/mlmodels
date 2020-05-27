@@ -21,7 +21,7 @@
 
             "data_pars" :{
                 "data_info": {
-                    "data_path": "mlmodels/dataset/vision/MNIST",
+                    "data_path": "dataset/vision/MNIST/",
                     "dataset":"MNIST",
                     "data_type":"tch_dataset",
                     "batch_size": 10,
@@ -30,7 +30,7 @@
                 "preprocessors": [
 				{
 					"name" :  "tch_dataset_start",
-                    "uri"  : "mlmodels/preprocess/generic.py::get_dataset_torch",
+                    "uri"  : "mlmodels.preprocess.generic:get_dataset_torch",
                     "args"  : {
                             "dataloader":"torchvision.datasets:MNIST",
                             "to_image":true,
@@ -46,13 +46,13 @@
 
             "compute_pars": {
                 "distributed": "mpi",
-                "max_batch_sample": 5,
-                "epochs": 2,
+                "max_batch_sample": 10,
+                "epochs": 5,
                 "learning_rate": 0.001
             },
             "out_pars": {
-                "checkpointdir": "ztest/model_tch/torchhub/restnet18/checkpoints/",
-                "path": "ztest/model_tch/torchhub/restnet18/"
+                "checkpointdir": "ztest/model_tch/torchhub/MNIST/restnet18/checkpoints/",
+                "path": "ztest/model_tch/torchhub/MNIST/restnet18/"
             }
         },
     

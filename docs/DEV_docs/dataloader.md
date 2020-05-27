@@ -1,5 +1,11 @@
-Algo base :
+#### Algo base :
+
+
 ```python
+
+uri : is the location of the function or class to be executed.
+We just execute sequentially the uri.
+
 for processor in processor_list :
    get(uri, args)
    load uri
@@ -7,14 +13,15 @@ for processor in processor_list :
    retturn results
 
 
-issue is multiple sub-process in processor   
+Main issue is multiple sub-process for each processor
+and data passing format.
 
 
 ```
 
 
 
-Files :
+### Files :
 
 Dataloader manager : manage the pipeline.
 https://github.com/arita37/mlmodels/blob/adata2/mlmodels/dataloader.py
@@ -24,19 +31,30 @@ Generic Wrapper of Dataset:
 https://github.com/arita37/mlmodels/blob/adata2/mlmodels/preprocess/generic.py
 
 
+Various Pre-processors:
+https://github.com/arita37/mlmodels/blob/adata2/mlmodels/preprocess/
 
 
 
 
+### Automatic Log
+
+https://github.com/arita37/mlmodels_store/blob/master/log_dataloader/log_dataloader.py
 
 
 
-##### Example   
+
+##### Example   1
 ```python
-/home/runner/work/mlmodels/mlmodels/mlmodels/dataset/json/refactor/charcnn.json 
 
-#####  Load JSON data_pars
+From this file
+https://github.com/arita37/mlmodels/blob/adata2//mlmodels/dataset/json/refactor/charcnn.json 
+
+
+"data_pars" :
 {
+
+  ### Generic to all pre-processors.
   "data_info": {
     "dataset": "mlmodels/dataset/text/ag_news_csv",
     "train": true,
@@ -45,62 +63,36 @@ https://github.com/arita37/mlmodels/blob/adata2/mlmodels/preprocess/generic.py
     "input_size": 1014,
     "num_of_classes": 4
   },
+
+
+  ### List of invidual pre-processors
   "preprocessors": [
     {
       "name": "loader",
       "uri": "mlmodels/preprocess/generic.py::pandasDataset",
       "args": {
-        "colX": [
-          "colX"
-        ],
-        "coly": [
-          "coly"
-        ],
-        "encoding": "'ISO-8859-1'",
-        "read_csv_parm": {
-          "usecols": [
-            0,
-            1
-          ],
-          "names": [
-            "coly",
-            "colX"
-          ]
-        }
+        "colX"          : ["colX"],
+        "coly"          : ["coly"],
+        "encoding"      : "'ISO-8859-1'",
+        "read_csv_parm" : {"usecols": [0, 1 ], "names": ["coly", "colX"] }
       }
     },
     {
       "name": "tokenizer",
       "uri": "mlmodels/model_keras/raw/char_cnn/data_utils.py::Data",
       "args": {
-        "data_source": "",
-        "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",
-        "input_size": 1014,
-        "num_of_classes": 4
+        "data_source"    : "",
+        "alphabet"       : "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",
+        "input_size"     : 1014,
+        "num_of_classes" : 4
       }
     }
   ]
 }
 
- #####  Load DataLoader 
 
- #####  compute DataLoader 
 
-  URL:  mlmodels/preprocess/generic.py::pandasDataset {'colX': ['colX'], 'coly': ['coly'], 'encoding': "'ISO-8859-1'", 'read_csv_parm': {'usecols': [0, 1], 'names': ['coly', 'colX']}} 
 
-###### load_callable_from_uri LOADED <class 'mlmodels/preprocess/generic.pandasDataset'>
-cls_name : pandasDataset
-
-  URL:  mlmodels/model_keras/raw/char_cnn/data_utils.py::Data {'data_source': '', 'alphabet': 'abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:\'"/\\|_@#$%^&*~`+-=<>()[]{}', 'input_size': 1014, 'num_of_classes': 4} 
-
-###### load_callable_from_uri LOADED <class 'mlmodels/model_keras/raw/char_cnn/data_utils.Data'>
-cls_name : Data
-
- Object Creation
-
- Object Compute
-
- Object get_data
 
  #####  get_Data DataLoader 
 ((array([[65, 19, 18, ...,  0,  0,  0],
@@ -119,10 +111,10 @@ cls_name : Data
 ```
 
 
-
+##### Example  2
 ```python
  ####################################################################################################
-/home/runner/work/mlmodels/mlmodels/mlmodels/dataset/json/refactor/torchhub_cnn_dataloader.json 
+https://github.com/arita37/mlmodels/blob/adata2//mlmodels/dataset/json/refactor/torchhub_cnn_dataloader.json 
 
 #####  Load JSON data_pars
 {
@@ -138,15 +130,12 @@ cls_name : Data
       "name": "tch_dataset_start",
       "uri": "mlmodels.preprocess.generic::get_dataset_torch",
       "args": {
-        "dataloader": "torchvision.datasets:MNIST",
-        "to_image": true,
-        "transform": {
-          "uri": "mlmodels.preprocess.image:torch_transform_mnist",
-          "pass_data_pars": false,
-          "arg": {
-            "fixed_size": 256,
-            "path": "dataset/vision/MNIST/"
-          }
+        "dataloader" : "torchvision.datasets:MNIST",
+        "to_image"   : true,
+        "transform"  : {
+              "uri"            : "mlmodels.preprocess.image:torch_transform_mnist",
+              "pass_data_pars" : false,
+              "arg"            : {"fixed_size": 256, "path": "dataset/vision/MNIST/"}
         },
         "shuffle": true,
         "download": true
@@ -158,8 +147,6 @@ cls_name : Data
  #####  Load DataLoader 
 
  #####  compute DataLoader 
-
-  URL:  mlmodels.preprocess.generic::get_dataset_torch {'dataloader': 'torchvision.datasets:MNIST', 'to_image': True, 'transform': {'uri': 'mlmodels.preprocess.image:torch_transform_mnist', 'pass_data_pars': False, 'arg': {'fixed_size': 256, 'path': 'dataset/vision/MNIST/'}}, 'shuffle': True, 'download': True} 
 
 ###### load_callable_from_uri LOADED <function get_dataset_torch at 0x7f2df3e85378>
 
@@ -167,82 +154,26 @@ cls_name : Data
 
  ######### Execute : preprocessor_func <function get_dataset_torch at 0x7f2df3e85378>
 
-  function with postional parmater data_info <function get_dataset_torch at 0x7f2df3e85378> , (data_info, **args) 
-
   #### If transformer URI is Provided {'uri': 'mlmodels.preprocess.image:torch_transform_mnist', 'pass_data_pars': False, 'arg': {'fixed_size': 256, 'path': 'dataset/vision/MNIST/'}} 
 
   #### Loading dataloader URI 
-
   dataset :  <class 'torchvision.datasets.mnist.MNIST'> 
-
 
  #####  get_Data DataLoader 
 ((<torch.utils.data.dataloader.DataLoader object at 0x7f2ddd09f908>, <torch.utils.data.dataloader.DataLoader object at 0x7f2ddd0aa940>), {})
+
+
 ```
 
 
 
-```python
-########################################################################################
-/home/runner/work/mlmodels/mlmodels/mlmodels/dataset/json/refactor/resnet34_benchmark_mnist.json 
-
-#####  Load JSON data_pars
-{
-  "data_info": {
-    "data_path": "mlmodels/dataset/vision/MNIST",
-    "dataset": "MNIST",
-    "data_type": "tch_dataset",
-    "batch_size": 10,
-    "train": true
-  },
-  "preprocessors": [
-    {
-      "name": "tch_dataset_start",
-      "uri": "mlmodels/preprocess/generic.py::get_dataset_torch",
-      "args": {
-        "dataloader": "torchvision.datasets:MNIST",
-        "to_image": true,
-        "transform": {
-          "uri": "mlmodels.preprocess.image:torch_transform_mnist",
-          "pass_data_pars": false,
-          "arg": {}
-        },
-        "shuffle": true,
-        "download": true
-      }
-    }
-  ]
-}
-
- #####  Load DataLoader 
-
- #####  compute DataLoader 
-
-  URL:  mlmodels/preprocess/generic.py::get_dataset_torch {'dataloader': 'torchvision.datasets:MNIST', 'to_image': True, 'transform': {'uri': 'mlmodels.preprocess.image:torch_transform_mnist', 'pass_data_pars': False, 'arg': {}}, 'shuffle': True, 'download': True} 
-
-###### load_callable_from_uri LOADED <function get_dataset_torch at 0x7f2ddd0a5730>
-
- ######### postional parameteres :  ['data_info']
-
- ######### Execute : preprocessor_func <function get_dataset_torch at 0x7f2ddd0a5730>
-
-  function with postional parmater data_info <function get_dataset_torch at 0x7f2ddd0a5730> , (data_info, **args) 
-
-  #### If transformer URI is Provided {'uri': 'mlmodels.preprocess.image:torch_transform_mnist', 'pass_data_pars': False, 'arg': {}} 
-
-  #### Loading dataloader URI 
-
-  dataset :  <class 'torchvision.datasets.mnist.MNIST'> 
-
- #####  get_Data DataLoader 
-((<torch.utils.data.dataloader.DataLoader object at 0x7f2ddc68a748>, <torch.utils.data.dataloader.DataLoader object at 0x7f2ddc68a7f0>), {})
-```
 
 
 
+##### Example 3
 ```python
  ####################################################################################################
-/home/runner/work/mlmodels/mlmodels/mlmodels/dataset/json/refactor/keras_textcnn.json 
+https://github.com/arita37/mlmodels/blob/adata2//mlmodels/dataset/json/refactor/keras_textcnn.json 
 
 #####  Load JSON data_pars
 {
@@ -276,13 +207,14 @@ cls_name : Data
 ###### load_callable_from_uri LOADED <class 'mlmodels/preprocess/generic.NumpyDataset'>
 cls_name : NumpyDataset
 Dataset File path :  mlmodels/dataset/text/imdb.npz
+```
 
 
+##### Example   4
 
- ####################################################################################################
-/home/runner/work/mlmodels/mlmodels/mlmodels/dataset/json/refactor/namentity_crm_bilstm_new.json 
+https://github.com/arita37/mlmodels/blob/adata2//mlmodels/dataset/json/refactor/namentity_crm_bilstm_new.json 
 
-#####  Load JSON data_pars
+```python
 {
   "data_info": {
     "data_path": "dataset/text/",
@@ -295,9 +227,7 @@ Dataset File path :  mlmodels/dataset/text/imdb.npz
       "name": "loader",
       "uri": "mlmodels/preprocess/generic.py::pandasDataset",
       "args": {
-        "read_csv_parm": {
-          "encoding": "ISO-8859-1"
-        },
+        "read_csv_parm": {"encoding": "ISO-8859-1"},
         "colX": [],
         "coly": []
       }
@@ -315,12 +245,8 @@ Dataset File path :  mlmodels/dataset/text/imdb.npz
       "name": "split_xy",
       "uri": "mlmodels/dataloader.py::split_xy_from_dict",
       "args": {
-        "col_Xinput": [
-          "X"
-        ],
-        "col_yinput": [
-          "y"
-        ]
+        "col_Xinput": ["X"],
+        "col_yinput": ["y"]
       }
     },
     {
@@ -339,15 +265,7 @@ Dataset File path :  mlmodels/dataset/text/imdb.npz
     }
   ],
   "output": {
-    "shape": [
-      [
-        75
-      ],
-      [
-        75,
-        18
-      ]
-    ],
+    "shape": [[75 ], [75, 18 ] ],
     "max_len": 75
   }
 }
@@ -397,6 +315,8 @@ cls_name : Preprocess_namentity
 
 
 ```
+
+
 
 
 

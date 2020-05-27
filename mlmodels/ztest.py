@@ -39,8 +39,8 @@ def os_bash(cmd):
 
 
 
-def log_separator():
-   print("\n" * 5, "*" * 120, flush=True )
+def log_separator(space=140):
+   print("\n" * 5, "*" * space, flush=True )
 
 
 def log_info_repo(arg=None):
@@ -154,8 +154,8 @@ def log_remote_push(arg=None):
            pip3 freeze > deps.txt
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
-           git pull --all  &&  git add --all &&  git commit -m "{tag}" 
-           git push --all
+           git add --all &&  git commit -m "{tag}"     
+           git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """
 
@@ -224,7 +224,7 @@ def test_jupyter(arg=None, config_mode="test_all"):
     path = str( os.path.join(root, "example/") )
     print(path)
 
-    print("############ List of files ################################")
+    print("############ List of files #########################################")
     #model_list = get_recursive_files2(root, r'/*/*.ipynb')
     model_list  = get_recursive_files2(path, r'*.ipynb')
     model_list2 = get_recursive_files2(path, r'*.py')
@@ -239,17 +239,40 @@ def test_jupyter(arg=None, config_mode="test_all"):
     block_list = [ "ipynb_checkpoints" ] 
     model_list = [t for t in model_list if t not in block_list]
 
-    test_list = [f"ipython {t}"  for  t in model_list]
+    test_list = [f"{t}"  for  t in model_list]
     print(test_list, flush=True) 
 
     log_separator()
     print("############ Running Jupyter files ################################")
-    for cmd in test_list:
-        log_separator()
-        print( cmd.replace("/home/runner/work/mlmodels/mlmodels/", git.get("url_branch_file", "")), "\n", flush=True)
-        os.system(cmd)
+    for file in test_list:
+        try : 
+          log_separator()
+          print( file.replace("/home/runner/work/mlmodels/mlmodels/", git.get("url_branch_file", "")), "\n", flush=True)
+          if ".ipynb" in file :
+            os.system( f"jupyter nbconvert --to script  {file}")
+
+          file2 = file.replace(".ipynb", ".py")
+          os_file_replace(file2, s1="get_ipython", s2="# get_ipython")   #### Jupyter Flag
+          os.system( f"python {file2}")
+        except :
+          pass
 
 
+def os_file_replace(filename, s1="", s2=""):
+  try :
+    # Read in the file
+    with open(filename, 'r') as file :
+      filedata = file.read()
+
+    # Replace the target string
+    filedata = filedata.replace(s1, s2)
+
+    # Write the file out again
+    with open(filename, 'w') as file:
+      file.write(filedata)
+
+  except :
+    print("No replacement")
 
 
 

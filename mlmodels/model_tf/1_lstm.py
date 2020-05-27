@@ -8,6 +8,7 @@ from warnings import simplefilter
 
 import numpy as np
 import pandas as pd
+import pickle
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 
@@ -37,6 +38,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # **** change the warning level ****
 class Model:
     def __init__(self, model_pars=None, data_pars=None, compute_pars=None, **kwargs):
         reset_model()
+        
+        self.model_pars = model_pars
+        self.compute_pars = compute_pars
+        self.data_pars = data_pars
 
         epoch         = model_pars.get('epoch', 5)
         learning_rate = model_pars.get('learning_rate', 0.001)
@@ -177,6 +182,7 @@ def predict(model, sess=None, data_pars=None,  compute_pars=None, out_pars=None,
 
     if get_hidden_state:
         return output_predict, init_value
+    # print("Predictions: ", output_predict)
     return output_predict
 
 
@@ -190,13 +196,42 @@ def save(model, session=None, save_pars=None):
     from mlmodels.util import save_tf
     print(save_pars)
     save_tf(model, session, save_pars)
+    d = {"model_pars"  :  model.model_pars, 
+     "compute_pars":  model.compute_pars,
+     "data_pars"   :  model.data_pars
+    }
+    path = save_pars['path']  + "/model/"
+    pickle.dump(d, open(path + "/model_pars.pkl", mode="wb"))
+    log(os.listdir(path))
      
 
 
 def load(load_pars=None):
     from mlmodels.util import load_tf
     print(load_pars)
-    return load_tf(load_pars)
+    path = load_pars['path'] + "/model/model_pars.pkl"
+    d = pickle.load( open(path, mode="rb")  )
+
+    ### Setup Model
+    
+    # reset_model()
+    model = Model(model_pars= d['model_pars'], compute_pars= d['compute_pars'],
+                data_pars= d['data_pars']) 
+    model_path = os.path.join(load_pars['path'], "model")
+    
+    full_name  = model_path + "/model.ckpt"
+    # 
+    # saver.restore(sess,  full_name)
+    # sess = tf.compat.v1.Session()
+    # saver = tf.train.Saver()
+    # saver = tf.train.import_meta_graph(model_path + '/model.ckpt.meta')
+    # saver.restore(sess,  full_name)
+    # saver.restore(sess, tf.train.latest_checkpoint(model_path+'/'))
+    
+    sess = load_tf(load_pars) 
+    print(f"Loaded saved model from {model_path}")
+    
+    return model, sess
 
 
 

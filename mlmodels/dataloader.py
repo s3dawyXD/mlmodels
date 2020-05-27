@@ -1,24 +1,52 @@
 # -*- coding: utf-8 -*-
 """
-
-https://www.tensorflow.org/api_docs/python/tf/compat/v1
-tf.compat.v1   IS ALL TF 1.0
-
-tf.compat.v2    iS TF 2.0
-
 Typical user workflow
 
 def get_dataset(data_pars):
     loader = DataLoader(data_pars)
     loader.compute()
     data = loader.get_data()
-    [print(x.shape) for x in data]
+    [log(x.shape) for x in data]
     return data
 
 
+data_pars --> Dataloader.py  :
+  sequence of pre-processors item
+       uri, args
+       return some objects in a sequence way.
 
 
 
+"data_pars": {  
+ "data_info": { 
+                  "name" : "text_dataset",   "data_path": "dataset/nlp/WIKI_QA/" , 
+                  "train": true
+                  } 
+         },
+ 
+
+"preprocessors": [ 
+                {  "uri" : "mlmodels.preprocess.generic.:train_test_val_split",
+                    "arg" : {   "split_if_exists": true, "frac": 0.99, "batch_size": 64,  "val_batch_size": 64,
+                                    "input_path" :    "dataset/nlp/WIKIQA_singleFile/" ,
+                                    "output_path" :  "dataset/nlp/WIKIQA" ,   
+                                    "format" : "csv"
+                               },
+                    "output_type" :  "file_csv"
+                } ,  
+
+
+             {  "name" : "loader"  ,
+                "uri" :  "mlmodels.model_tch.matchzoo:WIKI_QA_loader",
+                "arg" :  {  "name" : "text_dataset",   
+                                        "data_path": "dataset/nlp/WIKI_QA/"   ,
+                                         "data_pack"  : "",   "mode":"pair",  "num_dup":2,   "num_neg":1,
+                                        "batch_size":20,     "resample":true,  
+                                        "sort":false,   "callbacks":"PADDING"
+                                      },
+                 "output_type" :  "pytorch_dataset"
+             } ]
+}
 
 
 """
@@ -33,11 +61,9 @@ import pandas as pd
 import numpy as np
 from collections.abc import MutableMapping
 from functools import partial
+
 from pprint import pprint as print2
 
-# possibly replace with keras.utils.get_file down the road?
-#### It dowloads from HTTP from Dorpbox, ....  (not urgent)
-# from cli_code.cli_download import Downloader
 
 
 from sklearn.model_selection import train_test_split
@@ -48,23 +74,11 @@ import cloudpickle as pickle
 #### mlmodels-internal imports
 from mlmodels.util import load_callable_from_dict, load_callable_from_uri, path_norm, path_norm_dict, log
 
+from mlmodels.preprocess.generic import load_function
+
 from mlmodels.preprocess.generic import pandasDataset, NumpyDataset
 
 #########################################################################
-#### Specific packages   ##### Be ware of tensorflow version
-#### I fpossible, we dont use to have dependance on tensorflow, torch, ...
-
-
-"""  Not used
-import tensorflow as tf
-import torch
-import torchtext
-import keras
-
-import tensorflow.data
-"""
-
-
 VERBOSE = 0 
 DATASET_TYPES = ["csv_dataset", "text_dataset", "NumpyDataset", "pandasDataset"]
 
@@ -81,6 +95,7 @@ def pickle_dump(t, **kwargs):
 
 
 def image_dir_load(path):
+    ## TODO : implement it
     return ImageDataGenerator().flow_from_directory(path)
 
 
@@ -162,8 +177,8 @@ def _check_output_shape(self, inter_output, shape, max_len):
 
 
 def get_dataset_type(x) :
-    from mlmodel.process.generic import PandasDataset, NumpyDataset, Dataset, kerasDataset  #Pytorch
-    from mlmodel.process.generic import DataLoader  ## Pytorch
+    from mlmodels.preprocess.generic import PandasDataset, NumpyDataset, Dataset, kerasDataset  #Pytorch
+    from mlmodels.preprocess.generic import DataLoader  ## Pytorch
 
 
     if isinstance(x, PandasDataset  ) : return "PandasDataset"
@@ -172,51 +187,8 @@ def get_dataset_type(x) :
 
 
 
-"""
 
-data_pars --> Dataloader.py  :
-  sequence of pre-processors item
-       uri, args
-       return some objects in a sequence way.
-
-
-
-"data_pars": {  
- "data_info": { 
-                  "name" : "text_dataset",   "data_path": "dataset/nlp/WIKI_QA/" , 
-                  "train": true
-                  } 
-         },
- 
-
-"preprocessors": [ 
-                {  "uri" : "mlmodels.preprocess.generic.:train_test_val_split",
-                    "arg" : {   "split_if_exists": true, "frac": 0.99, "batch_size": 64,  "val_batch_size": 64,
-                                    "input_path" :    "dataset/nlp/WIKIQA_singleFile/" ,
-                                    "output_path" :  "dataset/nlp/WIKIQA" ,   
-                                    "format" : "csv"
-                               },
-                    "output_type" :  "file_csv"
-                } ,  
-
-
-             {  "name" : "loader"  ,
-                "uri" :  "mlmodels.model_tch.matchzoo:WIKI_QA_loader",
-                "arg" :  {  "name" : "text_dataset",   
-                                        "data_path": "dataset/nlp/WIKI_QA/"   ,
-                                         "data_pack"  : "",   "mode":"pair",  "num_dup":2,   "num_neg":1,
-                                        "batch_size":20,     "resample":true,  
-                                        "sort":false,   "callbacks":"PADDING"
-                                      },
-                 "output_type" :  "pytorch_dataset"
-             } ]
-}
-
-
-"""
-
-
-
+#################################################################################################
 class DataLoader:
 
     default_loaders = {
@@ -248,13 +220,13 @@ class DataLoader:
         for preprocessor in self.preprocessors:
             uri = preprocessor.get("uri", None)
             if not uri:
-                print(f"Preprocessor {preprocessor} missing uri")
+                log(f"Preprocessor {preprocessor} missing uri")
 
 
             ### Compare date type for COMPATIBILITY
             input_type = preprocessor.get("input_type", "")   ### Automatic ???
             if input_type != input_type_prev :
-                print(f"Mismatch input / output data type {preprocessor} ")                  
+                log(f"Mismatch input / output data type {preprocessor} ")                  
 
             input_type_prev = preprocessor.get('output_type', "")
        
@@ -271,13 +243,14 @@ class DataLoader:
             log("URL: ",uri, args)
 
        
-            preprocessor_func = load_callable_from_uri(uri)
-            print("\n###### load_callable_from_uri LOADED",  preprocessor_func)
+            # preprocessor_func = load_callable_from_uri(uri)
+            preprocessor_func = load_function(uri)
+            log("\n###### load_callable_from_uri LOADED",  preprocessor_func)
             if inspect.isclass(preprocessor_func):
                 ### Should match PytorchDataloader, KerasDataloader, PandasDataset, ....
                 ## A class : muti-steps compute
                 cls_name = preprocessor_func.__name__
-                print("cls_name :", cls_name, flush=True)
+                log("cls_name :", cls_name, flush=True)
 
 
                 if cls_name in DATASET_TYPES:  # dataset object
@@ -291,14 +264,14 @@ class DataLoader:
 
 
                 else:  # pre-process object defined in preprocessor.py
-                    print("\n", "Object Creation")
+                    log("\n", "Object Creation")
                     obj_preprocessor = preprocessor_func(**args)
 
-                    print("\n", "Object Compute")
+                    log("\n", "Object Compute")
                     obj_preprocessor.compute(input_tmp)
 
 
-                    print("\n", "Object get_data")                    
+                    log("\n", "Object get_data")                    
                     out_tmp = obj_preprocessor.get_data()
 
 
@@ -306,12 +279,12 @@ class DataLoader:
             else:
                 ### Only a function, not a Class : Directly COMPUTED.
 
-                # print("input_tmp: ",input_tmp['X'].shape,input_tmp['y'].shape)
-                # print("input_tmp: ",input_tmp.keys())
+                # log("input_tmp: ",input_tmp['X'].shape,input_tmp['y'].shape)
+                # log("input_tmp: ",input_tmp.keys())
                 pos_params = inspect.getfullargspec(preprocessor_func)[0]
 
-                print("\n ######### postional parameteres : ", pos_params)
-                print("\n ######### Execute : preprocessor_func", preprocessor_func)
+                log("\n ######### postional parameters : ", pos_params)
+                log("\n ######### Execute : preprocessor_func", preprocessor_func)
 
                 if isinstance(input_tmp, (tuple, list)) and len(input_tmp) > 0 and len(pos_params) == 0:
                     out_tmp = preprocessor_func(*input_tmp, **args)
@@ -352,157 +325,135 @@ def split_xy_from_dict(out, **kwargs):
 
 
 def test_run_model():
-    print("\n\n\n###### Test_run_model  #############################################################")
+    log("\n\n\n###### Test_run_model  #############################################################")
     from mlmodels.models import test_module
-
-    # param_pars = {
-    #     "choice": "json",
-    #     "config_mode": "test",
-    #     "data_path": "dataset/json/refactor/03_nbeats_dataloader.json",
-    # }
-    # test_module("model_tch/03_nbeats_dataloader.py", param_pars)
-
-    # ll = [
-    #        {  "model_uri" : "model_tch.torchhub",
-    #           'pars':       { "choice": "json", "config_mode": "test",
-    #                           "data_path":'dataset/json/refactor/torchhub_cnn_dataloader.json'  }   }
-    # ]
-
 
     ll = [
         #### Keras
-         "dataset/json/refactor/charcnn.json"
-        ,"dataset/json/refactor/charcnn_zhang.json"
-        , "dataset/json/refactor/keras_textcnn.json"
-
+        "model_keras/charcnn.json",
+        "model_keras/charcnn_zhang.json",
+        "model_keras/textcnn.json",
+        "model_keras/namentity_crm_bilstm.json",
 
 
         ### Torch
-        ,'dataset/json/refactor/torchhub_cnn_dataloader.json'
+        'dataset/json/refactor/resnet18_benchmark_mnist.json',
+        'dataset/json/refactor/resnet34_benchmark_mnist.json',
+        'dataset/json/refactor/model_list_CIFAR.json',
+        'dataset/json/refactor/torchhub_cnn_dataloader.json',
+        'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
+        'dataset/json/refactor/model_list_KMNIST.json',
 
+
+        ### textcnn
+        'dataset/json/refactor/textcnn.json',
 
 
     ]
 
+    not_fittable_models = ['dataset/json/refactor/torchhub_cnn_dataloader.json']
+
     for x in ll :
          try :
-            print("\n\n\n", "#" * 100)
-            print(x )
+            log("\n\n\n", "#" * 100)
+            log(x )
 
             data_path = path_norm(x)
             param_pars = {"choice": "json", "data_path": data_path, "config_mode": "test"}
             with open(data_path) as json_file:
                 config = json.load(json_file)
 
-            print( json.dumps(config, indent=2))
-            test_module(config['test']['model_pars']['model_uri'], param_pars)
+            log( json.dumps(config, indent=2))
+            test_module(config['test']['model_pars']['model_uri'], param_pars, 
+                        fittable = False if x in not_fittable_models else True)
 
          except Exception as e :
             import traceback
             traceback.print_exc()
-            print("Error", x,  e)
+            log("######## Error", x,  e, flush=True)
+
 
 
 def test_single(arg):
-    # refactor_path = path_norm( path )
-    # data_pars_list = [(f,json.loads(open(refactor_path+f).read())['test']['data_pars']) for f in os.listdir(refactor_path)]
-    
-    # data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
-    #print(data_pars_list)
-
     data_pars_list  =  [
             path_norm( arg.path)
     ] 
+    test_json_list(data_pars_list)
 
-
-    for f in data_pars_list:
-        try :
-          #f  = refactor_path + "/" + f
-          # f= f.replace("gitdev/mlmodels/",  "gitdev/mlmodels2/" )
-
-          if os.path.isdir(f) : continue
-
-          print("\n" *5 , "#" * 100)
-          print(  f, "\n")
-          
-
-          print("#"*5, " Load JSON data_pars") 
-          d = json.loads(open( f ).read())
-          data_pars = d['test']['data_pars']
-          data_pars = path_norm_dict( data_pars)
-          print(data_pars)
-          
-
-          print( "\n", "#"*5, " Load DataLoader ") 
-          loader    = DataLoader(data_pars)
-
-
-          print("\n", "#"*5, " compute DataLoader ")           
-          loader.compute()
-
-          print("\n", "#"*5, " get_Data DataLoader ")  
-          print(loader.get_data())
-
-        except Exception as e :
-          print("Error", f,  e)
 
 
 
 def test_dataloader(path='dataset/json/refactor/'):
     refactor_path = path_norm( path )
     # data_pars_list = [(f,json.loads(open(refactor_path+f).read())['test']['data_pars']) for f in os.listdir(refactor_path)]
-    
 
-    data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
-    print(data_pars_list)
+    # data_pars_list = [ refactor_path + "/" + f for f in os.listdir(refactor_path)  if os.path.isfile( refactor_path + "/" + f)  ]
+    # log(data_pars_list)
 
 
     data_pars_list  =  [
-        path_norm('dataset/json/refactor/charcnn.json'),
-        path_norm('dataset/json/refactor/charcnn_zhang.json'),
-        path_norm('dataset/json/refactor/torchhub_cnn_dataloader.json' ),
-        # path_norm('dataset/json/refactor/namentity_crm_bilstm_dataloader_new.json' ),
-        path_norm('dataset/json/refactor/model_list_CIFAR.json' ),
-        path_norm('dataset/json/refactor/resnet34_benchmark_mnist.json' ),
-        path_norm('dataset/json/refactor/keras_textcnn.json'),
-        path_norm('dataset/json/refactor/namentity_crm_bilstm_new.json' )
 
-    ] 
+        'model_keras/charcnn.json',
+        'model_keras/charcnn_zhang.json',
+        'model_keras/textcnn.json',
+        'model_keras/namentity_crm_bilstm.json',
+        
 
+        ### DO NOT remove the torch examples
+        'dataset/json/refactor/torchhub_cnn_dataloader.json',
+        'dataset/json/refactor/model_list_CIFAR.json',
+        'dataset/json/refactor/resnet34_benchmark_mnist.json',
+
+
+        #### Text
+        'dataset/json/refactor/textcnn.json',
+
+
+    ]
+
+
+    test_json_list(data_pars_list)
+
+
+
+def test_json_list(data_pars_list):
 
     for f in data_pars_list:
         try :
           #f  = refactor_path + "/" + f
           # f= f.replace("gitdev/mlmodels/",  "gitdev/mlmodels2/" )
+          f = path_norm(f)
 
           if os.path.isdir(f) : continue
 
-          print("\n" *5 , "#" * 100)
-          print(  f, "\n")
-          
+          log("\n" *5 , "#" * 100)
+          log(  f, "\n")
 
-          print("#"*5, " Load JSON data_pars") 
+          log("#"*5, " Load JSON data_pars") 
           d = json.loads(open( f ).read())
           data_pars = d['test']['data_pars']
           data_pars = path_norm_dict( data_pars)
-          #print( textwrap.fill( str(data_pars), 90 ) )
-          print( json.dumps(data_pars, indent=2))
+          #log( textwrap.fill( str(data_pars), 90 ) )
+          log( json.dumps(data_pars, indent=2))
 
 
-          print( "\n", "#"*5, " Load DataLoader ") 
+          log( "\n", "#"*5, " Load DataLoader ") 
           loader    = DataLoader(data_pars)
 
 
-          print("\n", "#"*5, " compute DataLoader ")           
+          log("\n", "#"*5, " compute DataLoader ")           
           loader.compute()
 
-          print("\n", "#"*5, " get_Data DataLoader ")  
-          print(loader.get_data())
+          log("\n", "#"*5, " get_Data DataLoader ")  
+          log(loader.get_data())
 
         except Exception as e :
           import traceback
           traceback.print_exc()
-          print("Error", f,  e)
+          log("Error", f,  e, flush=True)    
+
+
+
 
 
 ####################################################################################################
@@ -559,7 +510,6 @@ if __name__ == "__main__":
    main()
     
 #    test_run_model()
-
 
  
 
@@ -782,7 +732,7 @@ if __name__ == "__main__":
         "config_mode": "test",
         "data_path": "dataset/json/refactor/namentity_crm_bilstm_dataloader_new.json",
     }
-    test_module("model_keras/namentity_crm_bilstm_dataloader.py", param_pars)
+    test_module("model_keras/namentity_crm_bilstm.py", param_pars)
 
     """
     
