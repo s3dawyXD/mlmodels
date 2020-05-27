@@ -14,6 +14,7 @@ TO DO :
 
 """
 import os
+import torch
 from pathlib import Path
 import pandas as pd, numpy as np
 
@@ -228,19 +229,22 @@ def get_dataset_torch(data_info, **args):
             args.pop(k, None)
 
         dset_inst    = dset(os.path.join(data_path,'train'), train=True, download=True, transform=transform, data_info=data_info, **args)
-        train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
+        # train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
+        train_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
         
         dset_inst    = dset(os.path.join(data_path,'test'), train=False, download=False, transform=transform, data_info=data_info, **args)
-        valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
-
+        # valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
 
     else :
         ###### Pre Built Dataset available  #############################################
         dset_inst    = dset(data_path, train=True, download=True, transform=transform)
-        train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        # train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        train_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
         
         dset_inst    = dset(data_path, train=False, download=False, transform=transform)
-        valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        # valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
 
 
     return train_loader, valid_loader  
@@ -383,7 +387,47 @@ def get_model_embedding(data_info, **args):
  
     return dloader
  
- 
+class Custom_DataLoader:
+    def __init__(self, dataset=None, batch_size=-1, shuffle=True, drop_last=False):
+        self.dataset = dataset
+        self.drop_last = drop_last
+        if batch_size == -1:
+            self.batch_size = len(self.dataset)
+        else:
+            self.batch_size = batch_size
+        assert self.batch_size > 0, "batch_size must not be negative, except -1 for full memory load."
+        self.shuffle = shuffle
+    
+    def __iter__(self):
+        if self.shuffle:
+            index_generator = iter(np.random.permutation(len(self.dataset)))
+        else:
+            index_generator = iter(range(len(self.dataset)))
+            
+        batch = []
+        while(True):
+            try:
+                batch.append(self.dataset[index_generator.__next__()])
+                if len(batch) == self.batch_size:
+                    output = list(zip(*batch))  # Outputs resolved this way for (image, label) pairs
+                    output[1] = torch.tensor(output[1])
+                    yield output 
+                    batch=[]
+                    
+            except StopIteration:
+                if not self.drop_last:
+                    output = list(zip(*batch)) # Outputs resolved this way for (image, label) pairs
+                    output[1] = torch.tensor(output[1])
+                    yield output
+                break
+            except:
+                break
+    
+    def __len__(self):
+            length = round(len(self.dataset) / self.batch_size)
+            if self.drop_last:
+                length = length - 1
+            return length
  
 class pandasDataset(Dataset):
     """
