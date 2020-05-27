@@ -470,7 +470,7 @@ def cli_load_arguments(config_file=None):
     add("--config_mode" , default="test"                   , help="test/ prod /uat")
     add("--log_file"    , help="File to save the logging")
 
-    add("--do"          , default="test"                   , help="what to do test or search")
+    add("--do"          , default="test_single"                   , help="what to do test or search")
 
     ###### model_pars
     add("--path", default='dataset/json/refactor/torchhub_cnn_dataloader.json' , help="name of the model for --do test")
@@ -509,7 +509,7 @@ if __name__ == "__main__":
    VERBOSE =1  
    main()
     
-   test_run_model()
+#    test_run_model()
 
  
 
