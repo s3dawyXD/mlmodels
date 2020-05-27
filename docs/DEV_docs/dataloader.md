@@ -17,6 +17,31 @@ Main issue is multiple sub-process for each processor
 and data passing format.
 
 
+
+Datalaoder  : 
+     pipeline manager, Manage a sequence of tasks.
+
+
+Dataset :
+     Class which wraps data on disk/web : numpy, pandas, TF_dataser....     
+
+
+Iterator (ie "Dataloader") :
+     Transfer, Transform and Format from Dataset to XXXX-Tensor.
+     XXXX: is framwork : Tflow, Pytorch, ....
+
+     This is the final connector to Model.
+     Need to convert   Dataset  into XXXX Tensor.
+
+
+
+### Notes :
+   train, val, test are processed in indepedant way : Split is done before.
+
+
+
+
+
 ```
 
 
