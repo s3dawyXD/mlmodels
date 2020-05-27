@@ -250,7 +250,7 @@ class DataLoader:
                 ### Should match PytorchDataloader, KerasDataloader, PandasDataset, ....
                 ## A class : muti-steps compute
                 cls_name = preprocessor_func.__name__
-                log("cls_name :", cls_name, flush=True)
+                print("cls_name :", cls_name, flush=True)
 
 
                 if cls_name in DATASET_TYPES:  # dataset object
@@ -370,7 +370,7 @@ def test_run_model():
          except Exception as e :
             import traceback
             traceback.print_exc()
-            log("######## Error", x,  e, flush=True)
+            print("######## Error", x,  e, flush=True)
 
 
 
@@ -450,7 +450,7 @@ def test_json_list(data_pars_list):
         except Exception as e :
           import traceback
           traceback.print_exc()
-          log("Error", f,  e, flush=True)    
+          print("Error", f,  e, flush=True)    
 
 
 
