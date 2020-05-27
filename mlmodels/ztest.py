@@ -39,8 +39,8 @@ def os_bash(cmd):
 
 
 
-def log_separator():
-   print("\n" * 5, "*" * 120, flush=True )
+def log_separator(space=140):
+   print("\n" * 5, "*" * space, flush=True )
 
 
 def log_info_repo(arg=None):
@@ -154,7 +154,9 @@ def log_remote_push(arg=None):
            pip3 freeze > deps.txt
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
-           git add --all &&  git commit -m "{tag}  && git pull --all" 
+
+           git add --all &&  git commit -m "{tag}"     
+           
            git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """

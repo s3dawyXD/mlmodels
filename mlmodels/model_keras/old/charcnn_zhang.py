@@ -46,12 +46,12 @@ class Model:
             self.model = None
 
         else :
-            self.model = CharCNNZhang(input_size=data_pars["data_info"]["input_size"],
-                                alphabet_size          = data_pars["data_info"]["alphabet_size"],
+            self.model = CharCNNZhang(input_size=data_pars["input_size"],
+                                alphabet_size          = data_pars["alphabet_size"],
                                 embedding_size         = model_pars["embedding_size"],
                                 conv_layers            = model_pars["conv_layers"],
                                 fully_connected_layers = model_pars["fully_connected_layers"],
-                                num_of_classes         = data_pars["data_info"]["num_of_classes"],
+                                num_of_classes         = data_pars["num_of_classes"],
                                 threshold              = model_pars["threshold"],
                                 dropout_p              = model_pars["dropout_p"],
                                 optimizer              = model_pars["optimizer"],
@@ -66,11 +66,7 @@ def fit(model, data_pars={}, compute_pars={}, out_pars={}, **kw):
     epochs = compute_pars['epochs']
 
     sess = None  #
-    dataset, internal_states = get_dataset(data_pars)
-    Xtrain, ytrain = dataset
-    data_pars["data_info"]["train"] = False
-    dataset, internal_states = get_dataset(data_pars)
-    Xtest, ytest = dataset
+    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
 
     early_stopping = EarlyStopping(monitor='val_acc', patience=3, mode='max')
     model.model.fit(Xtrain, ytrain,
@@ -93,9 +89,8 @@ def fit_metrics(model, data_pars={}, compute_pars={}, out_pars={}, **kw):
 
 def predict(model, sess=None, data_pars={}, out_pars={}, compute_pars={}, **kw):
     ##### Get Data ###############################################
-    data_pars["data_info"]["train"] = False
-    dataset, internal_states = get_dataset(data_pars)
-    Xpred, ypred = dataset
+    data_pars['train'] = False
+    Xpred, ypred = get_dataset(data_pars)
 
     #### Do prediction
     ypred = model.model.predict(Xpred)
@@ -132,10 +127,38 @@ def get_dataset(data_pars=None, **kw):
       "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
       "size": [0, 0, 6], "output_size": [0, 6] },
     """
-    from mlmodels.dataloader import DataLoader
-    loader = DataLoader(data_pars)
-    loader.compute()
-    return loader.get_data()
+    from mlmodels.util import path_norm
+    
+    if data_pars['train']:
+
+        print('Loading data...')
+        train_data = Data(data_source= path_norm( data_pars["train_data_source"]) ,
+                             alphabet       = data_pars["alphabet"],
+                             input_size     = data_pars["input_size"],
+                             num_of_classes = data_pars["num_of_classes"])
+        train_data.load_data()
+        train_inputs, train_labels = train_data.get_all_data()
+
+
+        # Load val data
+        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
+                               alphabet=data_pars["alphabet"],
+                               input_size=data_pars["input_size"],
+                               num_of_classes=data_pars["num_of_classes"])
+        val_data.load_data()
+        val_inputs, val_labels = val_data.get_all_data()
+
+        return train_inputs, val_inputs, train_labels, val_labels
+
+
+    else:
+        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
+                               alphabet=data_pars["alphabet"],
+                               input_size=data_pars["input_size"],
+                               num_of_classes=data_pars["num_of_classes"])
+        val_data.load_data()
+        Xtest, ytest = val_data.get_all_data()
+        return Xtest, ytest
 
 
 def get_params(param_pars={}, **kw):
@@ -258,22 +281,21 @@ if __name__ == '__main__':
     # test(pars_choice="test01")
 
     ### Local json file
-    test(pars_choice="json", data_path=f"dataset/json/refactor/charcnn_zhang.json")
-    # test(pars_choice="json", data_path= f"{root_path}/model_keras/charcnn_zhang.json")
+    test(pars_choice="json", data_path= f"{root_path}/model_keras/charcnn_zhang.json")
 
-    # ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
-    # from mlmodels.models import test_module
-    #
-    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn_zhang.json"}
-    # test_module(model_uri=MODEL_URI, param_pars=param_pars)
-    #
-    # ##### get of get_params
-    # # choice      = pp['choice']
-    # # config_mode = pp['config_mode']
-    # # data_path   = pp['data_path']
-    #
-    # ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
-    # from mlmodels.models import test_api
-    #
-    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn_zhang.json"}
-    # test_api(model_uri=MODEL_URI, param_pars=param_pars)
+    ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
+    from mlmodels.models import test_module
+
+    param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn_zhang.json"}
+    test_module(model_uri=MODEL_URI, param_pars=param_pars)
+
+    ##### get of get_params
+    # choice      = pp['choice']
+    # config_mode = pp['config_mode']
+    # data_path   = pp['data_path']
+
+    ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
+    from mlmodels.models import test_api
+
+    param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn_zhang.json"}
+    test_api(model_uri=MODEL_URI, param_pars=param_pars)

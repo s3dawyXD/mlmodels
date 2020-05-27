@@ -1,6 +1,7 @@
 {
   "test": {
     "model_pars": {
+      "model_uri": "model_keras.charcnn.py",
       "embedding_size": 128,
       "conv_layers": [
         [256, 10],
@@ -15,13 +16,39 @@
       "loss": "categorical_crossentropy"
     },
     "data_pars": {
-      "train": true,
-      "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",
-      "alphabet_size": 69,
-      "input_size": 1014,
-      "num_of_classes": 4,
-      "train_data_source": "dataset/text/ag_news_csv/train.csv",
-      "val_data_source": "dataset/text/ag_news_csv/test.csv"
+      "data_info": {
+        "dataset" : "mlmodels/dataset/text/ag_news_csv",
+        "train": true,
+        "alphabet_size": 69,
+        "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",
+        "input_size": 1014,
+        "num_of_classes": 4
+      },
+      "preprocessors": [
+        {
+            "name": "loader",
+            "uri": "mlmodels.preprocess.generic:pandasDataset",
+            "args": {
+                "colX": ["colX"],
+                "coly": ["coly"],
+                "encoding": "'ISO-8859-1'",
+                "read_csv_parm": {
+                    "usecols": [0,1],
+                    "names": ["coly", "colX"]
+                }
+            }
+        },
+        {
+          "name": "tokenizer",
+          "uri": "mlmodels.model_keras.raw.char_cnn.data_utils:Data",
+          "args": {
+            "data_source": "",
+            "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}",
+            "input_size": 1014,
+            "num_of_classes": 4
+          }
+        }
+      ]
     },
     "compute_pars": {
       "epochs": 1,

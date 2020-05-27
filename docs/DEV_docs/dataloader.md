@@ -17,6 +17,45 @@ Main issue is multiple sub-process for each processor
 and data passing format.
 
 
+
+Datalaoder  : 
+     pipeline manager, Manage a sequence of tasks.
+
+     There are many ways to process data :
+        saving on disk or not, ...
+
+
+
+Dataset :
+     Class which wraps data on disk/web : numpy, pandas, TF_dataser....     
+
+
+Iterator (ie "Dataloader") :
+     Transfer, Transform and Format from Dataset to XXXX-Tensor.
+     XXXX: is framwork : Tflow, Pytorch, ....
+
+     This is the final connector to Model.
+     Need to convert   Dataset  into XXXX Tensor.
+
+
+
+### Notes :
+   train, val, test are processed in indepedant way : Split is done before.
+
+
+
+
+
+It's better to have one Dataloader per framework XXXXX'
+but those dataloader can re-use functions between them...
+-->
+Manage API breaks more easily....
+Re-use existing code....
+
+
+
+
+
 ```
 
 
