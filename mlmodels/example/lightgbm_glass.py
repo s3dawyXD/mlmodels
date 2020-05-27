@@ -4,7 +4,7 @@ import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
 from mlmodels.optim import optim
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 print( os.getcwd())
 

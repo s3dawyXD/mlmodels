@@ -14,7 +14,7 @@ Check parameters template in models_config.json
 import inspect
 import os
 import sys
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from datetime import datetime, timedelta
 from pathlib import Path
 

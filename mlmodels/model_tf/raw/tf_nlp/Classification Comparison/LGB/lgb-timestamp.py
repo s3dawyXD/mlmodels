@@ -16,7 +16,7 @@
 # In[1]:
 
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import pickle
 import re
 import time

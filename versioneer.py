@@ -282,7 +282,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 import errno
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import re
 import subprocess
@@ -1186,7 +1186,7 @@ SHORT_VERSION_PY = """
 # unpacked source archive. Distribution tarballs contain a pre-generated copy
 # of this file.
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 version_json = '''
 %s

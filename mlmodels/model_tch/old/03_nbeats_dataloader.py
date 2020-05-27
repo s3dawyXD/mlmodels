@@ -1,4 +1,4 @@
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 
 import numpy as np
@@ -253,7 +253,7 @@ def load(load_pars):
 
 #############################################################################################################
 def get_params(param_pars, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
 
     pp = param_pars
     choice = pp["choice"]

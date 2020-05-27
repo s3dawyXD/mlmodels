@@ -1,4 +1,4 @@
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import copy
 
@@ -311,7 +311,7 @@ def load(load_pars):
 
 #############################################################################################################
 def get_params(param_pars, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']

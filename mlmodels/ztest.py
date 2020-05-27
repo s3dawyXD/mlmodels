@@ -11,7 +11,7 @@ import copy
 import math
 import os
 from collections import Counter, OrderedDict
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from pathlib import Path
 import numpy as np
 from time import sleep

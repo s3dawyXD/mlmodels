@@ -147,7 +147,7 @@ def get_dataset(data_pars=None, **kw):
 
 
 def get_params(param_pars=None, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     choice      = param_pars['choice']
     config_mode = param_pars['config_mode']
     data_path   = param_pars['data_path']

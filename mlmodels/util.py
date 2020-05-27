@@ -5,7 +5,7 @@ import fnmatch
 
 # import toml
 from pathlib import Path
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 import importlib
 from inspect import getmembers
@@ -229,7 +229,7 @@ def test_module(model_uri="model_tf/1_lstm.py", data_path="dataset/", pars_choic
 
 ####################################################################################################
 def config_load_root():
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     path_user = os.path.expanduser('~')
     path_config = path_user + "/.mlmodels/config.json"
 
@@ -258,7 +258,7 @@ def config_set(ddict2):
 
 def params_json_load(path, config_mode="test", 
                      tlist= [ "model_pars", "data_pars", "compute_pars", "out_pars"] ):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pars = json.load(open(path, mode="r"))
     pars = pars[config_mode]
 
@@ -277,7 +277,7 @@ def params_json_load(path, config_mode="test",
 
 def load_config(args, config_file, config_mode, verbose=0):
     ##### Load file dict_pars as dict namespace #############################
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     print(config_file) if verbose else None
 
     try:

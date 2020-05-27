@@ -38,7 +38,7 @@ import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
 from mlmodels.metrics import metrics_eval
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON
@@ -81,7 +81,7 @@ model2 = module.load(load_pars ={ 'path': out_pars['path'] +"/model/"})
 import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON
@@ -122,7 +122,7 @@ model2 = module.load(load_pars ={ 'path': out_pars['path'] +"/model/"})
 import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON
@@ -164,7 +164,7 @@ import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
 from mlmodels.metrics import metrics_eval
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON

@@ -16,7 +16,7 @@
 # In[1]:
 
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import re
 
 import numpy as np

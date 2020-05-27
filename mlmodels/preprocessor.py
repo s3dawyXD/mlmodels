@@ -9,7 +9,7 @@ import keras
 from sklearn.model_selection import train_test_split
 from cli_code.cli_download import Downloader
 from collections.abc import MutableMapping
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import cloudpickle as pickle
 from util import load_callable_from_dict
 

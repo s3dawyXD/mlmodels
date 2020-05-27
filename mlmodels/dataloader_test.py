@@ -1,5 +1,5 @@
 import os
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import pandas as pd
 import numpy as np
 import math

@@ -5,7 +5,7 @@
 
 
 import collections
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import time
 
 import numpy as np

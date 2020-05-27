@@ -2,7 +2,7 @@
 import os
 import re
 from pathlib import Path
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 import sklearn

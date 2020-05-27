@@ -18,7 +18,7 @@ models.py   #### Generic Interface
 import argparse
 import glob
 import inspect
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import re
 import sys

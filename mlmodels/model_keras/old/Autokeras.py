@@ -5,7 +5,7 @@ https://autokeras.com/examples/imdb/
 """
 
 import os
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from copy import deepcopy
 import numpy as np
 import pandas as pd

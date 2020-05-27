@@ -236,7 +236,7 @@ def get_dataset(data_pars=None, **kw):
 
 
 def get_params(param_pars={}, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']

@@ -835,7 +835,7 @@ def create_kerasDataloader():
 ########################################################################################
 def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ### Local test
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     log("#### Test unit Dataloader/Dataset   ####################################")
     
     js = json.load(open(data_path, mode='r'))

@@ -56,7 +56,7 @@ model_list = ["AFM",
 
 
 """
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 from pathlib import Path
 import importlib

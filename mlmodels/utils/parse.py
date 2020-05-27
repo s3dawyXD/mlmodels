@@ -6,7 +6,7 @@ Parse Code source CLI to extract JSON file
 
 
 """
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import  os, argparse
 from pathlib import Path
 
