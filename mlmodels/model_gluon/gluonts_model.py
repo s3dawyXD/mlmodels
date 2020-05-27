@@ -1,4 +1,11 @@
+#https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluonts_model.py
 # -*- coding: utf-8 -*-
+
+#### New version
+new = True
+
+
+
 """
 Advanded GlutonTS models
 
@@ -6,7 +13,7 @@ Advanded GlutonTS models
 import os, copy
 import pandas as pd, numpy as np
 
-
+import importlib
 import matplotlib.pyplot as plt
 from pathlib import Path
 import json
@@ -30,8 +37,8 @@ from gluonts.dataset.util import to_pandas
 from gluonts.evaluation import Evaluator
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.model.predictor import Predictor
-
-
+from gluonts.distribution.neg_binomial import NegativeBinomialOutput
+from tqdm.autonotebook import tqdm
 #### Only for SeqtoSeq
 from gluonts.block.encoder import (
     HierarchicalCausalConv1DEncoder,
@@ -44,9 +51,11 @@ from gluonts.block.encoder import (
 ####################################################################################################
 from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri, json_norm
 
+#from mlmodels.util import load_function_uri
+
 
 VERBOSE = False
-MODEL_URI = get_model_uri(__file__)
+#MODEL_URI = get_model_uri(__file__)
 
 
 MODELS_DICT = {
@@ -79,19 +88,36 @@ class Model(object):
             
             if model_pars["model_name"] == "seq2seq" :
                 mpars['encoder'] = MLPEncoder()   #bug in seq2seq
-            
-            
+
+            if model_pars["model_name"] == "deepar" :
+                    
+                # distr_output – Distribution to use to evaluate observations and sample predictions (default: StudentTOutput())
+                if "NegativeBinomialOutput" in  mpars['distr_output'] :             
+                   mpars['distr_output'] = NegativeBinomialOutput()
+                   #mpars['distr_output'] =_load_function(mpars['distr_output'])()  # "gluonts.distribution.neg_binomial:NegativeBinomialOutput"                 
+                else :
+                   del mpars['distr_output']  # = StudentTOutput() default one
+                print(mpars.get('distr_output'))
+
+
+                ### Need to put manually in JSON Before  ########################################
+                ###  Cardinality : Nb
+                # self.train_ds,self.test_ds, self.cardinalities = get_dataset(data_pars)             
+                print( mpars.get("cardinality" ) )
+
+
             ### Setup the compute
             trainer = Trainer( **cpars  )
 
             ### Setup the model
-            self.model = MODELS_DICT[model_pars["model_name"]]( trainer=trainer, **mpars )
+            self.model = MODELS_DICT[model_pars["model_name"]]( **mpars, trainer=trainer )
+
 
 
 def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", **kw):
     if choice == "json":
       data_path = path_norm( data_path )
-      config    = json.load(open(data_path, encoding='utf-8'))
+      config    = json.load(open(data_path))  #, encoding='utf-8'))
       config    = config[config_mode]
       
       return config["model_pars"], config["data_pars"], config["compute_pars"], config["out_pars"]
@@ -102,12 +128,69 @@ def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", *
 
 
 def get_dataset(data_pars):    
-
     from mlmodels.preprocess.timeseries import pandas_to_gluonts, pd_clean_v1
+    from mlmodels.preprocess.timeseries import (  gluonts_create_dynamic,  gluonts_create_static,
+      gluonts_create_timeseries, create_startdate,
+      pandas_to_gluonts_multiseries )
 
-    data_path  = data_pars['train_data_path'] if data_pars['train'] else data_pars['test_data_path']
-    data_path  = path_norm( data_path )
+    d = data_pars
 
+    if data_pars.get("data_type", "single_dataframe") ==  "single_dataframe" :
+        return get_dataset_single(data_pars)
+
+
+    ###### Dataframe                                ########################################
+    df_timeseries, df_static, df_dynamic, n_timeseries    = get_features(data_pars)
+    
+    ###### Set parameters of dataset
+    pars                   = {'submission': d['submission'],
+                              'single_pred_length'     : d['single_pred_length'],    # 28
+                              'submission_pred_length' : d.get('submission_pred_length', d['single_pred_length' * 2]),
+                              'n_timeseries'           : d['n_timeseries']   ,
+                              'start_date'             : d['startdate'] ,   #  "2011-01-29"
+                              'freq'                   : d['freq'] 
+                             }
+    
+
+    if data_pars['train'] :
+       train_ds, test_ds, cardinalities   = pandas_to_gluonts_multiseries(df_timeseries, df_dynamic, df_static,pars)       
+       return train_ds, test_ds, cardinalities
+
+
+    else :
+       ### Submission mode
+       _, test_ds, cardinalities   = pandas_to_gluonts_multiseries(df_timeseries, df_dynamic, df_static,pars) 
+       return None, test_ds, cardinalities
+    
+
+
+def get_features(data_pars):
+    """"
+      ### Fixed Format
+
+    """ 
+    d = data_pars
+    data_folder    = d[ "data_path"]
+    df_timeseries  = pd.read_csv(data_folder+'/df_timeseries.csv')
+
+    #### Optional
+    df_static      = pd.read_csv(data_folder+'/df_static.csv')  if d.get('use_feat_static_cat', False)  else None
+    df_dynamic     = pd.read_csv(data_folder+'/df_dynamic.csv')  if d.get('use_feat_dynamic_real', False)  else None
+    df_static_real = pd.read_csv(data_folder+'/df_static_real.csv')  if d.get('use_feat_static_real', False)  else None
+
+
+    return df_timeseries,df_static,df_dynamic, len(df_timeseries)
+
+
+def get_dataset_single(data_pars):    
+    """
+      Using One Single Dataframe as INput
+
+    """
+    from mlmodels.preprocess.timeseries import pandas_to_gluonts, pd_clean_v1
+    print(data_pars)
+    data_path=data_pars['data_path']
+    ### Old Codes
     df = pd.read_csv(data_path)
     df = df.set_index( data_pars['col_date'] )
     df = pd_clean_v1(df)
@@ -127,40 +210,104 @@ def get_dataset(data_pars):
         train_series.plot()
         save_fig     = data_pars.get('save_fig', "save_fig.png")
         # plt.savefig(save_fig)
-    return gluonts_ds
+
+    if data_pars['train'] :     
+      return gluonts_ds, None , None
+
+    else :
+      return None, gluonts_ds , None
 
 
 
 def fit(model, sess=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, session=None, **kwargs):
         """
           Classe Model --> model,   model.model contains thte sub-model
-        """
+        ### OLD CODE
+        print(data_pars,model_pars)
         data_pars['train'] = True
-        model_gluon        = model.model
+        
         gluont_ds          = get_dataset(data_pars)
         predictor          = model_gluon.train(gluont_ds)
+
+        #### New version
+        if data_pars['new'] = True :
+        """
+
+        data_pars['train'] = 1        
+        train_ds, test_ds, cardinalities = get_dataset(data_pars)
+        
+        model_gluon        = model.model
+        
+        predictor          = model_gluon.train(train_ds)
+       
+        #predictor          = model_gluon.train(model.train_ds)
         model.model        = predictor
         return model
 
 
 def predict(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
+    """
+
+Converting forecasts back to M5 submission format (if submission is True)
+Since GluonTS estimators return a sample-based probabilistic forecasting predictor, we first need to reduce these results to a single pred per time series. This can be done by computing the mean or median over the predicted sample paths.
+########################
+if submission == True:
+    forecasts_acc = np.zeros((len(forecasts), pred_length))
+    for i in range(len(forecasts)):
+        forecasts_acc[i] = np.mean(forecasts[i].samples, axis=0)
+
+
+# We then reshape the forecasts into the correct data shape for submission ...
+########################
+if submission == True:
+    forecasts_acc_sub = np.zeros((len(forecasts)*2, single_pred_length))
+    forecasts_acc_sub[:len(forecasts)] = forecasts_acc[:,:single_pred_length]
+    forecasts_acc_sub[len(forecasts):] = forecasts_acc[:,single_pred_length:]
+
+.. and verfiy that reshaping is consistent.
+########################
+if submission == True:
+    np.all(np.equal(forecasts_acc[0], np.append(forecasts_acc_sub[0], forecasts_acc_sub[30490])))
+
+
+## Then, we save our submission into a timestamped CSV file which can subsequently be uploaded to Kaggle.
+########################
+if submission == True:
+    import time
+    sample_submission            = pd.read_csv(data_folder/sample_submission.csv')
+    sample_submission.iloc[:,1:] = forecasts_acc_sub
+    submission_id                = 'submission_{}.csv'.format(int(time.time()))
+    sample_submission.to_csv(submission_id, index=False)
+
+
+
+
+    """
     
-    data_pars['train'] = False
-    test_ds            = get_dataset(data_pars)
+    data_pars['train'] = 0 
+    _, test_ds, cardinalities = get_dataset(data_pars) 
+    # test_ds            = model.test_ds
     model_gluon        = model.model
     
     forecast_it, ts_it = make_evaluation_predictions(
             dataset     = test_ds,      # test dataset
             predictor   = model_gluon,  # predictor
-            num_samples = compute_pars['num_samples'],  # number of sample paths we want for evaluation
+            num_samples = model.compute_pars['num_samples'],  # number of sample paths we want for evaluation
         )
+    tss = list(tqdm(ts_it, total=len(test_ds)))
 
-    forecasts, tss = list(forecast_it), list(ts_it)
+    forecasts = list(tqdm(forecast_it, total=len(test_ds)))
+
+    #forecasts, tss = list(forecast_it), list(ts_it)
     forecast_entry, ts_entry = forecasts[0], tss[0]
 
     ### External benchmark.py evaluation
     if kw.get("return_ytrue") :
-        ypred, ytrue = forecasts, tss
+        forecasts_acc = np.zeros((len(forecasts), pred_length))
+        for i in range(len(forecasts)):
+          forecasts_acc[i] = np.mean(forecasts[i].samples, axis=0)       
+
+        ypred, ytrue = forecasts_acc, tss
         return ypred, ytrue
 
     if VERBOSE:
@@ -176,10 +323,20 @@ def predict(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, 
 
 
 
+def evaluate(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
+   """
+     Actual values tests
+
+   """ 
+   pass
+
+
+
 def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
         ## load test dataset
-        data_pars['train'] = False
-        test_ds = get_dataset(data_pars)
+       
+        data_pars['train'] = 0 
+        _, test_ds, cardinalities = get_dataset(data_pars) 
 
         forecasts = ypred["forecasts"]
         tss = ypred["tss"]
@@ -194,19 +351,17 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
 
 def fit_metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
         ### load test dataset
-        data_pars['train'] = False
-        test_ds = get_dataset(data_pars)
-
+      
+        data_pars['train'] = 0 
+        _, test_ds, cardinalities = get_dataset(data_pars) 
         forecasts = ypred["forecasts"]
         tss = ypred["tss"]
 
         ### Evaluate
         evaluator = Evaluator(quantiles=out_pars['quantiles'])
-        agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
+        agg_metrics, item_metrics = evaluator(tss,forecasts, num_series=len(test_ds))
         metrics_dict = json.dumps(agg_metrics, indent=4)
         return metrics_dict, item_metrics
-
-
 
 def save(model, path):
     import pickle
@@ -220,6 +375,7 @@ def save(model, path):
         }
     pickle.dump(d, open(path + "/glutonts_model_pars.pkl", mode="wb"))
     log(os.listdir(path))
+
 
 
 def load(path):
@@ -238,10 +394,45 @@ def load(path):
     return model
 
 
+"""    
+def save_local(model, path):
+    import pickle
+    os.makedirs(path, exist_ok = True)
+
+    model.model.serialize(Path(path) )   
+    d = {"model_pars"  :  model.model_pars, 
+         "compute_pars":  model.compute_pars,
+         "data_pars"   :  model.data_pars
+        }
+    pickle.dump(d, open(path + "/glutonts_model_pars.pkl", mode="wb"))
+    log(os.listdir(path))
+"""    
+
+
+
+
+"""    
+def load_local(path):
+    import pickle
+   
+
+    predictor_deserialized = Predictor.deserialize(Path(path))
+    d = pickle.load( open(path + "/glutonts_model_pars.pkl", mode="rb")  )
+    
+    ### Setup Model
+    model = Model(model_pars= d['model_pars'], compute_pars= d['compute_pars'],
+                  data_pars= d['data_pars'])  
+
+    model.model = predictor_deserialized
+
+    return model
+"""
+
+
 def plot_prob_forecasts(ypred, out_pars=None):
     forecast_entry = ypred["forecasts"][0]
     ts_entry = ypred["tss"][0]
-
+   
     plot_length = 150
     prediction_intervals = (50.0, 90.0)
     legend = ["observations", "median prediction"] + [f"{k}% prediction interval" for k in prediction_intervals][::-1]
@@ -269,20 +460,24 @@ def plot_predict(item_metrics, out_pars=None):
 def test_single(data_path="dataset/", choice="", config_mode="test"):
     model_uri = MODEL_URI
     log("#### Loading params   ##############################################")
-    log( MODEL_URI)
+    log( model_uri)
     model_pars, data_pars, compute_pars, out_pars = get_params(choice=choice, data_path=data_path, config_mode=config_mode)
     print(model_pars, data_pars, compute_pars, out_pars)
 
     log("#### Loading dataset   #############################################")
-    gluonts_ds = get_dataset(data_pars)
-
-    log("#### Model init, fit   #############################################")
+    #gluonts_ds = get_dataset(data_pars)
+    
+    log("#### Model init     ################################################")
     from mlmodels.models import module_load_full
     module, model = module_load_full(model_uri, model_pars, data_pars, compute_pars)
     print(module, model)
 
-    model = fit(model, sess=None, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
+
+    log("#### Model fit     #################################################")
+    #model=Model(model_pars, data_pars, compute_pars)
+    model = fit(model, sess=None, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)    
     print(model)
+
 
     log("#### Save the trained model  ######################################")
     save(model, out_pars["path"])
@@ -291,13 +486,16 @@ def test_single(data_path="dataset/", choice="", config_mode="test"):
     log("#### Load the trained model  ######################################")
     model = load(out_pars["path"])
 
+
     log("#### Predict   ####################################################")
     ypred = predict(model, sess=None, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
     # print(ypred)
 
+
     log("#### metrics   ####################################################")
     metrics_val, item_metrics = metrics(ypred, data_pars, compute_pars, out_pars)
     print(metrics_val)
+
 
     log("#### Plot   #######################################################")
     if VERBOSE :
@@ -315,255 +513,11 @@ def test() :
     
     for t in ll  :
       test_single(data_path="model_gluon/gluonts_model.json", choice="json", config_mode= t )
+      #test_single(data_path="gluonts_model.json", choice="json", config_mode= t )
 
 
-
+""" """
 if __name__ == '__main__':
     VERBOSE = False
 
-    test()
-
-
-
-
-
-
-INFO = """
-DeepStateEstimator,
-    This implements the deep state space model described in
-    [RSG+18]_.
-
-
-    freq
-        Frequency of the data to train on and predict
-    prediction_length
-        Length of the prediction horizon
-    cardinality
-        Number of values of each categorical feature.
-        This must be set by default unless ``use_feat_static_cat``
-        is set to `False` explicitly (which is NOT recommended).
-    add_trend
-        Flag to indicate whether to include trend component in the
-        state space model
-    past_length
-        This is the length of the training time series;
-        i.e., number of steps to unroll the RNN for before computing 
-        predictions.
-        Set this to (at most) the length of the shortest time series in the 
-        dataset.
-        (default: None, in which case the training length is set such that 
-        at least
-        `num_seasons_to_train` seasons are included in the training.
-        See `num_seasons_to_train`)
-    num_periods_to_train
-        (Used only when `past_length` is not set)
-        Number of periods to include in the training time series. (default: 4)
-        Here period corresponds to the longest cycle one can expect given 
-        the granularity of the time series.
-        See: https://stats.stackexchange.com/questions/120806/frequency
-        -value-for-seconds-minutes-intervals-data-in-r
-
-WaveNetEstimator
-        Model with Wavenet architecture and quantized target.
-
-        freq
-            Frequency of the data to train on and predict
-        prediction_length
-            Length of the prediction horizon
-        trainer
-            Trainer object to be used (default: Trainer())
-        cardinality
-            Number of values of the each categorical feature (default: [1])
-        embedding_dimension
-            Dimension of the embeddings for categorical features (the same
-            dimension is used for all embeddings, default: 5)
-        num_bins
-            Number of bins used for quantization of signal (default: 1024)
-        hybridize_prediction_net
-            Boolean (default: False)
-        n_residue
-            Number of residual channels in wavenet architecture (default: 24)
-        n_skip
-            Number of skip channels in wavenet architecture (default: 32)
-        dilation_depth
-            Number of dilation layers in wavenet architecture.
-            If set to None (default), dialation_depth is set such that the receptive length is at least
-            as long as typical seasonality for the frequency and at least 2 * prediction_length.
-        n_stacks
-            Number of dilation stacks in wavenet architecture (default: 1)
-        temperature
-            Temparature used for sampling from softmax distribution.
-            For temperature = 1.0 (default) sampling is according to estimated probability.
-        act_type
-            Activation type used after before output layer (default: "elu").
-            Can be any of 'elu', 'relu', 'sigmoid', 'tanh', 'softrelu', 'softsign'.
-        num_parallel_samples
-            Number of evaluation samples per time series to increase parallelism during inference.
-            This is a model optimization that does not affect the accuracy (default: 200)
-
-
-
-DeepFactorEstimator(GluonEstimator):
-
-    DeepFactorEstimator is an implementation of the 2019 ICML paper "Deep Factors for Forecasting"
-    https://arxiv.org/abs/1905.12417.  It uses a global RNN model to learn patterns across multiple related time series
-    and an arbitrary local model to model the time series on a per time series basis.  In the current implementation,
-    the local model is a RNN (DF-RNN).
-
-    freq
-        Time series frequency.
-    prediction_length
-        Prediction length.
-    num_hidden_global
-        Number of units per hidden layer for the global RNN model (default: 50).
-    num_layers_global
-        Number of hidden layers for the global RNN model (default: 1).
-    num_factors
-        Number of global factors (default: 10).
-    num_hidden_local
-        Number of units per hidden layer for the local RNN model (default: 5).
-    num_layers_local
-        Number of hidden layers for the global local model (default: 1).
-    cell_type
-        Type of recurrent cells to use (available: 'lstm' or 'gru';
-        default: 'lstm').
-    trainer
-        Trainer object to be used (default: Trainer()).
-    context_length
-        Training length (default: None, in which case context_length = prediction_length).
-    num_parallel_samples
-        Number of evaluation samples per time series to increase parallelism during inference.
-        This is a model optimization that does not affect the accuracy (default: 100).
-    cardinality
-        List consisting of the number of time series (default: list([1]).
-    embedding_dimension
-        Dimension of the embeddings for categorical features (the same
-        dimension is used for all embeddings, default: 10).
-    distr_output
-        Distribution to use to evaluate observations and sample predictions
-        (default: StudentTOutput()).
-
-
-
-GaussianProcessEstimator shows how to build a local time series model using
-Gaussian Processes (GP).
-    Each time series has a GP with its own
-    hyper-parameters.  For the radial basis function (RBF) Kernel, the
-    learnable hyper-parameters are the amplitude and lengthscale. The periodic
-    kernel has those hyper-parameters with an additional learnable frequency
-    parameter. The RBFKernel is the default, but either kernel can be used by
-    inputting the desired KernelOutput object. The noise sigma in the model is
-    another learnable hyper-parameter for both kernels. These parameters are
-    fit using an Embedding of the integer time series indices (each time series
-    has its set of hyper-parameter that is static in time). The observations
-    are the time series values. In this model, the time features are hour of
-    the day and day of the week.
-
-    freq
-        Time series frequency.
-    prediction_length
-        Prediction length.
-    cardinality
-        Number of time series.
-    trainer
-        Trainer instance to be used for model training (default: Trainer()).
-    context_length
-        Training length (default: None, in which case context_length = prediction_length).
-    kernel_output
-        KernelOutput instance to determine which kernel subclass to be
-        instantiated (default: RBFKernelOutput()).
-    params_scaling
-        Determines whether or not to scale the model parameters (default: True).
-    float_type
-        Determines whether to use single or double precision (default: np.float64).
-    max_iter_jitter
-        Maximum number of iterations for jitter to iteratively make the matrix positive definite (default: 10).
-    jitter_method
-        Iteratively jitter method or use eigenvalue decomposition depending on problem size (default: "iter").
-    sample_noise
-        Boolean to determine whether to add :math:`\sigma^2I` to the predictive covariance matrix (default: True).
-    time_features
-        Time features to use as inputs of the model (default: None, in which
-        case these are automatically determined based on the frequency).
-    num_parallel_samples
-        Number of evaluation samples per time series to increase parallelism during inference.
-        This is a model optimization that does not affect the accuracy (default: 100).
-
-
-Seq2SeqEstimator(GluonEstimator):
-    Quantile-Regression Sequence-to-Sequence Estimator
-        freq: str,
-        prediction_length: int,
-        cardinality: List[int],
-        embedding_dimension: int,
-        encoder: Seq2SeqEncoder,
-        decoder_mlp_layer: List[int],
-        decoder_mlp_static_dim: int,
-        scaler: Scaler = NOPScaler(),
-        context_length: Optional[int] = None,
-        quantiles: List[float] = [0.1, 0.5, 0.9],
-        trainer: Trainer = Trainer(),
-        num_parallel_samples: int = 100,
-    ) -> None:
-        
-
-
-TransformerEstimator(GluonEstimator):
-        Construct a Transformer estimator.
-        This implements a Transformer model, close to the one described in
-        [Vaswani2017]_.
-        .. [Vaswani2017] Vaswani, Ashish, et al. "Attention is all you need."
-            Advances in neural information processing systems. 2017.
-        freq
-            Frequency of the data to train on and predict
-        prediction_length
-            Length of the prediction horizon
-        context_length
-            Number of steps to unroll the RNN for before computing predictions
-            (default: None, in which case context_length = prediction_length)
-        trainer
-            Trainer object to be used (default: Trainer())
-        dropout_rate
-            Dropout regularization parameter (default: 0.1)
-        cardinality
-            Number of values of the each categorical feature (default: [1])
-        embedding_dimension
-            Dimension of the embeddings for categorical features (the same
-            dimension is used for all embeddings, default: 5)
-        distr_output
-            Distribution to use to evaluate observations and sample predictions
-            (default: StudentTOutput())
-        model_dim
-            Dimension of the transformer network, i.e., embedding dimension of the input
-            (default: 32)
-        inner_ff_dim_scale
-            Dimension scale of the inner hidden layer of the transformer's
-            feedforward network (default: 4)
-        pre_seq
-            Sequence that defined operations of the processing block before the main transformer
-            network. Available operations: 'd' for dropout, 'r' for residual connections
-            and 'n' for normalization (default: 'dn')
-        post_seq
-            seq
-            Sequence that defined operations of the processing block in and after the main
-            transformer network. Available operations: 'd' for dropout, 'r' for residual connections
-            and 'n' for normalization (default: 'drn').
-        act_type
-            Activation type of the transformer network (default: 'softrelu')
-        num_heads
-            Number of heads in the multi-head attention (default: 8)
-        scaling
-            Whether to automatically scale the target values (default: true)
-        lags_seq
-            Indices of the lagged target values to use as inputs of the RNN
-            (default: None, in which case these are automatically determined
-            based on freq)
-        time_features
-            Time features to use as inputs of the RNN (default: None, in which
-            case these are automatically determined based on freq)
-        num_parallel_samples
-            Number of evaluation samples per time series to increase parallelism during inference.
-            This is a model optimization that does not affect the accuracy (default: 100)
-
-        
-"""
+    #test()
