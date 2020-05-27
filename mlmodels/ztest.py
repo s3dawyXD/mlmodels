@@ -148,7 +148,7 @@ def log_remote_start(arg=None):
 
 
 def log_remote_push(arg=None):
-   ### Pushing to mlmodels_store 
+   ### Pushing to mlmodels_store   with --force
    tag ="ml_store"
    s = f""" cd /home/runner/work/mlmodels/mlmodels_store/
            pip3 freeze > deps.txt
