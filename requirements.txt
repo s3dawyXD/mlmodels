@@ -26,7 +26,7 @@ python-dateutil==2.8.0
 #### Utils
 cli_code    ### Utilities
 versioneer==0.18   ## Auto Versionning
-
+jsoncomment==0.4.2
 
 
 
