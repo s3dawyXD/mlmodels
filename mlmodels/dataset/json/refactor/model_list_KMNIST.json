@@ -30,7 +30,7 @@
                 "preprocessors": [
 				{
 					"name" :  "tch_dataset_start",
-                    "uri"  : "mlmodels/preprocess/generic.py::get_dataset_torch",
+                    "uri"  : "mlmodels.preprocess.generic:get_dataset_torch",
                     "args"  : {
                             "dataloader":"torchvision.datasets:KMNIST",
                             "to_image":true,

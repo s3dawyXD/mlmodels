@@ -972,7 +972,7 @@ if __name__ == "__main__":
     #   "data_path": f"dataset/json_/namentity_crm_bilstm_dataloader.json",
     # }
     #
-    # test_module("model_keras/namentity_crm_bilstm_dataloader.py", param_pars)
+    # test_module("model_keras/dataloader/namentity_crm_bilstm.py", param_pars)
 
     # param_pars = {
     #    "choice": "json",

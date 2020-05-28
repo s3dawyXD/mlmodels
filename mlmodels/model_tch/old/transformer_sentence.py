@@ -485,11 +485,10 @@ if __name__ == '__main__':
     #### Very Slow !!!!!!!!!!!!!!!!!!!!
     ### Local fixed params
     # test(pars_choice="json")
-    test(pars_choice="json", data_path="model_tch/transformer_sentence.json", config_mode="test")
-    # test(pars_choice="test01", data_path= "model_tch/transformer_sentence.json", config_mode="test")
+    test(pars_choice="test01", data_path= "model_tch/transformer_sentence.json", config_mode="test")
 
 
-    # test(pars_choice="test01", data_path= "model_tch/transformer_sentence_new.json", config_mode="test")
+    test(pars_choice="test01", data_path= "model_tch/transformer_sentence_new.json", config_mode="test")
 
 
 

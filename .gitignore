@@ -146,6 +146,8 @@ example/exp
 /untitled.txt
 /README_index_doc
 /mlmodels/dataset/vision/FashionMNIST/processed
-/mlmodels/dataset/vision/FashionMNIST/raw
+/mlmodels/datas
 /mlmodels/mlmodels/dataset/vision/MNIST/MNIST/processed
 /mlmodels/mlmodels/dataset/vision/MNIST/MNIST/raw
+/.vscode
+/zvscode.code-workspace

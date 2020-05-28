@@ -39,8 +39,8 @@ def os_bash(cmd):
 
 
 
-def log_separator():
-   print("\n" * 5, "*" * 120, flush=True )
+def log_separator(space=140):
+   print("\n" * 5, "*" * space, flush=True )
 
 
 def log_info_repo(arg=None):
@@ -162,6 +162,7 @@ def log_remote_push(arg=None):
    cmd = " ; ".join(s.split("\n"))
    log(cmd)
    os.system(cmd)
+
 
 
 

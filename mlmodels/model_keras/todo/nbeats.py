@@ -2,118 +2,95 @@
 """
 
 
-%tensorflow_version 2.x
-import tensorflow as tf
-print("Tensorflow version " + tf.__version__)
-
-try:
-  tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  # TPU detection
-  print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
-except ValueError:
-  raise BaseException('ERROR: Not connected to a TPU runtime; please see the previous cell in this notebook for instructions!')
-
-tf.config.experimental_connect_to_cluster(tpu)
-tf.tpu.experimental.initialize_tpu_system(tpu)
-tpu_strategy = tf.distribute.experimental.TPUStrategy(tpu)
-
-
-def create_model():
-  pretrained_model = tf.keras.applications.Xception(input_shape=[*IMAGE_SIZE, 3], include_top=False)
-  pretrained_model.trainable = True
-  model = tf.keras.Sequential([
-    pretrained_model,
-    tf.keras.layers.GlobalAveragePooling2D(),
-    tf.keras.layers.Dense(5, activation='softmax')
-  ])
-  model.compile(
-    optimizer='adam',
-    loss = 'categorical_crossentropy',
-    metrics=['accuracy']
-  )
-  return model
-
-with tpu_strategy.scope(): # creating the model in the TPUStrategy scope means we will train the model on the TPU
-  model = create_model()
-model.summary()
-
-
-with tpu_strategy.scope(): # creating the model in the TPUStrategy scope means we will train the model on the TPU
-   model = Model()
-
-
-
-
-###########
-    batch_size = compute_pars['batch_size']
-    epochs = compute_pars['epochs']
-
-    sess = None  #
-    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
-
-    # This address identifies the TPU we'll use when configuring TensorFlow.
-    TPU_WORKER = 'grpc://' + os.environ['COLAB_TPU_ADDR']
-
-
-    keras.backend.clear_session()
-
-    resolver = tf.contrib.cluster_resolver.TPUClusterResolver(TPU_WORKER)
-    tf.contrib.distribute.initialize_tpu_system(resolver)
-    strategy = tf.contrib.distribute.TPUStrategy(resolver)
-
-    with strategy.scope():
-    
-      model0.compile(
-          optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.01),
-          loss='sparse_categorical_crossentropy',
-          metrics=['sparse_categorical_accuracy'])
-
-    model.model.fit(Xtrain, ytrain,
-                                  batch_size=batch_size,
-                                  epochs=epochs,
-                                  callbacks=[early_stopping],
-                                  validation_data=(Xtest, ytest))
-
-
-
-
 """
 import os
+
 import numpy as np
+
+
 from keras.callbacks import EarlyStopping
-
-
-#### Import EXISTING model and re-map to mlmodels
-from mlmodels.model_keras.raw.char_cnn.models.char_cnn_kim import CharCNNKim
-
-
 
 ####################################################################################################
 from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri
 
 VERBOSE = False
 MODEL_URI = get_model_uri(__file__)
+# print( path_norm("dataset") )
+
+
+
+
+
+#### Import EXISTING model and re-map to mlmodels
+from mlmodels.model_keras.raw.nbeats_keras.model import NBeatsNet
+
+
+
+
+def main():
+    # https://keras.io/layers/recurrent/
+    num_samples, time_steps, input_dim, output_dim = 50_000, 10, 1, 1
+
+    # Definition of the model.
+    model = NBeatsNet(backcast_length=time_steps, forecast_length=output_dim,
+                      stack_types=(NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK), nb_blocks_per_stack=2,
+                      thetas_dim=(4, 4), share_weights_in_stack=True, hidden_layer_units=64)
+
+    # Definition of the objective function and the optimizer.
+    model.compile_model(loss='mae', learning_rate=1e-5)
+
+    # Definition of the data. The problem to solve is to find f such as | f(x) - y | -> 0.
+    x = np.random.uniform(size=(num_samples, time_steps, input_dim))
+    y = np.mean(x, axis=1, keepdims=True)
+
+    # Split data into training and testing datasets.
+    c = num_samples // 10
+    x_train, y_train, x_test, y_test = x[c:], y[c:], x[:c], y[:c]
+
+    # Train the model.
+    model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=2, batch_size=128)
+
+    # Save the model for later.
+    model.save('n_beats_model.h5')
+
+    # Predict on the testing set.
+    predictions = model.predict(x_test)
+    print(predictions.shape)
+
+    # Load the model.
+    model2 = NBeatsNet.load('n_beats_model.h5')
+
+    predictions2 = model2.predict(x_test)
+    np.testing.assert_almost_equal(predictions, predictions2)
 
 
 
 ####################################################################################################
 class Model:
-    def __init__(self, model_pars=None, data_pars=None, compute_pars=None
-                 ):
+    def __init__(self, model_pars=None, data_pars=None, compute_pars=None  ):
         ### Model Structure        ################################
         if model_pars is None :
             self.model = None
             return None
 
-        self.model = CharCNNKim(input_size=data_pars["data_info"]["input_size"],
-                                alphabet_size          = data_pars["data_info"]["alphabet_size"],
-                                embedding_size         = model_pars["embedding_size"],
-                                conv_layers            = model_pars["conv_layers"],
-                                fully_connected_layers = model_pars["fully_connected_layers"],
-                                num_of_classes         = data_pars["data_info"]["num_of_classes"],
-                                dropout_p              = model_pars["dropout_p"],
-                                optimizer              = model_pars["optimizer"],
-                                loss                   = model_pars["loss"]).model
+        m = model_pars
+        num_samples = m['num_samples']
+        time_steps  = m['time_steps']
+        input_dim   = m['input_dim']
+        output_dim  = m['output_dim']
 
+        # num_samples, time_steps, input_dim, output_dim = 50_000, 10, 1, 1
+
+        # Definition of the model.
+        model = NBeatsNet(backcast_length=time_steps, forecast_length=output_dim,
+                          stack_types=(NBeatsNet.GENERIC_BLOCK, NBeatsNet.GENERIC_BLOCK), nb_blocks_per_stack=2,
+                          thetas_dim=(4, 4), share_weights_in_stack=True, hidden_layer_units=64)
+
+        loss = compute_pars['loss']
+        lr   = compute_pars['learning_rate']
+        # Definition of the objective function and the optimizer.
+        # model.compile_model(loss='mae', learning_rate=1e-5)
+        model.compile_model(loss= loss, learning_rate= learning_rate )
 
 
 
@@ -125,11 +102,7 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     epochs = compute_pars['epochs']
 
     sess = None  #
-    dataset, internal_states = get_dataset(data_pars)
-    Xtrain, ytrain = dataset
-    data_pars["data_info"]["train"] = False
-    dataset, internal_states = get_dataset(data_pars)
-    Xtest, ytest = dataset
+    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
 
     early_stopping = EarlyStopping(monitor='val_acc', patience=3, mode='max')
     model.model.fit(Xtrain, ytrain,
@@ -141,36 +114,19 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     return model, sess
 
 
-
-
-
 def fit_metrics(model, session=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
     """
        Return metrics ofw the model when fitted.
     """
-    from sklearn.metrics import accuracy_score
-    data_pars["data_info"]["train"] = False
-    dataset, internal_states = get_dataset(data_pars)
-    Xval, yval = dataset
-
-    ypred = model.model.predict(Xval)
-    metric_score_name = compute_pars.get('metric_score') 
-    if metric_score_name is None :
-        return {}
     ddict = {}
-    if metric_score_name == "accuracy_score":
-        ypred = ypred.argmax(axis=1)
-        yval = np.argmax(yval, axis=1)
-        score = accuracy_score(yval, ypred)
-        ddict[metric_score_name] = score
+
     return ddict
 
 
 def predict(model, session=None, data_pars=None, out_pars=None, compute_pars=None, **kw):
     ##### Get Data ###############################################
-    data_pars["data_info"]["train"] = False
-    dataset, internal_states = get_dataset(data_pars)
-    Xpred, ypred = dataset
+    data_pars['train'] = False
+    Xpred, ypred = get_dataset(data_pars)
 
     #### Do prediction
     ypred = model.model.predict(Xpred)
@@ -188,7 +144,6 @@ def reset_model():
 
 def save(model=None,  save_pars=None, session=None):
     from mlmodels.util import save_keras
-    print(save_pars)
     save_keras(model, session, save_pars=save_pars)
 
 
@@ -203,54 +158,44 @@ def load(load_pars=None):
 
 
 ####################################################################################################
-def str_to_indexes(s):
-    """
-    Convert a string to character indexes based on character dictionary.
-
-    Args:
-        s (str): String to be converted to indexes
-
-    Returns:
-        str2idx (np.ndarray): Indexes of characters in s
-
-    """
-    s = s.lower()
-    max_length = min(len(s), length)
-    str2idx = np.zeros(length, dtype='int64')
-    for i in range(1, max_length + 1):
-        c = s[-i]
-        if c in dict:
-            str2idx[i - 1] = dict[c]
-    return str2idx
-
-def tokenize(data, num_of_classes=4):
-    print("data: ", data.to_numpy())
-    data = data.to_numpy()
-    data_size = len(data)
-    start_index = 0
-    end_index = data_size
-    batch_texts = data[start_index:end_index]
-    batch_indices = []
-    one_hot = np.eye(num_of_classes, dtype='int64')
-    classes = []
-    for c, s in batch_texts:
-        batch_indices.append(str_to_indexes(s))
-        c = int(c) - 1
-        classes.append(one_hot[c])
-
-    return np.asarray(batch_indices, dtype='int64'), np.asarray(classes)
-
-
 def get_dataset(data_pars=None, **kw):
     """
       JSON data_pars to get dataset
       "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
       "size": [0, 0, 6], "output_size": [0, 6] },
     """
-    from mlmodels.dataloader import DataLoader
-    loader = DataLoader(data_pars)
-    loader.compute()
-    return loader.get_data()
+    from mlmodels.util import path_norm
+    
+    if data_pars['train']:
+
+        print('Loading data...')
+        train_data = Data(data_source= path_norm( data_pars["train_data_source"]) ,
+                             alphabet       = data_pars["alphabet"],
+                             input_size     = data_pars["input_size"],
+                             num_of_classes = data_pars["num_of_classes"])
+        train_data.load_data()
+        train_inputs, train_labels = train_data.get_all_data()
+
+
+        # Load val data
+        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
+                               alphabet=data_pars["alphabet"],
+                               input_size=data_pars["input_size"],
+                               num_of_classes=data_pars["num_of_classes"])
+        val_data.load_data()
+        val_inputs, val_labels = val_data.get_all_data()
+
+        return train_inputs, val_inputs, train_labels, val_labels
+
+
+    else:
+        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
+                               alphabet=data_pars["alphabet"],
+                               input_size=data_pars["input_size"],
+                               num_of_classes=data_pars["num_of_classes"])
+        val_data.load_data()
+        Xtest, ytest = val_data.get_all_data()
+        return Xtest, ytest
 
 
 def get_params(param_pars={}, **kw):
@@ -272,7 +217,7 @@ def get_params(param_pars={}, **kw):
         log("#### Path params   ##########################################")
         root       = path_norm()
         data_path  = path_norm( "dataset/text/imdb.npz"  )   
-        out_path   = path_norm( "ztest/model_keras/charcnn/" )
+        out_path   = path_norm( "ztest/model_keras/nbeats/" )
         model_path = os.path.join(out_path , "model")
 
 
@@ -306,7 +251,7 @@ def get_params(param_pars={}, **kw):
         }
 
         out_pars = {
-            "path":  path_norm( "ztest/ml_keras/charcnn/charcnn.h5"),
+            "path":  path_norm( "ztest/ml_keras/nbeats/nbeats.h5"),
             "data_type": "pandas",
             "size": [0, 0, 6],
             "output_size": [0, 6]
@@ -352,7 +297,7 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
 
     log("#### Save/Load   ###################################################")
     save_pars = {"path": out_pars['path']}
-    save(model, session=session, save_pars=save_pars)
+    save(model, session, save_pars=save_pars)
     model2, session2 = load(save_pars)
 
     log("#### Save/Load - Predict   #########################################")
@@ -367,16 +312,16 @@ if __name__ == '__main__':
     root_path = os_package_root_path()
 
     ### Local fixed params
-    # test(pars_choice="test01")
+    test(pars_choice="test01")
 
     #### Local json file
-    test(pars_choice="json", data_path= f"dataset/json/refactor/charcnn.json")
+    test(pars_choice="json", data_path= f"model_keras/nbeats.json")
 
 
     # ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
     # from mlmodels.models import test_module
     #
-    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn.json"}
+    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/nbeats.json"}
     # test_module(model_uri=MODEL_URI, param_pars=param_pars)
     #
     # #### get of get_params
@@ -387,7 +332,7 @@ if __name__ == '__main__':
     # ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
     # from mlmodels.models import test_api
     #
-    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/charcnn.json"}
+    # param_pars = {'choice': "json", 'config_mode': 'test', 'data_path': "model_keras/nbeats.json"}
     # test_api(model_uri=MODEL_URI, param_pars=param_pars)
 
 

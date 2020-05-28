@@ -1,0 +1,46 @@
+{
+
+
+"PandasDataset": {
+    "data_pars" : {
+        "data_info": {
+            "data_path": "dataset/vision/MNIST",
+            "dataset":"MNIST",
+            "data_type":"tch_dataset",
+            "batch_size": 10,
+            "train": true
+        },
+
+        "preprocessors": [
+            {
+                "name": "loader",
+                "uri": "mlmodels/preprocess/generic.py::pandasDataset",
+                "args": {
+                    "colX": ["colX"],
+                    "coly": ["coly"],
+                    "encoding": "'ISO-8859-1'",
+                    "read_csv_parm": {"usecols": [0,1], "names": ["coly", "colX"] }
+                }
+            }
+        ]     
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

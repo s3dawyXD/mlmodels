@@ -14,6 +14,7 @@ TO DO :
 
 """
 import os
+import torch
 from pathlib import Path
 import pandas as pd, numpy as np
 
@@ -41,24 +42,27 @@ def torch_datasets_wrapper(sets, args_list = None, **args):
 
 
 
+
+from mlmodels.util import load_function_uri as load_function
+"""
 def load_function(uri_name="path_norm"):
-    """
-    ##### Pandas CSV case : Custom MLMODELS One
-    "dataset"        : "mlmodels.preprocess.generic:pandasDataset"
+    #load dynamically function from URI
 
-    ##### External File processor :
-    "dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
+    ###### Pandas CSV case : Custom MLMODELS One
+    #"dataset"        : "mlmodels.preprocess.generic:pandasDataset"
 
-      Absolute drive path
-     "MyFolder/mlmodels/preprocess/generic.py:pandasDataset"
+    ###### External File processor :
+    #"dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
+
+    #Absolute drive path
+    #"MyFolder/mlmodels/preprocess/generic.py:pandasDataset"
 
 
-  """
+
     import importlib, sys
     from pathlib import Path
     pkg = uri_name.split(":")
     package, name = pkg[0], pkg[1]
-    
     try:
         #### Import from package mlmodels sub-folder
         return  getattr(importlib.import_module(package), name)
@@ -80,7 +84,7 @@ def load_function(uri_name="path_norm"):
             raise NameError(f"Module {pkg} notfound, {e1}, {e2}")
 
 
-
+"""
 
 def tf_dataset_download(data_info, **args):
     """
@@ -142,7 +146,7 @@ def tf_dataset_download(data_info, **args):
     np.savez_compressed(os.path.join(trainPath, f"{name}") , X = Xtemp, y = ytemp )    
  
 
-    log("##############", "Saving train dataset", "###############################") 
+    log("##############", "Saving test dataset", "###############################") 
     Xtemp, ytemp = [], []
     for x in test_ds:
         #log(x)
@@ -156,7 +160,6 @@ def tf_dataset_download(data_info, **args):
     ### Multiple files
     np.savez_compressed(os.path.join(testPath, f"{name}"), X = Xtemp, y = ytemp)
     
-    
     log("Saved", out_path, os.listdir( out_path ))
 
 
@@ -164,7 +167,10 @@ def tf_dataset_download(data_info, **args):
  
 def get_dataset_torch(data_info, **args):
     """
-      From URI path, get dataloader for Pytorch Models
+      From URI path, get dataloader for Pytorch Models.
+      Use Transform if necessary
+      Return train_loader, valid_loader
+
 
       torchvison.datasets
          MNIST Fashion-MNIST KMNIST EMNIST QMNIST  FakeData COCO Captions Detection LSUN ImageFolder DatasetFolder 
@@ -228,19 +234,22 @@ def get_dataset_torch(data_info, **args):
             args.pop(k, None)
 
         dset_inst    = dset(os.path.join(data_path,'train'), train=True, download=True, transform=transform, data_info=data_info, **args)
-        train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
+        # train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
+        train_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle= shuffle)
         
         dset_inst    = dset(os.path.join(data_path,'test'), train=False, download=False, transform=transform, data_info=data_info, **args)
-        valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
-
+        # valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
 
     else :
         ###### Pre Built Dataset available  #############################################
         dset_inst    = dset(data_path, train=True, download=True, transform=transform)
-        train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        # train_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        train_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
         
         dset_inst    = dset(data_path, train=False, download=False, transform=transform)
-        valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        # valid_loader = DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
+        valid_loader = Custom_DataLoader( dset_inst, batch_size=batch_size, shuffle=shuffle)
 
 
     return train_loader, valid_loader  
@@ -330,6 +339,7 @@ def get_dataset_keras(data_info, **args):
 
 
 
+
 def get_model_embedding(data_info, **args):
     """"
      Mostly Embedding data, it can be external data used in the model.
@@ -383,8 +393,57 @@ def get_model_embedding(data_info, **args):
  
     return dloader
  
- 
- 
+
+
+class Custom_DataLoader:
+    """
+      Mini Batch Dataloader to overload PyTorch one
+
+    """
+    def __init__(self, dataset=None, batch_size=-1, shuffle=True, drop_last=False):
+        self.dataset = dataset
+        self.drop_last = drop_last
+        if batch_size == -1:
+            self.batch_size = len(self.dataset)
+        else:
+            self.batch_size = batch_size
+        assert self.batch_size > 0, "batch_size must not be negative, except -1 for full memory load."
+        self.shuffle = shuffle
+    
+    def __iter__(self):
+        if self.shuffle:
+            index_generator = iter(np.random.permutation(len(self.dataset)))
+        else:
+            index_generator = iter(range(len(self.dataset)))
+            
+        batch = []
+        while(True):
+            try:
+                batch.append(self.dataset[index_generator.__next__()])
+                if len(batch) == self.batch_size:
+                    output = list(zip(*batch))  # Outputs resolved this way for (image, label) pairs
+                    output[1] = torch.tensor(output[1])
+                    yield output 
+                    batch=[]
+                    
+            except StopIteration:
+                if not self.drop_last:
+                    output = list(zip(*batch)) # Outputs resolved this way for (image, label) pairs
+                    output[1] = torch.tensor(output[1])
+                    yield output
+                break
+            except:
+                break
+    
+    def __len__(self):
+            length = round(len(self.dataset) / self.batch_size)
+            if self.drop_last:
+                length = length - 1
+            return length
+
+
+
+
 class pandasDataset(Dataset):
     """
    Defines a dataset composed of sentiment text and labels
@@ -427,6 +486,8 @@ class pandasDataset(Dataset):
         file_path = path_norm(os.path.join(path, filename))
         if not os.path.exists(file_path):
             file_path = path_norm(os.path.join(path, dataset, 'train.csv' if train else 'test.csv'))
+            if not os.path.exists(file_path):
+                file_path = path_norm(os.path.join(path, dataset, 'train/train.csv' if train else 'test/test.csv'))
         df = pd.read_csv(file_path, **args.get("read_csv_parm",{}))
         self.df = df
 
@@ -564,17 +625,65 @@ class NumpyDataset(Dataset):
 
 
 
+def get_model_embedding(data_info, **args):
+    """"
+     Get Embedding data to be used in the model, it can be external data used in the model.
+     INDEPENDANT OF Framework BUT Follows PyTorch Logic
+
+     embedding_transform_uri
+     embedding_path
+ 
+ 
+   ##### MNIST case : TorchVison TorchText Pre-Built
+   "dataset"       : "torchvision.datasets:MNIST"
+   "transform_uri" : "mlmodels.preprocess.image:torch_transform_mnist"
+ 
+ 
+   ##### Pandas CSV case : Custom MLMODELS One
+   "dataset"        : "mlmodels.preprocess.generic:pandasDataset"
+   "transform_uri"  : "mlmodels.preprocess.text:torch_fillna"
+ 
+ 
+   ##### External File processor :
+   "dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
+   "transform_uri"  : "MyFolder/preprocess/myfile.py:torch_fillna"
+ 
+ 
+   """
+   
+    model_pars = args.get("model_pars",{})
+    d          = model_pars
+
+    # args       = args("args", {})
+    train      = args.get('train', True)
+    download   = args.get("download", True)
 
 
+    log("############## Get Embedding Loader URI  #############################")
+    transform = None
+    if  len(args.get("embedding_transform_uri", ""))  > 1 :
+        transform = load_function( d.get("embedding_transform_uri", "mlmodels.preprocess.text:torch_transform_glove" ))()
+ 
+ 
+    log("#### Get Embedding t embeddingLoader #################################")
+    dset = load_function(d.get("embedding_dataset", "torchtext.embedding:glove") )
+ 
+    dloader = None
+    if len(d.get('embedding_path', "")) > 1 :
+        ###### Custom Build Dataset   ####################################################
+        dloader    = dset(d['embedding_path'], train=train, download=download, transform= transform, model_pars=model_pars, 
+                          args = args,  data_info = data_info)
+        
+    else :
+        ###### Pre Built Dataset available  #############################################
+        dloader    = dset(d['embedding_path'], train=train, download=download, transform= transform)
+ 
+ 
+    return dloader
+ 
+ 
 
 
-
-
-
-
-#####
-#####
-####
 
 
 
@@ -726,13 +835,29 @@ def create_kerasDataloader():
 ########################################################################################
 def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ### Local test
+    import json
+    log("#### Test unit Dataloader/Dataset   ####################################")
+    
+    js = json.load(open(data_path, mode='r'))
 
-    log("#### Loading params   ##############################################")
+    for key,ddict in js.items() :
+      try :
+        data_info = ddict['data_pars']['data_info']
+        prepro    = ddict['data_pars']['preprocessors'][0]
+        uri       = prepro['uri']
+        args      = prepro['args']
+
+        log(key, uri, args)
+        ffun = load_function(uri)
+        ffun = ffun(**args, data_info = data_info)
+      except Exception as e:
+        log(key, e)
+      
 
 
 
 if __name__ == "__main__":
-    test(data_path="model_tch/file.json", pars_choice="json", config_mode="test")
+    test(data_path="dataset/json/dataloader/test_generic.json", pars_choice="json", config_mode="test")
 
 
 
