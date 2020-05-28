@@ -178,6 +178,7 @@ def test_functions(arg=None):
   
   for p in dd  :
      try :
+         log("\n\n\n",   "#" *50)
          log(p)
          myfun = load_function_uri( p['uri'])
          log("\n\n", "*"*5, myfun)

@@ -1,8 +1,8 @@
 { "test": [
 
-  { "uri" : "mlmodels.util.log", "args" : { "x" : "passed"} }
+  { "uri" : "mlmodels.util:log", "args" : { "x" : "passed"} }
   
- ,{ "uri" : "mlmodels.util.load_function_uri", "args" : { "uri": "mlmodels.util.log" } }
+ ,{ "uri" : "mlmodels.util:load_function_uri", "args" : { "uri": "mlmodels.util.log" } }
 
 
 
