@@ -155,9 +155,7 @@ def log_remote_push(arg=None):
            pip3 freeze > deps.txt
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
-
            git add --all &&  git commit -m "{tag}"     
-           
            git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """
