@@ -93,8 +93,6 @@ jobs:
       run: |
            python -c "import mlmodels,os ; print(mlmodels); print(os)"
            python -c "import tensorflow, torch ; print(tensorflow); print(torch)"
-
-      # ml_test --do test_import    2>&1 | tee -a  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_import_$(date '+%Y-%m-%d-%H-%M')_$GITHUB_SHA.py
            ml_test --do test_import    2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_import.py
 
 
@@ -107,11 +105,16 @@ jobs:
       run: ml_models   2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_models.py
 
 
+
+    - name: ml_test_function
+      run: ml_test --do test_functions    2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_functions.py
+
+
+
     #- name: ml_test
     #  run: ml_test
       
         
-
     - name: log_gitcommit
       run: |
            ml_test --do log_remote_push
