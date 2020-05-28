@@ -1,7 +1,7 @@
 import pandas as pd
 import os, copy
 import matplotlib.pyplot as plt
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from fbprophet import Prophet
 from mlmodels.util import log, path_norm, save_pkl, load_pkl
 

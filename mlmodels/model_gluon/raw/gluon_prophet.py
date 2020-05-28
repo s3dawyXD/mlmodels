@@ -39,7 +39,7 @@ Things to do for benchamrking
 
 
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 from pathlib import Path
 

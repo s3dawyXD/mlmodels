@@ -25,7 +25,7 @@ from __future__ import division
 from __future__ import print_function
 
 import gc
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import shutil
 

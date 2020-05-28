@@ -6,7 +6,7 @@ import copy
 import math
 import os
 from collections import Counter, OrderedDict
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 import numpy as np
 ####################################################################################################

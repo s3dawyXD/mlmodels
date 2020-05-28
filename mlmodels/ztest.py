@@ -11,7 +11,7 @@ import copy
 import math
 import os
 from collections import Counter, OrderedDict
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from pathlib import Path
 import numpy as np
 from time import sleep
@@ -102,6 +102,7 @@ def log_info_repo(arg=None):
 
 
 
+
 def to_logfile(prefix="", dateformat='+%Y-%m-%d_%H:%M:%S,%3N' ) : 
     ### On Linux System
     if dateformat == "" :
@@ -155,8 +156,8 @@ def log_remote_push(arg=None):
            pip3 freeze > deps.txt
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
-           git add --all &&  git commit -m "{tag}"   
-           git pull all  
+           git add --all &&  git commit -m "{tag}" 
+           git pull --all     
            git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """

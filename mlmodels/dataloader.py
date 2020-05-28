@@ -55,7 +55,7 @@ import os
 import sys
 import inspect
 from urllib.parse import urlparse
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from importlib import import_module
 import pandas as pd
 import numpy as np

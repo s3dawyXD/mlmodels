@@ -1,5 +1,5 @@
 # import library
-import json, copy
+from jsoncomment import JsonComment ; json = JsonComment(), copy
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
 print(mlmodels)

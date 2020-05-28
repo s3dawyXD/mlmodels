@@ -4,6 +4,11 @@ mlflow==1.7.1
 
 
 
+### JSON with Cmment embedded
+jsoncomment==0.4.2
+
+
+
 ### TF
 tensorflow-datasets==3.0
 

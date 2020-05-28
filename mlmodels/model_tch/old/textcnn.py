@@ -7,7 +7,7 @@ https://github.com/leohsuofnthu/Pytorch-TextCNN/blob/master/textCNN_IMDB.ipynb
 """
 
 import os
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import shutil
 from pathlib import Path
 from time import sleep
@@ -372,7 +372,7 @@ def load(load_pars= None ):
 
 
 def get_params(param_pars=None, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']

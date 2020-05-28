@@ -738,7 +738,7 @@ class cSignalDecomposition:
 
     def to_json(self):
         dict1 = self.mBestModel.to_json();
-        import json
+        from jsoncomment import JsonComment ; json = JsonComment()
         return json.dumps(dict1, indent=4, sort_keys=True);
         
     def standardPlots(self, name = None, format = 'png'):

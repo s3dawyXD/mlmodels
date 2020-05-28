@@ -4,7 +4,7 @@
 # In[1]:
 
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 
 import matplotlib.pyplot as plt

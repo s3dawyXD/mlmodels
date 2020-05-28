@@ -20,13 +20,13 @@ ml_benchmark
 import argparse
 import glob
 import inspect
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import re
 import sys
 import numpy as np
 import pandas as pd
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import importlib
 from importlib import import_module
 from pathlib import Path

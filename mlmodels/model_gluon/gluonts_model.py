@@ -16,7 +16,7 @@ import pandas as pd, numpy as np
 import importlib
 import matplotlib.pyplot as plt
 from pathlib import Path
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 from gluonts.model.deepar import DeepAREstimator

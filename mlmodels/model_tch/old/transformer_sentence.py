@@ -58,7 +58,7 @@ distilbert-base-nli-stsb-mean-tokens: Performance: STSbenchmark: 84.38
 """
 import glob
 import inspect
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import logging
 import math
 import os

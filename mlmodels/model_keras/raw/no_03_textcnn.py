@@ -14,7 +14,7 @@ import numpy as np
 import os, inspect
 import gensim
 import keras
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import re
 
 """

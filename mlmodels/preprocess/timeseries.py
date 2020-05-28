@@ -759,7 +759,7 @@ def preprocess_timeseries_m5b() :
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     import os
     from tqdm.autonotebook import tqdm
     from pathlib import Path

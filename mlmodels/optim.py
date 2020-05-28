@@ -21,7 +21,7 @@ python optim.py --model_uri model_tf.1_lstm.py  --do search
 
 """
 import argparse
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 import copy
 # import pandas as pd

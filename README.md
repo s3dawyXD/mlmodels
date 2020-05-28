@@ -750,7 +750,7 @@ roc_auc_score(y, ypred)
 import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 #### Load model and data definitions from json
 # Model defination
@@ -791,7 +791,7 @@ metrics_val
 import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON
@@ -834,7 +834,7 @@ print(ypred)
 import mlmodels
 from mlmodels.models import module_load
 from mlmodels.util import path_norm_dict, path_norm, params_json_load
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 
 #### Model URI and Config JSON

@@ -26,7 +26,7 @@ import pandas as pd
 import torch
 import matchzoo as mz
 from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri, path_norm_dict
-from mlmodels.util import json_norm
+from mlmodels.util from jsoncomment import JsonComment ; json = JsonComment()_norm
 
 
 

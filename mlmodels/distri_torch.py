@@ -11,7 +11,7 @@ python   distri_model_tch.py   --model model_tch.mlp    mymodel_config.json
 from __future__ import print_function
 
 import argparse
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 
 import torch.nn as nn

@@ -18,7 +18,7 @@ from __future__ import absolute_import, division, print_function
 
 import collections
 import copy
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import math
 import re
 
