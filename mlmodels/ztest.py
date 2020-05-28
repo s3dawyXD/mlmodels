@@ -156,7 +156,7 @@ def log_remote_push(arg=None):
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
            git add --all &&  git commit -m "{tag}" 
-           git pull all     
+           git pull --all     
            git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """
