@@ -485,7 +485,7 @@ def get_params(param_pars=None, **kw):
 
     if choice == "json":
         data_path = path_norm(data_path)
-        cf = json.load(open(data_path, 'rb'))
+        cf = json.load(open(data_path, 'r'))
         cf = cf[config_mode]
         return cf['model_pars'], cf['data_pars'], cf['compute_pars'], cf['out_pars']
 
