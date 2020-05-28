@@ -150,7 +150,8 @@ def log_remote_start(arg=None):
 
 def log_remote_push(arg=None):
    ### Pushing to mlmodels_store   with --force
-   tag ="ml_store"
+   # tag ="ml_store" & arg.name
+   tag = arg.name
    s = f""" cd /home/runner/work/mlmodels/mlmodels_store/
            pip3 freeze > deps.txt
            ls
@@ -167,7 +168,33 @@ def log_remote_push(arg=None):
 
 
 
+
 ####################################################################################################
+def test_functions(arg=None):
+  from mlmodels.util import load_function_uri
+
+  path = path_norm("dataset/test_json/test_functions.json")
+  dd   = json.load(open( path ))['test']
+  
+  for p in dd  :
+     try :
+         log(p)
+         myfun = load_function_uri( p['uri'])
+         log("\n\n", "*"*5, myfun)
+         if len(dd['args']) > 0 :
+            log( myfun( **dd['args'] ))
+         
+         else :
+            log( myfun())
+            
+     except Exception as e:
+        log(e, p )    
+
+
+
+
+
+
 def test_model_structure():
     log("os.getcwd", os.getcwd())
     log(mlmodels)
@@ -555,6 +582,9 @@ def cli_load_arguments(config_file=None):
     add("--config_mode" , default="test"      , help="test/ prod /uat")
     add("--log_file"    , help="log.log")
     add("--folder"      , default=None        , help="test")
+
+    add("--name"      , default="ml_store"        , help="test")
+
 
     ##### model pars
 

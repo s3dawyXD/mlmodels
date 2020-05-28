@@ -139,7 +139,7 @@ def get_dataset(data_pars):
         return get_dataset_single(data_pars)
 
 
-    ###### Dataframe                                ########################################
+    ###### Multi Dataframe                                ########################################
     df_timeseries, df_static, df_dynamic, n_timeseries    = get_features(data_pars)
     
     ###### Set parameters of dataset
