@@ -107,11 +107,16 @@ jobs:
       run: ml_models   2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_models.py
 
 
+
+    - name: ml_test_function
+      run: ml_test --do test_functions    2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_functions.py
+
+
+
     #- name: ml_test
     #  run: ml_test
       
         
-
     - name: log_gitcommit
       run: |
            ml_test --do log_remote_push
