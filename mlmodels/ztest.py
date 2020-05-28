@@ -149,12 +149,14 @@ def log_remote_start(arg=None):
 
 def log_remote_push(arg=None):
    ### Pushing to mlmodels_store   with --force
-   tag ="ml_store"
+   # tag ="ml_store" & arg.name
+   tag = arg.name
    s = f""" cd /home/runner/work/mlmodels/mlmodels_store/
            pip3 freeze > deps.txt
            ls
            git config --local user.email "noelkev0@gmail.com" && git config --local user.name "arita37"        
            git add --all &&  git commit -m "{tag}"   
+           git pull all  
            git push --all -f
            cd /home/runner/work/mlmodels/mlmodels/
        """
@@ -579,6 +581,9 @@ def cli_load_arguments(config_file=None):
     add("--config_mode" , default="test"      , help="test/ prod /uat")
     add("--log_file"    , help="log.log")
     add("--folder"      , default=None        , help="test")
+
+    add("--name"      , default="ml_store"        , help="test")
+
 
     ##### model pars
 
