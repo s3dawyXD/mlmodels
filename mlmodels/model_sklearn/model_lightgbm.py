@@ -1,4 +1,4 @@
-  
+####lightgbm py
 # pylint: disable=C0321,C0103,C0301,E1305,E1121,C0302,C0330,C0111,W0613,W0611,R1705
 # -*- coding: utf-8 -*-
 
@@ -68,8 +68,8 @@ import pandas as pd
 from lightgbm import LGBMModel
 
 VERBOSE = False
-MODEL_URI = Path(os.path.abspath(__file__)).parent.name + "." + os.path.basename(__file__).replace(".py", "")
-
+#MODEL_URI = Path(os.path.abspath(__file__)).parent.name + "." + os.path.basename(__file__).replace(".py", "")
+MODEL_URI="model_sklearn.model_lightgbm.py"
 
 ####################################################################################################
 ######## Logs, root path
@@ -133,7 +133,7 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     #### Do prediction
     ypred = model.model.predict(Xval)
     ddict = {}
-    metric_score_name = compute_pars.get('metric_score') 
+    metric_score_name = compute_pars.get('metric_eval') 
     if metric_score_name is None :
         return {}
     
@@ -236,7 +236,7 @@ def get_dataset(data_pars=None, **kw):
 
 
 def get_params(param_pars={}, **kw):
-    from jsoncomment import JsonComment ; json = JsonComment()
+    import json
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']
@@ -302,31 +302,4 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     print(model2.model)
 
 
-if __name__ == '__main__':
-    VERBOSE = True
-    test_path = os.getcwd() + "/mytest/"
-
-    ### Local fixed params
-    test(pars_choice="test01")
-
-
-    ### Local json file
-    # test(pars_choice="json")
-
-    ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
-    from mlmodels.models import test_module
-
-    param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
-    test_module(model_uri=MODEL_URI, param_pars=param_pars)
-
-    ##### get of get_params
-    # choice      = pp['choice']
-    # config_mode = pp['config_mode']
-    # data_path   = pp['data_path']
-
-    ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
-    from mlmodels.models import test_api
-
-    param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
-    test_api(model_uri=MODEL_URI, param_pars=param_pars)
 
