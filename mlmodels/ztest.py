@@ -187,17 +187,13 @@ def test_functions(arg=None):
          w  = p.get('args', []) 
          kw = p.get('kw_args', {} )
          
-         if len(kw) == 0 and len(w) == 0  :
-           log( myfun())
+         if len(kw) == 0 and len(w) == 0   : log( myfun())
 
-         elif  len(kw) > 0 and len(w) > 0 :
-            log( myfun( *w,  ** kw ))
+         elif  len(kw) > 0 and len(w) > 0  : log( myfun( *w,  ** kw ))
 
-         elif  len(kw) > 0 and len(w) == 0 :
-            log( myfun( ** kw ))
+         elif  len(kw) > 0 and len(w) == 0 : log( myfun( ** kw ))
 
-         elif  len(kw) == 0 and len(w) > 0 :
-            log( myfun( *w ))
+         elif  len(kw) == 0 and len(w) > 0 : log( myfun( *w ))
                      
             
      except Exception as e:
