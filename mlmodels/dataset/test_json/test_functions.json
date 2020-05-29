@@ -11,6 +11,11 @@
 
 
 
+ ,{ "uri" : "mlmodels.util:os_package_root_path", "args" : [] }
+
+
+
+
 
 ]
 }
