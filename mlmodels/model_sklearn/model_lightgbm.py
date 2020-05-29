@@ -225,7 +225,7 @@ def get_dataset(data_pars=None, **kw):
     """
     d = data_pars
 
-    if d['mode'] == 'test':
+    if d['mode'] == 'test_data':
         from sklearn.datasets import  make_classification
         from sklearn.model_selection import train_test_split
 
