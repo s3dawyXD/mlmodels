@@ -1,7 +1,4 @@
-
-
 { "test": [
-
 
   { "uri" : "mlmodels.util.log", "args" : [ "x1" , "passed"] }
 
@@ -10,6 +7,7 @@
 
    
  ,{ "uri" : "mlmodels.util:load_function_uri", "kw_args" : {  "uri_name":  "mlmodels.util:log" } }
+
 
 
 

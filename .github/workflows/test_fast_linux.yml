@@ -106,6 +106,7 @@ jobs:
 
 
 
+
     - name: ml_test_function
       run: ml_test --do test_functions    2>&1 | tee  cd /home/runner/work/mlmodels/mlmodels_store/log_import/log_functions.py
 
@@ -117,7 +118,7 @@ jobs:
         
     - name: log_gitcommit
       run: |
-           ml_test --do log_remote_push
+           ml_test --do log_remote_push --name test_fast_linux
 
 
 
