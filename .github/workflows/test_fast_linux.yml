@@ -118,7 +118,7 @@ jobs:
         
     - name: log_gitcommit
       run: |
-           ml_test --do log_remote_push --name test_fast_linux.yml
+           ml_test --do log_remote_push --name test_fast_linux
 
 
 

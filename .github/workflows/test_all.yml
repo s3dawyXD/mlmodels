@@ -99,7 +99,7 @@ jobs:
       
       
     - name: log_gitcommit
-      run: ml_test --do log_remote_push
+      run: ml_test --do log_remote_push  --name test_all.yml
 
 # https://ianwhitestone.work/AWS-Serverless-Deployments-With-Github-Actions/
 #
