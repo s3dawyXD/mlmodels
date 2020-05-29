@@ -1,10 +1,29 @@
 {
-
-
-"PandasDataset": {
+"tf_dataset_download": {
     "data_pars" : {
         "data_info": {
-            "data_path": "dataset/vision/MNIST",
+            "data_path": "dataset/vision/",
+            "dataset":"MNIST",
+            "data_type":"tf_dataset",
+            "batch_size": 10,
+            "train": true
+        },
+
+        "preprocessors": [
+            {
+                "name": "loader",
+                "uri": "mlmodels/preprocess/generic:tf_dataset_download",
+                "args": {
+                    "train_samples":500,
+                    "test_samples":  500
+                }
+            }
+        ]     
+    }},
+"get_dataset_torch": {
+    "data_pars" : {
+        "data_info": {
+            "data_path": "dataset/vision/",
             "dataset":"MNIST",
             "data_type":"tch_dataset",
             "batch_size": 10,
@@ -14,33 +33,65 @@
         "preprocessors": [
             {
                 "name": "loader",
-                "uri": "mlmodels/preprocess/generic.py::pandasDataset",
+                "uri": "mlmodels/preprocess/generic:get_dataset_torch",
+                "args"  : {
+                            "dataloader":"torchvision.datasets:MNIST",
+                            "to_image":true,
+                            "transform":    {  "uri": "mlmodels.preprocess.image:torch_transform_mnist", 
+                                                "pass_data_pars": false, 
+                                                "arg": {  } },
+                            "shuffle": true,
+                            "download" : true
+                            }
+            }
+        ]     
+    }},
+"PandasDataset": {
+    "data_pars" : {
+        "data_info": {
+            "data_path": "dataset/recommender/",
+            "dataset":"IMDB_sample.txt",
+            "data_type":"csv_dataset",
+            "batch_size": 10,
+            "train": true
+        },
+
+        "preprocessors": [
+            {
+                "name": "loader",
+                "uri": "mlmodels/preprocess/generic:pandasDataset",
                 "args": {
                     "colX": ["colX"],
                     "coly": ["coly"],
-                    "encoding": "'ISO-8859-1'",
-                    "read_csv_parm": {"usecols": [0,1], "names": ["coly", "colX"] }
+                    "encoding": "ISO-8859-1",
+                    "read_csv_parm": {"usecols": [0,1], "names": ["coly", "colX"],"encoding": "ISO-8859-1" }
                 }
             }
         ]     
-    }
-}
+    }},
+"NumpyDataset": {
+    "data_pars" : {
+        "data_info": {
+            "data_path": "dataset/vision/",
+            "dataset":"MNIST",
+            "data_type":"tf_dataset",
+            "batch_size": 10,
+            "train": true
+        },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        "preprocessors": [
+            {
+                "name": "loader",
+                "uri": "mlmodels/preprocess/generic:NumpyDataset",
+                "args": {
+                    "to_image":true,
+                    "transform":    {  "uri": "mlmodels.preprocess.image:torch_transform_generic", 
+                                                "pass_data_pars": false, 
+                                                "arg": { "fixed_size" : 256 } },
+                    "numpy_loader_args": {}
+                }
+            }
+        ]     
+    }}
 
 }

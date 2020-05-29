@@ -117,9 +117,9 @@ def analyze_datainfo_paths(data_info):
     if not dataset or not data_path:
         raise Exception("please add these 'data_path','dataset' in data_info")
     
-    try:
+    if dataset.find('.') > -1:
         dataset_name = dataset.split('.')[0]
-    except:
+    else:
         raise Exception("please add dataset Extension like that : dataset.txt")
     
     path_train = os.path.join(data_path, 'train')
