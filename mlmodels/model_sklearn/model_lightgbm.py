@@ -63,17 +63,23 @@ if __name__ == '__main__':
 """
 import os
 from pathlib import Path
+from jsoncomment import JsonComment ; json = JsonComment()
+
 
 import pandas as pd
 from lightgbm import LGBMModel
 
-VERBOSE = False
-#MODEL_URI = Path(os.path.abspath(__file__)).parent.name + "." + os.path.basename(__file__).replace(".py", "")
-MODEL_URI="model_sklearn.model_lightgbm.py"
+
 
 ####################################################################################################
-######## Logs, root path
-from mlmodels.util import log, path_norm
+from mlmodels.util import  os_package_root_path, log, path_norm, get_model_uri
+
+
+
+####################################################################################################
+VERBOSE = False
+MODEL_URI = get_model_uri(__file__)
+
 
 
 
@@ -84,13 +90,14 @@ class Model(object):
         """
          lightgbm.LGBMModel(boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000, objective=None, class_weight=None, min_split_gain=0.0, min_child_weight=0.001, min_child_samples=20, subsample=1.0, subsample_freq=0, colsample_bytree=1.0, reg_alpha=0.0, reg_lambda=0.0, random_state=None, n_jobs=-1, silent=True, importance_type='split', **kwargs)
         """
-        self.model_pars, self.compute_pars = model_pars, compute_pars
+        self.model_pars, self.data_pars, self.compute_pars = model_pars, data_pars, compute_pars
 
         if model_pars is None :
             self.model = None
-        else :
-          
+
+        else :          
           self.model =  LGBMModel(**model_pars)
+
 
 
 
@@ -114,7 +121,7 @@ early_stopping_rounds (int or None, optional (default=None)) – Activates early
 verbose (bool or int, optional (default=True)) –
 Requires at least one evaluation data. If True, the eval metric on the eval set is printed at each boosting stage. If int, the eval metric on the eval set is printed at every verbose boosting stage. The last boosting stage or the boosting stage found by using early_stopping_rounds is also printed.
     """
-
+    data_pars['mode']  = 'train' 
     sess = None  # Session type for compute
     Xtrain, ytrain, Xtest,  ytest = get_dataset(data_pars)
 
@@ -128,14 +135,17 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     """
        Return metrics of the model when fitted.
     """
+    data_pars['mode']  = 'eval' 
     data_pars['train'] = True
     _, _, Xval, yval = get_dataset(data_pars)
     #### Do prediction
     ypred = model.model.predict(Xval)
+
+
     ddict = {}
     metric_score_name = compute_pars.get('metric_eval') 
     if metric_score_name is None :
-        return {}
+        raise Exception("  compute_pars.get('metric_eval')    requires a sklearn metrics name")
     
     
     from sklearn.metrics import roc_auc_score,mean_squared_error,accuracy_score
@@ -155,7 +165,7 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     else :
         from mlmodels.metrics import metrics_eval
         ddict = metrics_eval( metric_list=[ metric_score_name ], ytrue= yval, ypred= ypred, 
-                         ypred_proba=None, return_dict=1   )
+                              ypred_proba=None, return_dict=1   )
         return ddict
 
     return ddict
@@ -165,7 +175,8 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
 def predict(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
     ##### Get Data ###############################################
     data_pars['train'] = False
-    _, _, Xpred, ypred = get_dataset(data_pars)
+    data_pars['mode']  = 'predict' 
+    _, _, Xpred, None = get_dataset(data_pars)
     print(Xpred)
 
     #### Do prediction
@@ -206,31 +217,73 @@ def get_dataset(data_pars=None, **kw):
       JSON data_pars to get dataset
       "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
       "size": [0, 0, 6], "output_size": [0, 6] },
-    """
 
-    if data_pars['mode'] == 'test':
+      mode= train, eval, predict
+           test
+
+
+    """
+    d = data_pars
+
+    if d['mode'] == 'test':
         from sklearn.datasets import  make_classification
         from sklearn.model_selection import train_test_split
 
         X, y = make_classification(n_features=10, n_redundant=0, n_informative=2,
                                    random_state=1, n_clusters_per_class=1)
 
-        # print(X,y)
         Xtrain, Xtest, ytrain, ytest = train_test_split(X, y)
         return Xtrain,  ytrain, Xtest, ytest
 
 
-    if data_pars['mode'] == 'train':
+    if d['mode'] == 'train'  :
         from sklearn.model_selection import train_test_split
-        df = pd.read_csv(data_pars['path'])
-        dfX = df[data_pars['colX']]
-        dfy = df[data_pars['coly']]
-        Xtrain, Xtest, ytrain, ytest =  train_test_split(dfX.values, dfy.values)
+
+        path  =  path_norm( d.get('train_path', d.get('path', None)) )
+        path2 =  path_norm( d.get('test_path', None) )
+        
+        if path2 is None :
+           df  = pd.read_csv(path)
+           X = df[d['colX']].values
+           y = df[d['coly']].values
+
+           Xtrain, Xtest, ytrain, ytest =  train_test_split(X, y)
+           return Xtrain,  ytrain, Xtest, ytest
+
+
+        df     = pd.read_csv(path)
+        Xtrain = df[d['colX']].values
+        ytrain = df[d['coly']].values
+
+        df     = pd.read_csv(path2 )
+        Xtest  = df[d['colX']].values
+        ytest  = df[d['coly']].values
+
         return Xtrain,  ytrain, Xtest, ytest
 
+
+    if d['mode'] == 'eval'  :
+        path  = path_norm( d.get('test_path', d.get('path', None)) )
+        df    = pd.read_csv(path)
+        Xtest = df[d['colX']].values
+        ytest = df[d['coly']].values
+
+        return None,  None, Xtest, ytest
+
+
+    if d['mode'] == 'predict'  :
+        path  = path_norm( d.get('test_path', d.get('path', None)) )
+        df    = pd.read_csv(path)
+        Xtest = df[d['colX']].values
+        ytest = df[d['coly']].values
+
+        return None,  None, Xtest, None
+
+
     else:
-        Xtest, ytest = None, None
-        return None, None, Xtest, ytest
+        df  = pd.read_csv(data_pars['path'])
+        Xtest = df[data_pars['colX']]
+        return None, None, Xtest, None
 
 
 
@@ -268,38 +321,83 @@ def get_params(param_pars={}, **kw):
 ################################################################################################
 ########## Tests are normalized Do not Change ##################################################
 def test(data_path="dataset/", pars_choice="json", config_mode="test"):
-    ### Local test
+    log("### Local test ")
 
     log("#### Loading params   ##############################################")
     param_pars = {"choice": pars_choice, "data_path": data_path, "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
 
+
     log("#### Loading dataset   #############################################")
     xtuple = get_dataset(data_pars)
 
-    log("#### Model init, fit   #############################################")
+
+    log("#### Model init   ##################################################")
     session = None
     model = Model(model_pars, data_pars, compute_pars)
+
+
+    log("#### Model  fit   ##################################################")
     model, session = fit(model, data_pars, compute_pars, out_pars)
 
-    log("#### save the trained model  #######################################")
 
     log("#### Predict   #####################################################")
     ypred = predict(model, session, data_pars, compute_pars, out_pars)
 
-    log("#### metrics   #####################################################")
+
+    log("#### Metrics   #####################################################")
     metrics_val = fit_metrics(model, data_pars, compute_pars, out_pars)
     print(metrics_val)
 
+
     log("#### Plot   ########################################################")
 
-    log("#### Save/Load   ###################################################")
+
+
+    log("#### Save   ########################################################")
     save_pars = {"path" : out_pars['model_path'] }
     save(model, session, save_pars)
-    model2, session = load( save_pars)
-    #     ypred = predict(model2, data_pars, compute_pars, out_pars)
-    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
-    print(model2.model)
 
+
+    log("#### Load   ########################################################")
+    load_pars = {"path" : out_pars['model_path'] }
+    model2, session = load( load_pars)
+
+
+    log("#### Save/Load   ###################################################")    
+    ypred = predict(model2, data_pars, compute_pars, out_pars)
+    
+    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
+    log(model2.model)
+
+
+
+if __name__ == '__main__':
+    VERBOSE = True
+    test_path = os.getcwd() + "/mytest/"
+
+    ### Local fixed params
+    test(pars_choice="test01")
+
+
+    ### Local json file
+    # test(pars_choice="json")
+
+    ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
+    from mlmodels.models import test_module
+
+    param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
+    test_module(model_uri=MODEL_URI, param_pars=param_pars)
+
+    ##### get of get_params
+    # choice      = pp['choice']
+    # config_mode = pp['config_mode']
+    # data_path   = pp['data_path']
+
+    ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
+    from mlmodels.models import test_api
+
+    param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
+    test_api(model_uri=MODEL_URI, param_pars=param_pars)
 
 
