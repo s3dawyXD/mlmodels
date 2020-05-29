@@ -663,6 +663,8 @@ def load_function_uri(uri_name="path_norm"):
     import importlib, sys
     from pathlib import Path
     pkg = uri_name.split(":")
+
+    assert len(pkg) > 1, "  Missing :   in  uri_name module_name:function_or_class "
     package, name = pkg[0], pkg[1]
     
     try:
