@@ -61,6 +61,14 @@ Iterables that can be sampled batchwise, functions can be implemented to
 instantiate dataloaders of those respective frameworks, thereby keeping us 
 from reinventing the wheel.
 
+
+
+C) Embedding loader
+Exaple : Glove
+Load from XXX embedding to Tensor XXX or model XXX
+NO batch, direct full memory
+
+
 -->
 Manage API breaks more easily....
 Re-use existing code....
