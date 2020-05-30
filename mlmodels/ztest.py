@@ -173,8 +173,6 @@ def log_remote_push(arg=None):
 def test_functions(arg=None):
   from mlmodels.util import load_function_uri
 
-  print("ok")
-
   path = path_norm("dataset/test_json/test_functions.json")
   dd   = json.load(open( path ))['test']
   
