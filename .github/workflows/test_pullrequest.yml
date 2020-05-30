@@ -2,14 +2,14 @@ name:  test_pullrequest
 
 on:
   pull_request:
-    branches: dev
+    branches: dev2
 
  
 
   schedule:
     # * is a special character in YAML so you have to quote this string
     ### Every 12 hours
-    - cron:  '0 */1 * * *' 
+    - cron:  '0 */6 * * *' 
 
 
 jobs:

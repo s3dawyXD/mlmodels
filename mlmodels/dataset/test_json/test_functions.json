@@ -1,17 +1,15 @@
 { "test": [
 
-  { "uri" : "mlmodels.util.log", "args" : [ "x1" , "passed"] }
+  { "uri" : "mlmodels.util.log", "args" : [ "x1" , "passed"] ,     "kw_args" : { }  }
 
 
- ,{ "uri" : "mlmodels.util:log", "args" : [ "x1" , "passed"] }
+ ,{ "uri" : "mlmodels.util:log", "args" : [ "x1" , "passed"] ,      "kw_args" : { }   }
 
    
- ,{ "uri" : "mlmodels.util:load_function_uri", "kw_args" : {  "uri_name":  "mlmodels.util:log" } }
+ ,{ "uri" : "mlmodels.util:load_function_uri",  "args" : [ ],  "kw_args" : {  "uri_name":  "mlmodels.util:log" } }
 
 
-
-
- ,{ "uri" : "mlmodels.util:os_package_root_path", "args" : [] }
+ ,{ "uri" : "mlmodels.util:os_package_root_path", "args" : [],   "kw_args" : { }  }
 
 
 

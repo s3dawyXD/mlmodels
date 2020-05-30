@@ -289,7 +289,6 @@ def get_dataset(data_pars=None, **kw):
 
 
 def get_params(param_pars={}, **kw):
-    import json
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']
@@ -300,7 +299,7 @@ def get_params(param_pars={}, **kw):
         cf = cf[config_mode]
         return cf['model_pars'], cf['data_pars'], cf['compute_pars'], cf['out_pars']
 
-
+    """
     if choice == "test01":
         log("#### Path params   ##########################################")
         data_path  = path_norm( "dataset/tabular/titanic_train_preprocessed.csv"  )   
@@ -313,7 +312,7 @@ def get_params(param_pars={}, **kw):
         out_pars = {'path' : out_path, "model_path": model_path}
 
         return model_pars, data_pars, compute_pars, out_pars
-
+    """
     else:
         raise Exception(f"Not support choice {choice} yet")
 
