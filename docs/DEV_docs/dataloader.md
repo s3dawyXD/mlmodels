@@ -48,6 +48,12 @@ Iterator (ie "Dataloader") :
 
 It's better to have one Dataloader per framework XXXXX'
 but those dataloader can re-use functions between them...
+
+Since most Deep Learning frameworks contain a 'Dataloading' class to create
+Iterables that can be sampled batchwise, functions can be implemented to 
+instantiate dataloaders of those respective frameworks, thereby keeping us 
+from reinventing the wheel.
+
 -->
 Manage API breaks more easily....
 Re-use existing code....
