@@ -841,9 +841,12 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     js = json.load(open(data_path, mode='r'))
 
     for key,ddict in js.items() :
+      log("\n\n\n", "#"*20, key)
       try :
         data_info = ddict['data_pars']['data_info']
-        prepro    = ddict['data_pars']['preprocessors'][0]
+
+        ###Only ONE TASK  !!!!
+        prepro    = ddict['data_pars']['preprocessors'][0]   
         uri       = prepro['uri']
         args      = prepro['args']
 
@@ -857,7 +860,7 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
 
 
 if __name__ == "__main__":
-    test(data_path="dataset/json/dataloader/test_generic.json", pars_choice="json", config_mode="test")
+    test(data_path="dataset/test_json/test_preprocess-generic.json", pars_choice="", config_mode="")
 
 
 
