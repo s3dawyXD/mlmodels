@@ -277,7 +277,7 @@ then for each staging, declare some specific parameters for model, dataset and a
 #######################################################################################
 
 ## ③ Command Line Input  tools: package provide below tools
-https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md
+https://github.com/arita37/mlmodels/blob/dev/docs/README_docs/README_usage_CLI.md
 
 
 #######################################################################################
