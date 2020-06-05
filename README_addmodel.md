@@ -62,17 +62,18 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated
   - [Issue#102](https://github.com/arita37/mlmodels/issues/102)
   - [Issue#100](https://github.com/arita37/mlmodels/pull/100)
 
+<br>  
   
 ## 1) Fork 
-Fork from arita37/mlmodels. Please use yourName as Branch name
-Please use same branch for your developpements.
+Fork from arita37/mlmodels. 
+Please use same branch for your developpements: dev branch
 
-`git checkout -b YourName` or `git checkout -b YourName`
 
 
 ## 2) Configure for Tests  (No Tests Success, No PR Accepted)
 Change in these files where needed with your MODEL_NAME and BRANCH NAME :
 - [`Test on YOUR_Branch, at each Commit`](https://github.com/arita37/mlmodels/blob/dev/.github/workflows/a_PLEASE_CHANGE_test_yourmodel.yml)  : At each commit
+
 - [`Test at by using pullrequest/ youtest.py`](https://github.com/arita37/mlmodels/tree/dev/pullrequest)  : Used at PR Merge
 
 
@@ -100,21 +101,17 @@ Please re-use existing functions in [util.py](https://github.com/arita37/mlmodel
      data_path = path_norm("ztest/text/myfile.txt")
         --> FULL_ PATH   /home/ubuntu/mlmodels/ztest/text/myfile.txt
 
+
 ## 4) Create JSON For Parameters
 Create  mlmodels/model_XXXX/yyyy.json file following this [template](https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/models_config.json
 ).
   
 
 ## 5) Keep Your Branch Updated 
-Sync your branch with arita37/mlmodels:dev.
+Sync your branch with arita37/mlmodels:dev  to reduce conflicts at final steps.
 
-     git fetch upstream dev
-     git pull upstream dev
-     git add .
-     git commit -a
-     git puh origin your_branch
+   Pull Request : arita37/dev --> your Branch
 
-You need to **MERGE** recent changes in dev into your branch to reduce conflicts at final steps.
 
 
 ## Run Model
@@ -132,6 +129,7 @@ https://github.com/arita37/mlmodels/actions?query=workflow%3Atest_custom_model
 
 ## Issue A Pull Request
 Once you have made the changes issue a PR.
+
 
 
 
