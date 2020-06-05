@@ -45,7 +45,7 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated
 
 
 
-## Using Online Editor (to develop code for MLMODELS
+## Using Online Editor (pre-installed mlmodels)
 [Gitpod](https://github.com/arita37/mlmodels/issues/101)
 
 [Colab](https://github.com/arita37/mlmodels/issues/102)
