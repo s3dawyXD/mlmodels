@@ -15,17 +15,37 @@ Read following instructions before adding a new model.
 - [How to define a custom model](#how-to-define-a-custom-model)
 
 
+## Get started quickly
+```
+#### Easy path finding
+from mlmodels.util import path_norm 
+  path_withPrefix = path_norm("dataset/timseries/myfile.csv")   ##   site-package/mlmodels/dataset/timseries/myfile.csv
+
+
+
+### Run some model on Command Line for debugging
+cd mlmodels
+python optim.py
+
+python model_tch/textcnn.py
+
+python model_keras/textcnn.py
+
+
+
+```
+
+
 ## List of TODO / ISSUES List
 https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 
 
-## List of Functions/Methods
+## Index of Functions/Methods
 [Index](https://github.com/arita37/mlmodels/blob/dev/README_index_doc.py)
 
 
 
-## Using Online Editor (Gitpod) to develop code for MLMODELS
-
+## Using Online Editor (to develop code for MLMODELS
 [Gitpod](https://github.com/arita37/mlmodels/issues/101)
 
 [Colab](https://github.com/arita37/mlmodels/issues/102)
@@ -126,7 +146,7 @@ ________________________________________________________________________________
 
 
     ### On Windows
-    VC 14   https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019
+    Use WSL + Linux Installed.
     pip install numpy<=1.17.0
     pip install torch==1..1 -f https://download.pytorch.org/whl/torch_stable.html
     pip install -e .  -r requirements_wi.txt
