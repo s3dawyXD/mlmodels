@@ -24,8 +24,25 @@ import pandas as pd
 import numpy as np
 from collections import OrderedDict
 
+from mlmodels.util import path_norm, log
 
-from mlmodels.util import path_norm
+
+
+
+#############################################################################################################
+########## Utilies ##########################################################################################
+from pathlib import Path
+from typing import Dict, List
+def save_to_file(path, data):
+    import json
+    print(f"saving time-series into {path}")
+    path_dir = os.path.dirname(path)
+    os.makedirs(path_dir, exist_ok=True)
+    with open(path, 'wb') as fp:
+        for d in data:
+            fp.write(json.dumps(d).encode("utf-8"))
+            fp.write("\n".encode('utf-8'))
+
 
 
 
@@ -404,14 +421,6 @@ def test_gluonts2():
 
 
     """
-
-
-
-
-
-
-
-
 
 
 

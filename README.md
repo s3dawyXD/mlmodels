@@ -3,12 +3,13 @@
 
 This repository is the ***Model ZOO for Pytorch, Tensorflow, Keras, Gluon, LightGBM, Keras, Sklearn models etc*** with Lightweight Functional interface to wrap access to Recent and State of Art Deep Learning, ML models and Hyper-Parameter Search, cross platforms that follows the logic of sklearn, such as fit, predict, transform, metrics, save, load etc. 
 Now, more than **60 recent models** (> 2018) are available in those domains : 
-* Time Series, 
-* Text classification, 
-* Vision, 
-* Image Generation,Text generation, 
-* Gradient Boosting, Automatic Machine Learning tuning, 
-* Hyper-parameter search.
+
+* [Time Series](#Time-series), 
+* [Text classification](#Text_classification), 
+* [Vision](#Vision), 
+* [Image Generation](#Image_Generation),[Text generation](#Text_generation), 
+* [Gradient Boosting](#Gradient_Boosting), [Automatic Machine Learning tuning](#Automatic_Machine_Learning_tuning), 
+* [Hyper-parameter search](#Hyper-parameter_search).
 
 Main characteristics :
 
@@ -22,10 +23,11 @@ We are looking for contributors (!!)
 
 ![alt text](docs/mxnetf.png) ![alt text](docs/pytorch.PNG) ![alt text](docs/tenserflow.PNG)
 
-## Benefits :
+## Benefits of mlmodels repo :
+---
+Having a simple  framework for both machine learning models and deep learning models, **without BOILERPLATE code**.
 
-Having a simple  framework for both machine learning models and deep learning models, without BOILERPLATE code.
-Collection of models, model zoo in Pytorch, Tensorflow, Keras allows richer possibilities in model re-usage, model batching and benchmarking. Unique and simple interface, zero boilerplate code (!), and recent state of art models/frameworks are the main strength 
+**Collection of models**, model zoo in Pytorch, Tensorflow, Keras allows richer possibilities in **model re-usage**, **model batching** and **benchmarking**. Unique and simple interface, zero boilerplate code (!), and recent state of art models/frameworks are the main strength 
 of MLMODELS. Different domain fields are available, such as computer vision, NLP, Time Series prediction, tabular data classification.  
 
 
@@ -36,14 +38,13 @@ Here you can find usages [guide](https://cutt.ly/tyluzof)
 If you want to contribute,  [contribution guide](https://cutt.ly/Xylux3Q)
 
 ## Model List :
-*	[Time Series](#Time-series)
-*	[NLP](#NLP)
-*	[TABULAR](#TABULAR)
-*	[VISION](#VISION)
+---
 
 
+<details>
+<summary>Time Series:</summary>
+<br>
 
-### Time Series:
 
 1. Montreal AI, Nbeats: 2019, Advanced interpretable Time Series Neural Network, [[Link](https://arxiv.org/abs/1905.10437)]
 
@@ -56,7 +57,12 @@ If you want to contribute,  [contribution guide](https://cutt.ly/Xylux3Q)
 5. LSTM Neural Network prediction : Stacked Bidirectional and Unidirectional LSTM Recurrent Neural Network for Network-wide Traffic Speed Prediction [[Link]](https://arxiv.org/ftp/arxiv/papers/1801/1801.02143.pdf)
 
 
-### NLP:
+</details>
+
+
+<details>
+<summary>NLP:</summary>
+<br>
 
 1. Sentence Transformers : 2019, Embedding of full sentences using BERT, [[Link](https://arxiv.org/pdf/1908.10084.pdf)]
 
@@ -118,8 +124,12 @@ If you want to contribute,  [contribution guide](https://cutt.ly/Xylux3Q)
 
 22. HBMP:  Sentence Embeddings in NLI with Iterative Refinement Encoders
 [[Link](https://www.cambridge.org/core/journals/natural-language-engineering/article/sentence-embeddings-in-nli-with-iterative-refinement-encoders/AC811644D52446E414333B20FEACE00F)]
+</details>
 
-### TABULAR:
+
+<details>
+<summary>TABULAR:</summary>
+<br>
 
 #### LightGBM  : Light Gradient Boosting
 
@@ -129,6 +139,10 @@ If you want to contribute,  [contribution guide](https://cutt.ly/Xylux3Q)
 
 
 #### All sklearn models :
+
+<details>
+<summary>All sklearn models :</summary>
+<br>
 
 linear_model.ElasticNet\
 linear_model.ElasticNetCV\
@@ -156,8 +170,17 @@ svm.l1_min_c
 neighbors.KNeighborsClassifier\
 neighbors.KNeighborsRegressor\
 neighbors.KNeighborsTransformer
+</details>
+
+
 
 #### Binary Neural Prediction from tabular data:
+
+<details>
+
+<summary>Binary Neural Prediction from tabular data:</summary>
+
+<br>
 
 1. A Convolutional Click Prediction Model]([[Link](http://ir.ia.ac.cn/bitstream/173211/12337/1/A%20Convolutional%20Click%20Prediction%20Model.pdf)             |)]
 
@@ -194,10 +217,16 @@ neighbors.KNeighborsTransformer
 17. FiBiNET: Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction]([[Link](https://arxiv.org/pdf/1905.09433.pdf)   |)]
 
 
+</details>
+
+</details>
 
 
-### VISION:
 
+
+<details>
+<summary>VISION:</summary>
+<br>
 
 1. Vision Models (pre-trained) :  
 alexnet: SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size
@@ -293,11 +322,39 @@ alexnet: SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB
 29. mobilenet_v2: MobileNetV2: Inverted Residuals and Linear Bottlenecks
 [[Link](http://openaccess.thecvf.com/content_cvpr_2018/papers/Sandler_MobileNetV2_Inverted_Residuals_CVPR_2018_paper.pdf)]
 
-***More resources are available [here](https://github.com/arita37/mlmodels/blob/dev/README_model_list.md)***
+</details>
 
-######################################################################################
+***More resources are available on model list [here](https://github.com/arita37/mlmodels/blob/dev/README_model_list.md)***
 
-### ① Installation Guide:
+## Contribution
+---
+Dev-Documentation [link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3Adev-documentation)
+
+Starting contributing : [link](https://github.com/arita37/mlmodels/issues/307)
+
+Colab creation :[link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3AColab)
+
+Model benchmarking : [link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3Adev-documentation)
+
+Add new models : [link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3Adev-documentation)
+
+Core compute : [link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3A%22Core+compute%22)
+
+## User Documentation
+---
+User-Documentation: [link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3Auser-documentation)
+
+
+
+## Colab
+---
+Colab :[link](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3AColab)
+
+## Installation Guide:
+---
+<details>
+<summary>Installation Guide:</summary>
+<br>
 
 ### (A) Using pre-installed Setup (one click run) :
 
@@ -347,8 +404,6 @@ ________________________________________________________________________________
 
 [Read-more](https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md)
 
-
-
 _______________________________________________________________________________________
 
 ## Model List
@@ -369,9 +424,60 @@ ________________________________________________________________________________
 
 _______________________________________________________________________________________
 
+## Testing 
 
+[Read-more](https://github.com/arita37/mlmodels/blob/dev/README_testing.md)
+
+Testing : debugging Process
+[Read-more](https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3ATest)
+
+Tutorial : Code Design, Testing
+[Read-more]((https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3ATest))
+
+Tests: github actions to add
+[Read-more]((https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+label%3ATest))
+_______________________________________________________________________________________
+
+
+## Research Papers
+
+[Read-more](https://github.com/arita37/mlmodels/blob/dev/README_research_papers.md)
+
+_______________________________________________________________________________________
+
+## Tutorials
+---
+Tutorial : New contributors 
+[Read-more](https://github.com/arita37/mlmodels/issues/307)
+
+Tutorial : Code Design, Testing 
+[Read-more](https://github.com/arita37/mlmodels/issues/347)
+
+Tutorial : Usage of dataloader 
+[Read-more](https://github.com/arita37/mlmodels/issues/336)
+
+TUTORIAL : Use Colab for Code Development 
+[Read-more](https://github.com/arita37/mlmodels/issues/262)
+
+TUTORIAL : Do a PR or add model in mlmodels 
+[Read-more](https://github.com/arita37/mlmodels/issues/102)
+
+TUTORIAL : Using Online editor for mlmodels 
+[Read-more](https://github.com/arita37/mlmodels/issues/101)
+
+</details>
+
+## Example Notebooks
+---
+<details>
+<summary> Example Notebooks </summary>
+<br>
 
 ### LSTM example in TensorFlow ([Example notebook](mlmodels/example/1_lstm.ipynb))
+
+<details>
+<summary>LSTM example in TensorFlow </summary>
+<br>
 
 #### Define model and data definitions
 ```python
@@ -404,10 +510,14 @@ metrics_val   =  module.fit_metrics( model, sess, data_pars, compute_pars, out_p
 ypred         = module.predict(model, sess,  data_pars, compute_pars, out_pars)     # predict pipeline
 ```
 
-
+</details>
 ---
 
 ### AutoML example in Gluon ([Example notebook](mlmodels/example/gluon_automl.ipynb))
+<details>
+<summary>AutoML example in Gluon </summary>
+<br>
+
 ```python
 # import library
 import mlmodels
@@ -454,10 +564,13 @@ ypred       = module.predict(model, data_pars, compute_pars, out_pars)     # pre
 
 
 ```
-
+</details>
 ---
 
 ### RandomForest example in Scikit-learn ([Example notebook](mlmodels/example/sklearn.ipynb))
+<details>
+<summary>RandomForest example in Scikit-learn </summary>
+<br>
 ```
 # import library
 import mlmodels
@@ -486,10 +599,15 @@ model, sess   =  module.fit(model, data_pars=data_pars, compute_pars=compute_par
 ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)     # predict pipeline
 ```
 
+</details>
 
 ---
 
 ### TextCNN example in keras ([Example notebook](example/textcnn.ipynb))
+
+<details>
+<summary> TextCNN example in keras </summary>
+<br>
 
 ```python
 # import library
@@ -522,9 +640,15 @@ data_pars['train'] = 0
 ypred       = module.predict(model,  data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
 ```
 
+</details>
+
 ---
 
 ### Using json config file for input ([Example notebook](example/1_lstm_json.ipynb), [JSON file](mlmodels/mlmodels/example/1_lstm.json))
+
+<details>
+<summary> Using json config file for input </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -554,9 +678,15 @@ ypred       = module.predict(model, sess=sess,  data_pars=data_pars, compute_par
 
 ```
 
+</details>
+
 ---
 
 ### Using Scikit-learn's SVM for Titanic Problem from json file ([Example notebook](mlmodels/example/sklearn_titanic_svm.ipynb), [JSON file](mlmodels/example/sklearn_titanic_svm.json))
+
+<details>
+<summary> Using Scikit-learn's SVM for Titanic Problem from json file </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -597,9 +727,15 @@ roc_auc_score(y, ypred)
 
 ```
 
+</details>
+
 ---
 
 ### Using Scikit-learn's Random Forest for Titanic Problem from json file ([Example notebook](mlmodels/example/sklearn_titanic_randomForest.ipynb), [JSON file](mlmodels/example/sklearn_titanic_randomForest.json))
+
+<details>
+<summary> Using Scikit-learn's Random Forest for Titanic Problem from json file </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -639,9 +775,15 @@ roc_auc_score(y, ypred)
 
 ```
 
+</details>
+
 ---
 
 ### Using Autogluon for Titanic Problem from json file ([Example notebook](mlmodels/example/gluon_automl_titanic.ipynb), [JSON file](mlmodels/example/gluon_automl.json))
+
+<details>
+<summary> Using Autogluon for Titanic Problem from json file </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -682,11 +824,16 @@ roc_auc_score(y, ypred)
 
 
 ```
+</details>
 
 ---
----
+
 
 ### Using hyper-params (optuna) for Titanic Problem from json file ([Example notebook](mlmodels/example/sklearn_titanic_randomForest_example2.ipynb), [JSON file](mlmodels/example/hyper_titanic_randomForest.json))
+
+<details>
+<summary> Using hyper-params (optuna) for Titanic Problem from json file </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -738,11 +885,15 @@ y = pd.read_csv( path_norm('dataset/tabular/titanic_train_preprocessed.csv') )
 y = y['Survived'].values
 roc_auc_score(y, ypred)
 ```
-
+</details>
 
 ---
 
 ### Using LightGBM for Titanic Problem from json file ([Example notebook](mlmodels/example/model_lightgbm.ipynb), [JSON file](mlmodels/example/lightgbm_titanic.json))
+
+<details>
+<summary> Using LightGBM for Titanic Problem from json file </summary>
+<br>
 
 #### Import library and functions
 ```python
@@ -780,11 +931,16 @@ metrics_val = module.fit_metrics(model, data_pars, compute_pars, out_pars)
 metrics_val 
 
 ```
+</details>
 
 ---
 
 
 ### Using Vision CNN RESNET18 for MNIST dataset  ([Example notebook](mlmodels/example/model_restnet18.ipynb), [JSON file](mlmodels/model_tch/torchhub_cnn.json))
+
+<details>
+<summary> Using Vision CNN RESNET18 for MNIST dataset </summary>
+<br>
 
 ```python
 # import library
@@ -823,11 +979,14 @@ print(ypred)
 
 
 ```
+</details>
 ---
 
 ### Using ARMDN Time Series   ([Example notebook](mlmodels/example/model_timeseries_armdn.ipynb), [JSON file](mlmodels/model_keras/armdn.json))
 
-
+<details>
+<summary> Using ARMDN Time Serie </summary>
+<br>
 
 ```python
 # import library
@@ -872,7 +1031,11 @@ module.save(model, save_pars ={ 'path': out_pars['path'] +"/model/"})
 model2 = module.load(load_pars ={ 'path': out_pars['path'] +"/model/"})
 
 ```
+
 ---
+</details>
+
+</details>
 
 
 ![Pytorch](https://cutt.ly/Ayk8hji )
