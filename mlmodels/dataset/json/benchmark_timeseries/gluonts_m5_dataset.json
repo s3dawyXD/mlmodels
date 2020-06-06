@@ -39,7 +39,7 @@
            
             "submission": false , 
             
-            "data_path":  "gluonts_data/m5_dataset" , 
+            "data_path":  "dataset/timeseries/m5_dataset/gluonts/" , 
            
             "single_pred_length":28,
             "freq": "1D",
