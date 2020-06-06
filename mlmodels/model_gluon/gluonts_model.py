@@ -22,19 +22,23 @@ from gluonts.model.transformer import TransformerEstimator
 from gluonts.model.simple_feedforward import  SimpleFeedForwardEstimator
 from gluonts.model.wavenet import WaveNetEstimator, WaveNetSampler, WaveNet
 
-
-
 from gluonts.trainer import Trainer
-from gluonts.dataset.common import ListDataset,load_datasets
-from gluonts.dataset.repository.datasets import get_dataset as get_dataset_gluon
-
-from gluonts.dataset.field_names import FieldName
-from gluonts.dataset.util import to_pandas
 from gluonts.evaluation import Evaluator
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.model.predictor import Predictor
 
+
+
+from gluonts.dataset.common import ListDataset,load_datasets
+from gluonts.dataset.repository.datasets import get_dataset as get_dataset_gluon
+from gluonts.dataset.field_names import FieldName
+from gluonts.dataset.util import to_pandas
+
+
+
 from tqdm.autonotebook import tqdm
+
+
 #### Only for SeqtoSeq
 from gluonts.block.encoder import (
     HierarchicalCausalConv1DEncoder,
@@ -46,8 +50,8 @@ from gluonts.block.encoder import (
 
 ####################################################################################################
 from mlmodels.util import log, path_norm, get_model_uri, json_norm
+from mlmodels.util import load_function_uri
 
-#from mlmodels.util import load_function_uri
 
 
 VERBOSE = False
@@ -85,6 +89,7 @@ class Model(object):
             if model_pars["model_name"] == "seq2seq" :
                 mpars['encoder'] = MLPEncoder()   #bug in seq2seq
 
+
             if model_pars["model_name"] == "deepar" :                    
                 # distr_output â€“ Distribution to use to evaluate observations and sample predictions (default: StudentTOutput())
                 # mpars['distr_output'] =_load_function(mpars['distr_output'])()  # "gluonts.distribution.neg_binomial:NegativeBinomialOutput"
@@ -94,7 +99,7 @@ class Model(object):
                    mpars['distr_output'] = NegativeBinomialOutput()
                 else :
                    del mpars['distr_output']  # = StudentTOutput() default one
-                # print(mpars.get('distr_output'))
+                # log(mpars.get('distr_output'))
 
 
                 ### Need to put manually in JSON Before  ########################################
@@ -125,17 +130,23 @@ def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", *
 
 
 def get_dataset(data_pars):    
+    """
+      Return   train, test 
+
+    """
     d = data_pars.get("data_type", "single_dataframe")
 
     if d ==  "gluonts" :
-        return get_dataset_gluonts(data_pars)
+        train, test = get_dataset_gluonts(data_pars)
 
     if d ==  "single_dataframe" :
-        return get_dataset_single(data_pars)
+        train, test = get_dataset_single(data_pars)
 
     else :
         # Mutiple dataframe
-        return get_dataset_multi(data_pars)
+        train, test = get_dataset_multi(data_pars)
+
+    return train, test
 
 
 
@@ -149,13 +160,13 @@ def get_dataset_multi(data_pars):
           pandas_to_gluonts_multiseries )
 
     d = data_pars
-    data_folder    = d[ "data_path"]
-    df_timeseries  = pd.read_csv(data_folder+'/df_timeseries.csv')
+    data_path      = d[ "data_path"]
+    df_timeseries  = pd.read_csv(data_path+'/df_timeseries.csv')
 
     #### Optional
-    df_static      = pd.read_csv(data_folder+'/df_static.csv')  if d.get('use_feat_static_cat', False)  else None
-    df_dynamic     = pd.read_csv(data_folder+'/df_dynamic.csv')  if d.get('use_feat_dynamic_real', False)  else None
-    df_static_real = pd.read_csv(data_folder+'/df_static_real.csv')  if d.get('use_feat_static_real', False)  else None
+    df_static      = pd.read_csv(data_path+'/df_static.csv')  if d.get('use_feat_static_cat', False)  else None
+    df_dynamic     = pd.read_csv(data_path+'/df_dynamic.csv')  if d.get('use_feat_dynamic_real', False)  else None
+    df_static_real = pd.read_csv(data_path+'/df_static_real.csv')  if d.get('use_feat_static_real', False)  else None
 
 
     ###### Set parameters of dataset
@@ -170,13 +181,13 @@ def get_dataset_multi(data_pars):
 
     if data_pars['train'] :
        train_ds, test_ds, cardinalities   = pandas_to_gluonts_multiseries(df_timeseries, df_dynamic, df_static,pars)       
-       return train_ds, test_ds, cardinalities
+       return train_ds, test_ds
 
 
     else :
        ### Submission mode
        _, test_ds, cardinalities   = pandas_to_gluonts_multiseries(df_timeseries, df_dynamic, df_static,pars) 
-       return None, test_ds, cardinalities
+       return None, test_ds
     
 
 
@@ -194,10 +205,10 @@ def get_dataset_gluonts(data_pars):
     #TD              =get_dataset( data_pars['dataset_name'], Path(data_pars['data_path']))
     
     if data_pars['train'] :     
-      return TD.train , None , None
+      return TD.train , TD.test
 
     else :
-      return None, TD.test , None
+      return None, TD.test 
     
 
     
@@ -206,22 +217,33 @@ def get_dataset_single(data_pars):
       Using One Single Dataframe as INput
     """
     from mlmodels.preprocess.timeseries import pandas_to_gluonts, pd_clean_v1
-    print(data_pars)
-    data_path=data_pars['data_path']
-    ### Old Codes
-    df = pd.read_csv(data_path)
-    df = df.set_index( data_pars['col_date'] )
-    df = pd_clean_v1(df)
+    # log(data_pars)
+    data_path = data_pars['data_path']
 
-    # start_date = pd.Timestamp( data_pars['start'], freq=data_pars['freq'])
     pars = { "start" : data_pars['start'], 
              "cols_target" : data_pars['col_ytarget'],
              "freq"        : data_pars['freq'],
              "cols_cat"    : data_pars["cols_cat"],
              "cols_num"    : data_pars["cols_num"]
-        }    
-    gluonts_ds = pandas_to_gluonts(df, pars=pars) 
+        }   
+
+    ### Train
+    if data_pars.get('train', False) :
+        df = pd.read_csv(data_path + "/train/data.csv")
+        df = df.set_index( data_pars['col_date'] )
+        df = pd_clean_v1(df)
+        # start_date = pd.Timestamp( data_pars['start'], freq=data_pars['freq'])
  
+        gluonts_ds = pandas_to_gluonts(df, pars=pars) 
+ 
+
+    df = pd.read_csv(data_path + "/test/data.csv")
+    df = df.set_index( data_pars['col_date'] )
+    df = pd_clean_v1(df)
+    # start_date = pd.Timestamp( data_pars['start'], freq=data_pars['freq'])  
+    gluonts_ds_test = pandas_to_gluonts(df, pars=pars) 
+
+
     if VERBOSE:
         entry        = next(iter(gluonts_ds))
         train_series = to_pandas(entry)
@@ -230,10 +252,10 @@ def get_dataset_single(data_pars):
         # plt.savefig(save_fig)
 
     if data_pars['train'] :     
-      return gluonts_ds, None , None
+      return gluonts_ds, gluonts_ds_test
 
     else :
-      return None, gluonts_ds , None
+      return None, gluonts_ds_test
 
 
 
@@ -242,7 +264,7 @@ def fit(model, sess=None, data_pars=None, model_pars=None, compute_pars=None, ou
         """
           Classe Model --> model,   model.model contains thte sub-model
         ### OLD CODE
-        print(data_pars,model_pars)
+        log(data_pars,model_pars)
         data_pars['train'] = True
         
         gluont_ds          = get_dataset(data_pars)
@@ -253,7 +275,7 @@ def fit(model, sess=None, data_pars=None, model_pars=None, compute_pars=None, ou
         """
 
         data_pars['train'] = 1        
-        train_ds, test_ds, cardinalities = get_dataset(data_pars)
+        train_ds, test_ds  = get_dataset(data_pars)
         
         model_gluon        = model.model
         
@@ -304,39 +326,44 @@ if submission == True:
 
     """
     
-    data_pars['train'] = 0 
-    _, test_ds, cardinalities = get_dataset(data_pars) 
-    # test_ds            = model.test_ds
+    data_pars['train'] = 0
+    _, test_ds         = get_dataset(data_pars)
     model_gluon        = model.model
     
+
     forecast_it, ts_it = make_evaluation_predictions(
             dataset     = test_ds,      # test dataset
             predictor   = model_gluon,  # predictor
-            num_samples = model.compute_pars['num_samples'],  # number of sample paths we want for evaluation
+            num_samples = compute_pars['num_samples'],  # number of sample paths we want for evaluation
         )
-    tss = list(tqdm(ts_it, total=len(test_ds)))
 
-    forecasts = list(tqdm(forecast_it, total=len(test_ds)))
+
+    tss       = list(tqdm(ts_it, total=len(test_ds)))         ## Actual Values
+    forecasts = list(tqdm(forecast_it, total=len(test_ds)))   ## Prediction distirbution
 
     #forecasts, tss = list(forecast_it), list(ts_it)
     forecast_entry, ts_entry = forecasts[0], tss[0]
 
+
     ### External benchmark.py evaluation
     if kw.get("return_ytrue") :
-        forecasts_acc = np.zeros((len(forecasts), pred_length))
+
+        #### Avg the predictions
+        forecasts_acc = np.zeros((len(forecasts), data_pars['single_pred_length']))
         for i in range(len(forecasts)):
           forecasts_acc[i] = np.mean(forecasts[i].samples, axis=0)       
 
         ypred, ytrue = forecasts_acc, tss
         return ypred, ytrue
 
+
     if VERBOSE:
-        print(f"Number of sample paths: {forecast_entry.num_samples}")
-        print(f"Dimension of samples: {forecast_entry.samples.shape}")
-        print(f"Start date of the forecast window: {forecast_entry.start_date}")
-        print(f"Frequency of the time series: {forecast_entry.freq}")
-        print(f"Mean of the future window:\n {forecast_entry.mean}")
-        print(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
+        log(f"Number of sample paths: {forecast_entry.num_samples}")
+        log(f"Dimension of samples: {forecast_entry.samples.shape}")
+        log(f"Start date of the forecast window: {forecast_entry.start_date}")
+        log(f"Frequency of the time series: {forecast_entry.freq}")
+        log(f"Mean of the future window:\n {forecast_entry.mean}")
+        log(f"0.5-quantile (median) of the future window:\n {forecast_entry.quantile(0.5)}")
 
     dd = {"forecasts": forecasts, "tss": tss}
     return dd
@@ -355,16 +382,16 @@ def evaluate(model, sess=None, data_pars=None, compute_pars=None, out_pars=None,
 def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
         ## load test dataset
        
-        data_pars['train'] = 0 
-        _, test_ds, cardinalities = get_dataset(data_pars) 
+        data_pars['train']        = 0
+        _, test_ds                = get_dataset(data_pars)
 
-        forecasts = ypred["forecasts"]
-        tss = ypred["tss"]
+        forecasts                 = ypred["forecasts"]
+        tss                       = ypred["tss"]
 
         ## Evaluate
-        evaluator = Evaluator(quantiles=out_pars['quantiles'])
+        evaluator                 = Evaluator(quantiles=out_pars['quantiles'])
         agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_ds))
-        metrics_dict = json.dumps(agg_metrics, indent=4)
+        metrics_dict              = json.dumps(agg_metrics, indent=4)
         return metrics_dict, item_metrics
 
 
@@ -372,16 +399,17 @@ def metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
 def fit_metrics(ypred, data_pars, compute_pars=None, out_pars=None, **kw):
         ### load test dataset
       
-        data_pars['train'] = 0 
-        _, test_ds, cardinalities = get_dataset(data_pars) 
-        forecasts = ypred["forecasts"]
-        tss = ypred["tss"]
+        data_pars['train']        = 0
+        _, test_ds                = get_dataset(data_pars)
+        forecasts                 = ypred["forecasts"]
+        tss                       = ypred["tss"]
 
         ### Evaluate
-        evaluator = Evaluator(quantiles=out_pars['quantiles'])
+        evaluator                 = Evaluator(quantiles=out_pars['quantiles'])
         agg_metrics, item_metrics = evaluator(tss,forecasts, num_series=len(test_ds))
-        metrics_dict = json.dumps(agg_metrics, indent=4)
+        metrics_dict              = json.dumps(agg_metrics, indent=4)
         return metrics_dict, item_metrics
+
 
 def save(model, path):
     import pickle
@@ -414,39 +442,6 @@ def load(path):
     return model
 
 
-"""    
-def save_local(model, path):
-    import pickle
-    os.makedirs(path, exist_ok = True)
-
-    model.model.serialize(Path(path) )   
-    d = {"model_pars"  :  model.model_pars, 
-         "compute_pars":  model.compute_pars,
-         "data_pars"   :  model.data_pars
-        }
-    pickle.dump(d, open(path + "/glutonts_model_pars.pkl", mode="wb"))
-    log(os.listdir(path))
-"""    
-
-
-
-
-"""    
-def load_local(path):
-    import pickle
-   
-
-    predictor_deserialized = Predictor.deserialize(Path(path))
-    d = pickle.load( open(path + "/glutonts_model_pars.pkl", mode="rb")  )
-    
-    ### Setup Model
-    model = Model(model_pars= d['model_pars'], compute_pars= d['compute_pars'],
-                  data_pars= d['data_pars'])  
-
-    model.model = predictor_deserialized
-
-    return model
-"""
 
 
 def plot_prob_forecasts(ypred, out_pars=None):
@@ -472,7 +467,7 @@ def plot_predict(item_metrics, out_pars=None):
     os.makedirs(outpath, exist_ok=True)
     plt.savefig(outpath)
     plt.clf()
-    print('Saved image to {}.'.format(outpath))
+    log('Saved image to {}.'.format(outpath))
 
 
 
@@ -482,7 +477,7 @@ def test_single(data_path="dataset/", choice="", config_mode="test"):
     log("#### Loading params   ##############################################")
     log( model_uri)
     model_pars, data_pars, compute_pars, out_pars = get_params(choice=choice, data_path=data_path, config_mode=config_mode)
-    print(model_pars, data_pars, compute_pars, out_pars)
+    log(model_pars, data_pars, compute_pars, out_pars)
 
     log("#### Loading dataset   #############################################")
     #gluonts_ds = get_dataset(data_pars)
@@ -490,13 +485,13 @@ def test_single(data_path="dataset/", choice="", config_mode="test"):
     log("#### Model init     ################################################")
     from mlmodels.models import module_load_full
     module, model = module_load_full(model_uri, model_pars, data_pars, compute_pars)
-    print(module, model)
+    log(module, model)
 
 
     log("#### Model fit     #################################################")
     #model=Model(model_pars, data_pars, compute_pars)
     model = fit(model, sess=None, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)    
-    print(model)
+    log(model)
 
 
     log("#### Save the trained model  ######################################")
@@ -509,12 +504,12 @@ def test_single(data_path="dataset/", choice="", config_mode="test"):
 
     log("#### Predict   ####################################################")
     ypred = predict(model, sess=None, data_pars=data_pars, compute_pars=compute_pars, out_pars=out_pars)
-    # print(ypred)
+    # log(ypred)
 
 
     log("#### metrics   ####################################################")
     metrics_val, item_metrics = metrics(ypred, data_pars, compute_pars, out_pars)
-    print(metrics_val)
+    log(metrics_val)
 
 
     log("#### Plot   #######################################################")
