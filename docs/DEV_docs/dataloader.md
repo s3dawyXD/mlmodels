@@ -43,11 +43,32 @@ Iterator (ie "Dataloader") :
    train, val, test are processed in indepedant way : Split is done before.
 
 
+A)
+
+Batchable requires the whole flow as batch
+disk_Batch --> Memory_batch --> tensor_batch
+dataloader.py manages the sequence of tasks.
+Some pre-processing does not need to be batched... Example:
+Big-Data Processor ---> Save on disk (/train , /test , /val)
 
 
-
+B)
 It's better to have one Dataloader per framework XXXXX'
 but those dataloader can re-use functions between them...
+
+Since most Deep Learning frameworks contain a 'Dataloading' class to create
+Iterables that can be sampled batchwise, functions can be implemented to 
+instantiate dataloaders of those respective frameworks, thereby keeping us 
+from reinventing the wheel.
+
+
+
+C) Embedding loader
+Exaple : Glove
+Load from XXX embedding to Tensor XXX or model XXX
+NO batch, direct full memory
+
+
 -->
 Manage API breaks more easily....
 Re-use existing code....

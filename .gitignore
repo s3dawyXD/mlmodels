@@ -151,3 +151,5 @@ example/exp
 /mlmodels/mlmodels/dataset/vision/MNIST/MNIST/raw
 /.vscode
 /zvscode.code-workspace
+/mlmodels/dataset/vision/MNIST/MNIST/processed
+/mlmodels/dataset/vision/MNIST/MNIST/raw
