@@ -13,7 +13,10 @@
 
 
 
+ ,{ "uri" : "gluonts.distribution.neg_binomial:NegativeBinomialOutput", "args" : [],   "kw_args" : { }  }
+
+
 
 
 ]
-}
+

@@ -33,7 +33,7 @@ from mlmodels.util import path_norm, log
 ########## Utilies ##########################################################################################
 from pathlib import Path
 from typing import Dict, List
-def save_to_file(path: Path, data: List[Dict]):
+def save_to_file(path, data):
     import json
     print(f"saving time-series into {path}")
     path_dir = os.path.dirname(path)
