@@ -132,20 +132,13 @@ def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None
     """
 
     log("############ Dataloader setup  #############################")
-    train_pars              = data_pars.copy()
-    train_pars.update(train=1)
-    train_fname             = 'train.gz' if data_pars["train_type"].lower() == 'nli'else 'train/sts-train.csv'
-    train_reader            = get_dataset(train_pars)
-    train_data       = SentencesDataset(train_reader.get_examples(train_fname),  model=model.model)
+    data_readers, interal_states = get_dataset(data_pars)
+    train_reader, val_reader = data_readers
+
+    train_data       = SentencesDataset(train_reader.get_examples('train.gz'),  model=model.model)
     train_dataloader = DataLoader(train_data, shuffle=True, batch_size=compute_pars["batch_size"])
 
-
-
-    val_pars                = data_pars.copy()
-    val_pars.update(train=0)
-    val_fname               = 'dev.gz' if data_pars["test_type"].lower() == 'nli'  else 'val/sts-dev.csv'
-    val_reader              = get_dataset(val_pars)
-    val_data         = SentencesDataset(val_reader.get_examples(val_fname), model=model.model)
+    val_data         = SentencesDataset(val_reader.get_examples('val/sts-dev.csv'), model=model.model)
     val_dataloader   = DataLoader(val_data, shuffle=True, batch_size=compute_pars["batch_size"])
 
 
@@ -223,32 +216,10 @@ def get_dataset(data_pars=None, **kw):
     "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
     "size": [0, 0, 6], "output_size": [0, 6] },
     """
-    data_path = path_norm(data_pars["data_path"])
-
-    mode = "train" if data_pars["train"] else "test"
-    model_type = data_pars[f"{mode}_type"].lower() 
-
-    if model_type == 'nli':
-        Reader = readers.NLIDataReader
-
-    elif model_type == 'sts':
-        Reader = readers.STSBenchmarkDataReader
-
-    else :
-        ##### Custom dataset
-        raise Exception("Not Yet Implementated")
-        """
-           Big work to get implement for New Dataset
-
-
-
-        """  
-
-    path = os.path.join(data_path, data_pars[f"{mode}_path"])
-    reader = Reader(path)
-    return reader
-
-
+    from mlmodels.dataloader import DataLoader
+    loader = DataLoader(data_pars)
+    loader.compute()
+    return loader.get_data()
 
 
 

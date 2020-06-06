@@ -134,8 +134,8 @@ def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None
     log("############ Dataloader setup  #############################")
     train_pars              = data_pars.copy()
     train_pars.update(train=1)
-    train_fname             = 'train.gz' if data_pars["train_type"].lower() == 'nli'else 'sts-train.csv'
-    train_reader            = get_dataset(train_pars)    
+    train_fname             = 'train.gz' if data_pars["train_type"].lower() == 'nli'else 'train/sts-train.csv'
+    train_reader            = get_dataset(train_pars)
     train_data       = SentencesDataset(train_reader.get_examples(train_fname),  model=model.model)
     train_dataloader = DataLoader(train_data, shuffle=True, batch_size=compute_pars["batch_size"])
 
@@ -143,7 +143,7 @@ def fit(model, data_pars=None, model_pars=None, compute_pars=None, out_pars=None
 
     val_pars                = data_pars.copy()
     val_pars.update(train=0)
-    val_fname               = 'dev.gz' if data_pars["test_type"].lower() == 'nli'  else 'sts-dev.csv'
+    val_fname               = 'dev.gz' if data_pars["test_type"].lower() == 'nli'  else 'val/sts-dev.csv'
     val_reader              = get_dataset(val_pars)
     val_data         = SentencesDataset(val_reader.get_examples(val_fname), model=model.model)
     val_dataloader   = DataLoader(val_data, shuffle=True, batch_size=compute_pars["batch_size"])
@@ -232,7 +232,7 @@ def get_dataset(data_pars=None, **kw):
         Reader = readers.NLIDataReader
 
     elif model_type == 'sts':
-        Reader = readers.STSDataReader
+        Reader = readers.STSBenchmarkDataReader
 
     else :
         ##### Custom dataset
@@ -485,10 +485,11 @@ if __name__ == '__main__':
     #### Very Slow !!!!!!!!!!!!!!!!!!!!
     ### Local fixed params
     # test(pars_choice="json")
-    test(pars_choice="test01", data_path= "model_tch/transformer_sentence.json", config_mode="test")
+    test(pars_choice="json", data_path="model_tch/transformer_sentence.json", config_mode="test")
+    # test(pars_choice="test01", data_path= "model_tch/transformer_sentence.json", config_mode="test")
 
 
-    test(pars_choice="test01", data_path= "model_tch/transformer_sentence_new.json", config_mode="test")
+    # test(pars_choice="test01", data_path= "model_tch/transformer_sentence_new.json", config_mode="test")
 
 
 
