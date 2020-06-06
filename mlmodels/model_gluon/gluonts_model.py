@@ -1,13 +1,7 @@
-#https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluonts_model.py
 # -*- coding: utf-8 -*-
-
-#### New version
-new = True
-
-
-
 """
 Advanded GlutonTS models
+
 
 """
 import os, copy
@@ -16,7 +10,7 @@ import pandas as pd, numpy as np
 import importlib
 import matplotlib.pyplot as plt
 from pathlib import Path
-from jsoncomment import JsonComment ; json = JsonComment()
+import json
 
 
 from gluonts.model.deepar import DeepAREstimator
@@ -31,13 +25,15 @@ from gluonts.model.wavenet import WaveNetEstimator, WaveNetSampler, WaveNet
 
 
 from gluonts.trainer import Trainer
-from gluonts.dataset.common import ListDataset
+from gluonts.dataset.common import ListDataset,load_datasets
+from gluonts.dataset.repository.datasets import get_dataset as get_dataset_gluon
+
 from gluonts.dataset.field_names import FieldName
 from gluonts.dataset.util import to_pandas
 from gluonts.evaluation import Evaluator
 from gluonts.evaluation.backtest import make_evaluation_predictions
 from gluonts.model.predictor import Predictor
-from gluonts.distribution.neg_binomial import NegativeBinomialOutput
+
 from tqdm.autonotebook import tqdm
 #### Only for SeqtoSeq
 from gluonts.block.encoder import (
@@ -49,13 +45,13 @@ from gluonts.block.encoder import (
 
 
 ####################################################################################################
-from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri, json_norm
+from mlmodels.util import log, path_norm, get_model_uri, json_norm
 
 #from mlmodels.util import load_function_uri
 
 
 VERBOSE = False
-#MODEL_URI = get_model_uri(__file__)
+MODEL_URI = get_model_uri(__file__)
 
 
 MODELS_DICT = {
@@ -89,21 +85,22 @@ class Model(object):
             if model_pars["model_name"] == "seq2seq" :
                 mpars['encoder'] = MLPEncoder()   #bug in seq2seq
 
-            if model_pars["model_name"] == "deepar" :
-                    
-                # distr_output – Distribution to use to evaluate observations and sample predictions (default: StudentTOutput())
-                if "NegativeBinomialOutput" in  mpars['distr_output'] :             
+            if model_pars["model_name"] == "deepar" :                    
+                # distr_output â€“ Distribution to use to evaluate observations and sample predictions (default: StudentTOutput())
+                # mpars['distr_output'] =_load_function(mpars['distr_output'])()  # "gluonts.distribution.neg_binomial:NegativeBinomialOutput"
+
+                if "NegativeBinomialOutput" in  mpars['distr_output'] :  
+                   from gluonts.distribution.neg_binomial import NegativeBinomialOutput           
                    mpars['distr_output'] = NegativeBinomialOutput()
-                   #mpars['distr_output'] =_load_function(mpars['distr_output'])()  # "gluonts.distribution.neg_binomial:NegativeBinomialOutput"                 
                 else :
                    del mpars['distr_output']  # = StudentTOutput() default one
-                print(mpars.get('distr_output'))
+                # print(mpars.get('distr_output'))
 
 
                 ### Need to put manually in JSON Before  ########################################
                 ###  Cardinality : Nb
                 # self.train_ds,self.test_ds, self.cardinalities = get_dataset(data_pars)             
-                print( mpars.get("cardinality" ) )
+                log( 'Cardinality', mpars.get("cardinality" ) )
 
 
             ### Setup the compute
@@ -128,20 +125,39 @@ def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", *
 
 
 def get_dataset(data_pars):    
-    from mlmodels.preprocess.timeseries import pandas_to_gluonts, pd_clean_v1
-    from mlmodels.preprocess.timeseries import (  gluonts_create_dynamic,  gluonts_create_static,
-      gluonts_create_timeseries, create_startdate,
-      pandas_to_gluonts_multiseries )
+    d = data_pars.get("data_type", "single_dataframe")
 
-    d = data_pars
+    if d ==  "gluonts" :
+        return get_dataset_gluonts(data_pars)
 
-    if data_pars.get("data_type", "single_dataframe") ==  "single_dataframe" :
+    if d ==  "single_dataframe" :
         return get_dataset_single(data_pars)
 
+    else :
+        # Mutiple dataframe
+        return get_dataset_multi(data_pars)
 
-    ###### Multi Dataframe                                ########################################
-    df_timeseries, df_static, df_dynamic, n_timeseries    = get_features(data_pars)
-    
+
+
+def get_dataset_multi(data_pars):
+    """"
+      ### Multiple dataframe, M5 dataset
+
+    """ 
+    from mlmodels.preprocess.timeseries import (  gluonts_create_dynamic,  gluonts_create_static,
+          gluonts_create_timeseries, create_startdate,
+          pandas_to_gluonts_multiseries )
+
+    d = data_pars
+    data_folder    = d[ "data_path"]
+    df_timeseries  = pd.read_csv(data_folder+'/df_timeseries.csv')
+
+    #### Optional
+    df_static      = pd.read_csv(data_folder+'/df_static.csv')  if d.get('use_feat_static_cat', False)  else None
+    df_dynamic     = pd.read_csv(data_folder+'/df_dynamic.csv')  if d.get('use_feat_dynamic_real', False)  else None
+    df_static_real = pd.read_csv(data_folder+'/df_static_real.csv')  if d.get('use_feat_static_real', False)  else None
+
+
     ###### Set parameters of dataset
     pars                   = {'submission': d['submission'],
                               'single_pred_length'     : d['single_pred_length'],    # 28
@@ -164,28 +180,30 @@ def get_dataset(data_pars):
     
 
 
-def get_features(data_pars):
-    """"
-      ### Fixed Format
+def get_dataset_gluonts(data_pars):
+    """
+     Read gluonts data stored in json from disk
 
-    """ 
-    d = data_pars
-    data_folder    = d[ "data_path"]
-    df_timeseries  = pd.read_csv(data_folder+'/df_timeseries.csv')
+    """
+    from gluonts.dataset.common import ListDataset, load_datasets
+    from pathlib import Path
+    dataset_path = Path(data_pars['data_path'])    
+    TD           = load_datasets( metadata=dataset_path,
+                                  train=dataset_path / "train", test=dataset_path / "test",)
+    
+    #TD              =get_dataset( data_pars['dataset_name'], Path(data_pars['data_path']))
+    
+    if data_pars['train'] :     
+      return TD.train , None , None
 
-    #### Optional
-    df_static      = pd.read_csv(data_folder+'/df_static.csv')  if d.get('use_feat_static_cat', False)  else None
-    df_dynamic     = pd.read_csv(data_folder+'/df_dynamic.csv')  if d.get('use_feat_dynamic_real', False)  else None
-    df_static_real = pd.read_csv(data_folder+'/df_static_real.csv')  if d.get('use_feat_static_real', False)  else None
+    else :
+      return None, TD.test , None
+    
 
-
-    return df_timeseries,df_static,df_dynamic, len(df_timeseries)
-
-
+    
 def get_dataset_single(data_pars):    
     """
       Using One Single Dataframe as INput
-
     """
     from mlmodels.preprocess.timeseries import pandas_to_gluonts, pd_clean_v1
     print(data_pars)
@@ -219,6 +237,7 @@ def get_dataset_single(data_pars):
 
 
 
+
 def fit(model, sess=None, data_pars=None, model_pars=None, compute_pars=None, out_pars=None, session=None, **kwargs):
         """
           Classe Model --> model,   model.model contains thte sub-model
@@ -243,6 +262,7 @@ def fit(model, sess=None, data_pars=None, model_pars=None, compute_pars=None, ou
         #predictor          = model_gluon.train(model.train_ds)
         model.model        = predictor
         return model
+
 
 
 def predict(model, sess=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
