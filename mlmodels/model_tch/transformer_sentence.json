@@ -9,12 +9,23 @@
 		},
 
 		"data_pars": {
-			"data_path" : "dataset/text/",
-            "train_path": "AllNLI",
-            "train_type": "NLI",
-            "test_path": "stsbenchmark",
-            "test_type": "sts",
-            "train": 1
+			"data_info": {},
+			"preprocessors": [
+				{
+					"name" :  "DataReader",
+                    "uri"  : "mlmodels.model_tch.util_transformer:TransformerDataReader",
+                    "args"  : {
+						"train": {
+							"uri"  : "sentence_transformers.readers:NLIDataReader",
+							"dataset": "dataset/text/AllNLI/train"
+						},
+						"test": {
+							"uri"  : "sentence_transformers.readers:STSBenchmarkDataReader",
+							"dataset": "dataset/text/stsbenchmark/val"
+						}
+					}
+				}
+			]
 		},
 
 
@@ -28,7 +39,7 @@
 
 		"out_pars": {
 			"path":"./output/transformer_sentence/",
-			"modelpath":"./output/transformer_sentence/model.h5"
+			"model_path":"./output/transformer_sentence/model.h5"
 		}
 	},
 

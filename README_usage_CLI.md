@@ -5,16 +5,19 @@
 - ml_benchmark :  Benchmark
 - ml_test      :  Testing for developpers.
 
-```
 
+path are relative the the install folder of mlmodels:
+     dataset/timeseries/myfile.csv mean  <Install Folder mlmodels>/dataset/timeseries/myfile.csv
+
+```
+<br><br>
 
 # How to use Command Line
 
 
 ### ml_models
-=======
+setup, fit, predict, save, load a model
 
-### How to use Command Line
 
 ```bash
 
@@ -53,6 +56,14 @@ ml_models --do predict --config_file model_tf/1_lstm.json --config_mode "test"
 ml_models  --do test  --model_uri model_tf.1_lstm
 
 
+#### Other examples
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m4.json --config_mode "deepar"
+
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m5.json --config_mode "deepar"
+
+
+
+
 
 #### External  Models by Absolute path URI
 ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
@@ -69,11 +80,14 @@ ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
 
 
 ```
-
+<br><br>
 
 
 
 ### ml_optim
+
+Hyper-parameter search
+
 ```bash
 
 ml_optim --do
@@ -95,7 +109,7 @@ ml_optim --do
 
 
 ```
-
+<br><br>
 
 
 ### ml_benchmark
@@ -111,8 +125,7 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
     
 ```
-
-
+<br><br>
 
 
 
@@ -128,7 +141,7 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
 
 ```
-
+<br><br>
 
 
 
@@ -141,11 +154,11 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
 
 ```
+<br><br>
 
 
 
-
-# Example in Colab :
+# Example of CLI in Colab :
 
 https://colab.research.google.com/drive/1u6ZUrBExDY9Jr6HA7kKutVKoP5RQfvRi#scrollTo=4qtLQiaCaDaU
 

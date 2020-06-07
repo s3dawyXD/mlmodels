@@ -112,7 +112,10 @@ def tf_dataset_download(data_info, **args):
   
     dataset  = dataset.lower()
     out_path = path_norm(out_path)
-    name     = dataset.replace(".","-")
+    if dataset.find('.') > -1:
+        dataset = dataset.split('.')[0]
+        
+    name     = dataset  #.replace(".","-")
     os.makedirs(out_path, exist_ok=True)
     log("Dataset Name is : ", name)
  
@@ -471,10 +474,15 @@ class pandasDataset(Dataset):
         dataset = data_info.get('dataset', "")
         if len(dataset) < 1:
            raise Exception("'dataset' is required field, please add it in data_info key", dataset)
-        filename = dataset if dataset.find('.csv') > -1 else dataset + '.csv'  ## CSV file
+        
+        if dataset.find('.') > -1:
+            dataset_name = dataset.split('.')[0]
+            filename = dataset
+        else:
+            dataset_name = dataset
+            filename = dataset if dataset.find('.') > -1 else dataset + '.csv'  ## CSV file
 
-
-        if len(root) > 1:
+        if len(root) > 0: # root has a value
             path =  root # os.path.join(root,'train' if train else 'test') #TODO: need re-organize dataset later
         else:
             path = data_info.get("data_path","")
@@ -484,10 +492,13 @@ class pandasDataset(Dataset):
         #### DataFrame Load  ##############################################
         # df = torch.load(os.path.join(path, filename))
         file_path = path_norm(os.path.join(path, filename))
+
         if not os.path.exists(file_path):
-            file_path = path_norm(os.path.join(path, dataset, 'train.csv' if train else 'test.csv'))
+            # file_path = path_norm(os.path.join(path, dataset_name, 'train.csv' if train else 'test.csv'))
+            file_path = path_norm(os.path.join(path, dataset_name, filename if train else filename))
             if not os.path.exists(file_path):
-                file_path = path_norm(os.path.join(path, dataset, 'train/train.csv' if train else 'test/test.csv'))
+                # file_path = path_norm(os.path.join(path, dataset_name, 'train/train.csv' if train else 'test/test.csv'))
+                file_path = path_norm(os.path.join(path, dataset_name, 'train' if train else 'test', filename))
         df = pd.read_csv(file_path, **args.get("read_csv_parm",{}))
         self.df = df
 
@@ -570,10 +581,15 @@ class NumpyDataset(Dataset):
         dataset = data_info.get('dataset', None)
         if not dataset:
             raise Exception("'dataset' is required field, please add it in data_info key")
+        
         try:
             dataset = dataset.lower()
         except:
             raise Exception(f"Datatype error 'dataset': {dataset}")
+        
+        if len(root) == 0:
+            root      = data_info.get('data_path', "")
+            root      = os.path.join(root,'train' if train else 'test')
            
         self.target_transform = target_transform
         self.transform  = transform
@@ -585,8 +601,10 @@ class NumpyDataset(Dataset):
             file_path   = os.path.join(root, f"{dataset}.npz")
         else:
             file_path   = os.path.join(root, dataset)
+        
+        file_path = path_norm( file_path)
         print("Dataset File path : ", file_path)
-        data            = np.load( path_norm( file_path),**args.get("numpy_loader_args", {}))
+        data            = np.load( file_path,**args.get("numpy_loader_args", {}))
         
         
         if data_info.get("data_type",None) == 'tf_dataset':
@@ -838,12 +856,15 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     from jsoncomment import JsonComment ; json = JsonComment()
     log("#### Test unit Dataloader/Dataset   ####################################")
     
-    js = json.load(open(data_path, mode='r'))
+    js = json.load(open(path_norm(data_path), mode='r'))
 
     for key,ddict in js.items() :
+      log("\n\n\n", "#"*20, key)
       try :
         data_info = ddict['data_pars']['data_info']
-        prepro    = ddict['data_pars']['preprocessors'][0]
+
+        ###Only ONE TASK  !!!!
+        prepro    = ddict['data_pars']['preprocessors'][0]   
         uri       = prepro['uri']
         args      = prepro['args']
 
@@ -851,13 +872,13 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
         ffun = load_function(uri)
         ffun = ffun(**args, data_info = data_info)
       except Exception as e:
-        log(key, e)
+        log("[Error] ", key, e)
       
 
 
 
 if __name__ == "__main__":
-    test(data_path="dataset/json/dataloader/test_generic.json", pars_choice="json", config_mode="test")
+    test(data_path="dataset/test_json/test_preprocess-generic.json", pars_choice="", config_mode="")
 
 
 
