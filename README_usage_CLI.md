@@ -10,15 +10,15 @@ path are relative the the install folder of mlmodels:
      dataset/timeseries/myfile.csv mean  <Install Folder mlmodels>/dataset/timeseries/myfile.csv
 
 ```
-
+<br><br>
 
 # How to use Command Line
 
 
 ### ml_models
 =======
+setup, fit, predict, save, load a model
 
-### How to use Command Line
 
 ```bash
 
@@ -86,6 +86,9 @@ ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
 
 
 ### ml_optim
+
+Hyper-parameter search
+
 ```bash
 
 ml_optim --do
