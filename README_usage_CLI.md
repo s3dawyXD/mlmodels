@@ -5,6 +5,10 @@
 - ml_benchmark :  Benchmark
 - ml_test      :  Testing for developpers.
 
+
+path are relative the the install folder of mlmodels:
+     dataset/timeseries/myfile.csv mean  <Install Folder mlmodels>/dataset/timeseries/myfile.csv
+
 ```
 
 
@@ -53,6 +57,14 @@ ml_models --do predict --config_file model_tf/1_lstm.json --config_mode "test"
 ml_models  --do test  --model_uri model_tf.1_lstm
 
 
+#### Other examples
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m4.json --config_mode "deepar"
+
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m5.json --config_mode "deepar"
+
+
+
+
 
 #### External  Models by Absolute path URI
 ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
@@ -69,7 +81,7 @@ ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
 
 
 ```
-
+<br />
 
 
 
