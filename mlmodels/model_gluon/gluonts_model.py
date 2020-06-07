@@ -102,8 +102,7 @@ class Model(object):
                 # log(mpars.get('distr_output'))
 
 
-                ### Need to put manually in JSON Before  ########################################
-                ###  Cardinality : Nb
+                ###  Cardinality : Nb of unique values for each category
                 # self.train_ds,self.test_ds, self.cardinalities = get_dataset(data_pars)             
                 log( 'Cardinality', mpars.get("cardinality" ) )
 
@@ -136,21 +135,34 @@ def get_dataset(data_pars):
     """
     d = data_pars.get("data_type", "single_dataframe")
 
+    if d ==  "gluonts"          : uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_gluonts"
+    if d ==  "single_dataframe" : uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_pandas_single"
+    if d ==  "multi_dataframe"  : uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_pandas_multi"
+    else :  raise Exception("No loader") 
+
+
+    # uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_gluonts" 
+    loader = load_function_uri(uri)
+    # train, test = loader(data_pars)
+
+
     if d ==  "gluonts" :
-        train, test = get_dataset_gluonts(data_pars)
+        train, test = get_dataset_gluonts(data_pars
 
     if d ==  "single_dataframe" :
-        train, test = get_dataset_single(data_pars)
+        train, test = get_dataset_pandas_single(data_pars)
 
-    else :
+    if d ==  "single_dataframe" :
         # Mutiple dataframe
-        train, test = get_dataset_multi(data_pars)
+        train, test = get_dataset_pandas_multi(data_pars)
+    else :
+         raise Exception("No loader") 
 
     return train, test
 
 
 
-def get_dataset_multi(data_pars):
+def get_dataset_pandas_multi(data_pars):
     """"
       ### Multiple dataframe, M5 dataset
 
@@ -212,7 +224,7 @@ def get_dataset_gluonts(data_pars):
     
 
     
-def get_dataset_single(data_pars):    
+def get_dataset_pandas_single(data_pars):    
     """
       Using One Single Dataframe as INput
     """

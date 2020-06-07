@@ -26,15 +26,15 @@
              
              
              },
-             
+
         "data_pars": {
             "train": true, 
             "dt_source": "",
             "data_type":"gluonts",
 
                 
-                 "use_feat_static_cat": true, 
-                 "use_feat_static_real":false,
+            "use_feat_static_cat": true, 
+            "use_feat_static_real":false,
 
            
             "submission": false , 
