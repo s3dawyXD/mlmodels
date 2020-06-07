@@ -80,7 +80,7 @@ ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
 
 
 ```
-<br />
+<br><br>
 
 
 
@@ -109,7 +109,7 @@ ml_optim --do
 
 
 ```
-
+<br><br>
 
 
 ### ml_benchmark
@@ -125,8 +125,7 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
     
 ```
-
-
+<br><br>
 
 
 
@@ -142,7 +141,7 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
 
 ```
-
+<br><br>
 
 
 
@@ -155,11 +154,11 @@ ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/bench
 
 
 ```
+<br><br>
 
 
 
-
-# Example in Colab :
+# Example of CLI in Colab :
 
 https://colab.research.google.com/drive/1u6ZUrBExDY9Jr6HA7kKutVKoP5RQfvRi#scrollTo=4qtLQiaCaDaU
 
