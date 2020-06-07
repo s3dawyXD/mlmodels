@@ -16,7 +16,6 @@ path are relative the the install folder of mlmodels:
 
 
 ### ml_models
-=======
 setup, fit, predict, save, load a model
 
 
