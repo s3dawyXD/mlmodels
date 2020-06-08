@@ -1,0 +1,173 @@
+{
+    "BERT_RANKING":{
+       "model_pars":{ 
+          "model_uri" : "model_tch.matchzoo_models",
+          "model":"BERT",
+          "model_pars":{
+             "mode":"bert-base-uncased",
+             "dropout_rate":0.2
+          },
+
+          "loss":{ "RankHingeLoss":{}},
+          #//"task":"ranking",
+          #//"task_pars" : {   },
+          
+          "metrics":{
+             "NormalizedDiscountedCumulativeGain":{"k":3 },
+             "NormalizedDiscountedCumulativeGain":{"k":5 },
+             "MeanAveragePrecision":{}
+          }
+      },
+
+
+   "data_pars": {  
+      "data_info": {    
+                    "data_path": "dataset/nlp/" , 
+                    "dataset_type" : "text_dataset",
+                    "dataset":"WIKI_QA",
+                    "train": true,
+
+                    # The problem of intgration modelzoo and Dataloader
+                    # data configration existed in a postion but functions doesn't have access to this position
+                    # For Example:
+                    #      get_raw_dataset(data_pars, task)
+                    #      Here this Function needs 'task', but 'task' exist in 'model_pars',but function doesn't have access to 'model_pars'
+                    
+                    # So to solve this problem we need a common place where we can access common data configration from different palces
+                    # 'data_info' will be the common place
+                    
+                    
+                    # task: Could be one of `ranking`, `classification`,
+                    "task":"ranking",
+
+                    "preprocess":{
+                        "train":{
+                            "transform":true,
+                            "mode":"pair",
+                            "num_dup":2,
+                            "num_neg":1,
+                            "batch_size":20,
+                            "stage":"train",
+                            "resample":true,
+                            "sort":false,
+                            "dataloader_callback":"PADDING"
+                        },
+                        "test":{
+                            "transform":true,
+                            "batch_size":20,
+                            "stage":"dev",
+                            "dataloader_callback":"PADDING"
+                        }
+                    }
+                  },
+      
+ 
+
+      "preprocessors": [ 
+                {  "uri" : "mlmodels.model_tch.matchZoo:get_raw_dataset",
+                    "arg" : {
+                        
+                        "filter":false
+                            }
+                }    
+
+                ]
+    },"compute_pars":{
+
+          "compute_pars" :{
+            "model": "None",
+            "optimizer": "optim.Optimizer",
+            "trainloader": "DataLoader",
+            "validloader": "DataLoader",
+            "device": "cpu",
+            "start_epoch": 1,
+            "epochs":  1,
+            "validate_interval":  "None",
+            "scheduler": "None",
+            "clip_norm": "None",
+            "patience": "None",
+            "key": "None" ,
+            "checkpoint": "",
+            "save_dir": "",
+            "save_all": true,
+            "verbose": 1
+          },
+
+
+          "optimizer":{
+             "ADAMW":{
+                "lr":5e-5, "beta1":0.9, "beta2":0.98, "eps":1e-8 }
+          },
+
+
+          "optimize_parameters":true,
+          "XXX-epochs":10
+       },
+
+
+  "out_pars":{
+          "checkpointdir":"ztest/model_tch/MATCHZOO/BERT/checkpoints/",
+          "path":"ztest/model_tch/MATCHZOO/BERT/"
+       }
+       },
+
+
+
+
+    "data_pars_old":{
+          "dataset":"WIKI_QA",
+          "data_path":"dataset/nlp/",
+          "dataset_pars" : {
+              "data_pack"  : "",
+              "mode":"pair",
+              "num_dup":2,
+              "num_neg":1,
+              "batch_size":20,
+              "resample":true,
+              "sort":false,
+              "callbacks":"PADDING"
+          },
+
+
+          "dataloader" : "",
+          "dataloader_pars" : {
+            "device" :    "cpu",
+            "dataset"  : "None",
+            "stage":"train",
+            "callback":"PADDING"
+          },
+
+
+
+          "preprocess":{
+             "train":{
+                "transform":true,
+                "mode":"pair",
+                "num_dup":2,
+                "num_neg":1,
+                "batch_size":20,
+                "stage":"train",
+                "resample":true,
+                "sort":false,
+                "dataloader_callback":"PADDING"
+             },
+             "test":{
+                "transform":true,
+                "batch_size":20,
+                "stage":"dev",
+                "dataloader_callback":"PADDING"
+             }
+          }
+       }
+
+
+    
+
+
+
+
+
+
+
+}
+ 
