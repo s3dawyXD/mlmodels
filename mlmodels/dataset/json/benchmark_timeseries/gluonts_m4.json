@@ -26,14 +26,15 @@
              
              
              },
+
         "data_pars": {
             "train": true, 
             "dt_source": "",
             "data_type":"gluonts",
 
                 
-                 "use_feat_static_cat": true, 
-                 "use_feat_static_real":false,
+            "use_feat_static_cat": true, 
+            "use_feat_static_real":false,
 
            
             "submission": false , 
@@ -58,7 +59,7 @@
             "num_samples": 100,
             
             "learning_rate"         : 1e-3,
-            "epochs"                : 100,
+            "epochs"                : 1,
             "num_batches_per_epoch" : 50,
             "batch_size"            : 32,   
             
