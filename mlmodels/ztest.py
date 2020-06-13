@@ -435,8 +435,8 @@ def test_dataloader(arg=None):
 
     log("############Check model ################################")
     path = path.replace("\\", "//")
-    test_list = [ f"python {path}/dataloader.py --do test "   ,
-
+    test_list = [
+       f"python {path}/dataloader.py --do test "   ,
     
        f"python {path}/preprocess/generic.py --do test "   , 
 

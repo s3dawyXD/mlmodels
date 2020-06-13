@@ -25,7 +25,7 @@ import numpy as np
 from collections import OrderedDict
 
 
-from mlmodels.util import path_norm
+from mlmodels.util import path_norm, log
 
 
 
