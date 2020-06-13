@@ -1,7 +1,7 @@
 ## Collection of recent research papers on Deep Learning, Machine Learning application
 
 
-Papers related with Pytorch, Tensorflow implementations.
+Research Papers related with Pytorch, Tensorflow implementations.
 
 
 ### Vision

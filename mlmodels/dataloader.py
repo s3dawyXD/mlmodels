@@ -81,6 +81,7 @@ from mlmodels.preprocess.generic import pandasDataset, NumpyDataset
 #########################################################################
 VERBOSE = 0 
 DATASET_TYPES = ["csv_dataset", "text_dataset", "NumpyDataset", "pandasDataset"]
+TRANSFORMER_LOADERS = ["NLIDataReader", "STSBenchmarkDataReader"]
 
 
 #########################################################################
@@ -262,6 +263,9 @@ class DataLoader:
                     else:
                         out_tmp = obj_preprocessor
 
+                elif cls_name in TRANSFORMER_LOADERS:  # transformer loader object
+                    obj_preprocessor = preprocessor_func(**args)
+                    out_tmp = obj_preprocessor
 
                 else:  # pre-process object defined in preprocessor.py
                     log("\n", "Object Creation")
@@ -343,6 +347,7 @@ def test_run_model():
         'dataset/json/refactor/torchhub_cnn_dataloader.json',
         'dataset/json/refactor/resnet18_benchmark_FashionMNIST.json',
         'dataset/json/refactor/model_list_KMNIST.json',
+        'model_tch/transformer_sentence.json',
 
 
         ### textcnn
@@ -397,7 +402,7 @@ def test_dataloader(path='dataset/json/refactor/'):
         'model_keras/charcnn_zhang.json',
         'model_keras/textcnn.json',
         'model_keras/namentity_crm_bilstm.json',
-        
+
 
         ### DO NOT remove the torch examples
         'dataset/json/refactor/torchhub_cnn_dataloader.json',
@@ -407,6 +412,8 @@ def test_dataloader(path='dataset/json/refactor/'):
 
         #### Text
         'dataset/json/refactor/textcnn.json',
+
+        'model_tch/transformer_sentence.json',
 
 
     ]

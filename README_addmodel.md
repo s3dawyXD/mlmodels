@@ -15,17 +15,37 @@ Read following instructions before adding a new model.
 - [How to define a custom model](#how-to-define-a-custom-model)
 
 
+## Get started quickly
+```
+#### Easy path finding
+from mlmodels.util import path_norm 
+  path_withPrefix = path_norm("dataset/timseries/myfile.csv")   ##   site-package/mlmodels/dataset/timseries/myfile.csv
+
+
+
+### Run some model on Command Line for debugging
+cd mlmodels
+python optim.py
+
+python model_tch/textcnn.py
+
+python model_keras/textcnn.py
+
+
+
+```
+
+
 ## List of TODO / ISSUES List
 https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 
 
-## List of Functions/Methods
+## Index of Functions/Methods
 [Index](https://github.com/arita37/mlmodels/blob/dev/README_index_doc.py)
 
 
 
-## Using Online Editor (Gitpod) to develop code for MLMODELS
-
+## Using Online Editor (pre-installed mlmodels)
 [Gitpod](https://github.com/arita37/mlmodels/issues/101)
 
 [Colab](https://github.com/arita37/mlmodels/issues/102)
@@ -42,17 +62,18 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated
   - [Issue#102](https://github.com/arita37/mlmodels/issues/102)
   - [Issue#100](https://github.com/arita37/mlmodels/pull/100)
 
+<br>  
   
 ## 1) Fork 
-Fork from arita37/mlmodels. Please use yourName as Branch name
-Please use same branch for your developpements.
+Fork from arita37/mlmodels. 
+Please use same branch for your developpements: dev branch
 
-`git checkout -b YourName` or `git checkout -b YourName`
 
 
 ## 2) Configure for Tests  (No Tests Success, No PR Accepted)
 Change in these files where needed with your MODEL_NAME and BRANCH NAME :
 - [`Test on YOUR_Branch, at each Commit`](https://github.com/arita37/mlmodels/blob/dev/.github/workflows/a_PLEASE_CHANGE_test_yourmodel.yml)  : At each commit
+
 - [`Test at by using pullrequest/ youtest.py`](https://github.com/arita37/mlmodels/tree/dev/pullrequest)  : Used at PR Merge
 
 
@@ -80,21 +101,17 @@ Please re-use existing functions in [util.py](https://github.com/arita37/mlmodel
      data_path = path_norm("ztest/text/myfile.txt")
         --> FULL_ PATH   /home/ubuntu/mlmodels/ztest/text/myfile.txt
 
+
 ## 4) Create JSON For Parameters
 Create  mlmodels/model_XXXX/yyyy.json file following this [template](https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/models_config.json
 ).
   
 
 ## 5) Keep Your Branch Updated 
-Sync your branch with arita37/mlmodels:dev.
+Sync your branch with arita37/mlmodels:dev  to reduce conflicts at final steps.
 
-     git fetch upstream dev
-     git pull upstream dev
-     git add .
-     git commit -a
-     git puh origin your_branch
+   Pull Request : arita37/dev --> your Branch
 
-You need to **MERGE** recent changes in dev into your branch to reduce conflicts at final steps.
 
 
 ## Run Model
@@ -117,6 +134,7 @@ Once you have made the changes issue a PR.
 
 
 
+
 ___________________________________________________________________________________________
 # Manual Installation
     ### On Linux/MacOS
@@ -126,7 +144,7 @@ ________________________________________________________________________________
 
 
     ### On Windows
-    VC 14   https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019
+    Use WSL + Linux Installed.
     pip install numpy<=1.17.0
     pip install torch==1..1 -f https://download.pytorch.org/whl/torch_stable.html
     pip install -e .  -r requirements_wi.txt
@@ -277,7 +295,7 @@ then for each staging, declare some specific parameters for model, dataset and a
 #######################################################################################
 
 ## ③ Command Line Input  tools: package provide below tools
-https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md
+https://github.com/arita37/mlmodels/blob/dev/docs/README_docs/README_usage_CLI.md
 
 
 #######################################################################################

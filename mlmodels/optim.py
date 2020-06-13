@@ -99,9 +99,11 @@ def optim_optuna(model_uri="model_tf.1_lstm.py",
     
     """
     import optuna
-
+    # these parameters should be inside the key "engine_pars" which should be inside "hypermodel_pars" of the config json
     engine_pars   = hypermodel_pars['engine_pars']
     ntrials       = engine_pars['ntrials']
+    # metric target should be a value that is available in the model.stats of the model we are optimizing it can simply be called "loss" or 
+    # specific like "roc_auc_score" 
     metric_target = engine_pars["metric_target"]
 
     save_path     = out_pars['path']

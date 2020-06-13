@@ -28,6 +28,9 @@ from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import f1_score, matthews_corrcoef
 from tqdm import tqdm
 
+from mlmodels.util import path_norm
+from mlmodels.preprocess.generic import load_function
+
 logger = logging.getLogger(__name__)
 csv.field_size_limit(2147483647)
 
@@ -256,3 +259,23 @@ processors = {
 output_modes = {
     "binary": "classification"
 }
+
+
+class TransformerDataReader:
+    def __init__(self, **args):
+        self.train_data = path_norm(args["train"]["dataset"])
+        self.train_reader = path_norm(args["train"]["uri"])
+        self.test_data = path_norm(args["test"]["dataset"])
+        self.test_reader = path_norm(args["test"]["uri"])
+
+    def compute(self, input_tmp):
+        train_func = load_function(self.train_reader)
+        train_reader = train_func(self.train_data)
+
+        test_func = load_function(self.test_reader)
+        test_reader = test_func(self.test_data)
+
+        self.data = (train_reader, test_reader)
+
+    def get_data(self):
+        return self.data

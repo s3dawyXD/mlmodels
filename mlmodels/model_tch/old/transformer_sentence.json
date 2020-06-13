@@ -10,7 +10,7 @@
 
 		"data_pars": {
 			"data_path" : "dataset/text/",
-            "train_path": "AllNLI",
+            "train_path": "AllNLI/train",
             "train_type": "NLI",
             "test_path": "stsbenchmark",
             "test_type": "sts",
@@ -28,7 +28,7 @@
 
 		"out_pars": {
 			"path":"./output/transformer_sentence/",
-			"modelpath":"./output/transformer_sentence/model.h5"
+			"model_path":"./output/transformer_sentence/model.h5"
 		}
 	},
 

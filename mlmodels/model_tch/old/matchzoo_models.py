@@ -26,9 +26,11 @@ import pandas as pd
 import torch
 import matchzoo as mz
 from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri, path_norm_dict
-from mlmodels.util from jsoncomment import JsonComment ; json = JsonComment()_norm
+from mlmodels.util import json_norm
+from jsoncomment import JsonComment ; json = JsonComment()
 
-
+print(type(mz))
+print(dir(mz))
 
 ###########################################################################################################
 MODEL_URI = get_model_uri(__file__)
@@ -499,7 +501,7 @@ def test_train(data_path, pars_choice, model_name):
 
 
 if __name__ == "__main__":
-    test_train(data_path="model_tch/matchzoo_models.json", pars_choice="json", model_name="BERT_RANKING")
+    test_train(data_path="model_tch/old/matchzoo_models.json", pars_choice="json", model_name="BERT_RANKING")
 
     # test_train(data_path="model_tch/matchzoo_models.json", pars_choice="json", model_name="BERT_RANKING")
 
