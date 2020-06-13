@@ -29,8 +29,6 @@ from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri, p
 from mlmodels.util import json_norm
 from jsoncomment import JsonComment ; json = JsonComment()
 
-print(type(mz))
-print(dir(mz))
 
 ###########################################################################################################
 MODEL_URI = get_model_uri(__file__)
@@ -84,8 +82,9 @@ CALLBACKS = {
 
 
 ###########################################################################################################
-def get_task(model_pars):
-    _task = model_pars['task']
+def get_task(model_pars, task):
+    # _task = model_pars['task']
+    _task = task
     assert _task in TASKS.keys()
 
     #### Task  #######################################
@@ -186,6 +185,7 @@ def get_data_loader(model_name, preprocessor, preprocess_pars, raw_data):
     return dataloader
 
 
+
 """
 def update_model_param(params, model, task, preprocessor):
     model.params['task'] = task
@@ -208,17 +208,34 @@ def get_config_file():
     return os.path.join(os_package_root_path(__file__, 1), 'config', 'model_tch', 'Imagecnn.json')
 
 
-def get_raw_dataset(data_pars, task):
-    if data_pars["dataset"] == "WIKI_QA":
-        filter_train_pack_raw = data_pars.get("preprocess").get("train").get("filter", False)
-        filter_test_pack_raw  = data_pars.get("preprocess").get("test").get("filter", False)
-        train_pack_raw        = mz.datasets.wiki_qa.load_data('train', task=task, filtered=filter_train_pack_raw)
-        test_pack_raw         = mz.datasets.wiki_qa.load_data('test', task=task, filtered=filter_test_pack_raw)
+# def get_raw_dataset(data_pars, task):
+#     if data_pars["dataset"] == "WIKI_QA":
+#         filter_train_pack_raw = data_pars.get("preprocess").get("train").get("filter", False)
+#         filter_test_pack_raw  = data_pars.get("preprocess").get("test").get("filter", False)
+#         train_pack_raw        = mz.datasets.wiki_qa.load_data('train', task=task, filtered=filter_train_pack_raw)
+#         test_pack_raw         = mz.datasets.wiki_qa.load_data('test', task=task, filtered=filter_test_pack_raw)
+#         return train_pack_raw, test_pack_raw
+#     else:
+#         dataset_name = data_pars["dataset"]
+#         raise Exception(f"Not support choice {dataset_name} dataset yet")
+
+def get_raw_dataset(data_info, **args):
+    if data_info["dataset"] == "WIKI_QA":
+        filter = args.get("filter", False)
+        task = data_info.get("task",'ranking')
+        train_pack_raw        = mz.datasets.wiki_qa.load_data('train', task= task, filtered=filter)
+        test_pack_raw         = mz.datasets.wiki_qa.load_data('test', task= task, filtered=filter)
         return train_pack_raw, test_pack_raw
     else:
-        dataset_name = data_pars["dataset"]
+        dataset_name = data_info["dataset"]
         raise Exception(f"Not support choice {dataset_name} dataset yet")
 
+# def dataset_loader(dataset, **args){
+#     trainset,validset = dataset
+#     _preprocessor_pars = args.get("process",None)
+#     trainloader = get_data_loader(_model, preprocessor, _preprocessor_pars["train"], trainset)
+#     testloader  = get_data_loader(_model, preprocessor, _preprocessor_pars["test"], validset)
+# }
 ###########################################################################################################
 ###########################################################################################################
 class Model:
@@ -246,12 +263,13 @@ class Model:
 
 
         ### Add Task
-        self.task = get_task(model_pars)
+        task = data_pars["data_info"].get("task",'ranking')
+        self.task = get_task(model_pars,task)
         self.model.params['task'] = self.task
 
 
         ### Add PreProcessor
-        _preprocessor_pars = data_pars["preprocess"]
+        _preprocessor_pars = data_pars["data_info"]["preprocess"]
         if "basic_preprocessor" in _preprocessor_pars:
             pars = _preprocessor_pars["basic_preprocessor"]
             preprocessor = mz.preprocessors.BasicPreprocessor(
@@ -280,12 +298,35 @@ class Model:
 
 
         ### Data Loader        #####################################  : part of traimer
-        train_pack_raw, test_pack_raw = get_raw_dataset(data_pars, self.task)
-        self.trainloader = get_data_loader(_model, preprocessor, _preprocessor_pars["train"], train_pack_raw)
-        self.testloader  = get_data_loader(_model, preprocessor, _preprocessor_pars["test"], test_pack_raw)
+        # train_pack_raw, test_pack_raw = get_raw_dataset(data_pars, self.task)
+        # self.trainloader = get_data_loader(_model, preprocessor, _preprocessor_pars["train"], train_pack_raw)
+        # self.testloader  = get_data_loader(_model, preprocessor, _preprocessor_pars["test"], test_pack_raw)
+        self.trainloader, self.testloader = get_dataset(_model, preprocessor, _preprocessor_pars, data_pars) 
 
 
 
+def get_dataset(_model, preprocessor,_preprocessor_pars , data_pars):
+    from mlmodels.dataloader import DataLoader
+    
+    dataset        = data_pars['data_info'].get('dataset', None)
+    loader = DataLoader(data_pars)
+
+    if dataset:
+        loader.compute()
+        try:
+            dataset, internal_states  = loader.get_data()
+            trainset, validset = dataset
+            trainloader = get_data_loader(_model, preprocessor, _preprocessor_pars["train"], trainset)
+            testloader  = get_data_loader(_model, preprocessor, _preprocessor_pars["test"], validset)
+
+        except:
+            raise Exception("the last Preprocessor have to return (trainset, validset), internal_states.")
+            
+        return trainloader, testloader
+
+    else:
+        raise Exception("Please add dataset in datainfo")
+        return 0
 
 
 
@@ -501,7 +542,7 @@ def test_train(data_path, pars_choice, model_name):
 
 
 if __name__ == "__main__":
-    test_train(data_path="model_tch/old/matchzoo_models.json", pars_choice="json", model_name="BERT_RANKING")
+    test_train(data_path="dataset/json/refactor/matchZoo.json", pars_choice="json", model_name="BERT_RANKING")
 
     # test_train(data_path="model_tch/matchzoo_models.json", pars_choice="json", model_name="BERT_RANKING")
 
