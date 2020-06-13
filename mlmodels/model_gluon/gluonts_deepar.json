@@ -39,7 +39,7 @@
            
             "submission": false , 
             
-            "data_path":  "dataset/timeseries/gluonts_data/m5_dataset" , 
+            "data_path":  "dropbox::dataset/timeseries/gluonts_data/m5_dataset" , 
            
             "single_pred_length":28,
             "freq": "1D",
@@ -124,7 +124,7 @@
             "submission": false , 
             "dataset_name": "m4_daily" , 
             
-            "data_path":  "dataset/timeseries/gluonts_data/m4_dataset/m4_daily" , 
+            "data_path":  "dropbox::dataset/timeseries/gluonts_data/m4_dataset/m4_daily" , 
            
             "single_pred_length":28,
             "freq": "1D",
@@ -203,7 +203,7 @@
             "submission": false, 
           
             
-            "data_path": "dataset/timeseries/gluonts_data/covid19_forecast" ,
+            "data_path": "dropbox::dataset/timeseries/gluonts_data/covid19_forecast" ,
            
            
             "num_series" : 1

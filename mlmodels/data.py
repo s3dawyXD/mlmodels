@@ -182,6 +182,27 @@ if __name__ == "__main__":
 """
 
 
+def download_googledrive(data_pars):
+
+  https://drive.google.com/drive/folders/1zzeCO5YgKXscP3BuKq11zA_lXYHkqAlB
+
+   """
+    googledrive::fileid::filename
+
+
+   """
+
+   cmd =""" wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=FILEID' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id={FILEID}" -O {FILENAME} && rm -rf /tmp/cookies.txt
+   """
+
+   fileid = path_split[1]
+
+
+   cmd= cmd.format(FILEID=fileid, FILENAME=filename)
+   os.system(cmd)
+
+
+
 
 
 
