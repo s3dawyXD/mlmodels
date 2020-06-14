@@ -128,6 +128,58 @@ def get_params(choice="", data_path="dataset/timeseries/", config_mode="test", *
 
 
 
+
+
+
+def get_dataset2(data_pars):    
+    """
+        "data_pars": {
+            "data_info": {
+            },
+            "preprocessors": [
+
+
+                {   "name" :  "get_dataset_process",
+                    "uri"  : "mlmodels.model_gluon.gluonts_model:get_dataset_process",
+                    "args"  : { 
+
+                        "train": true, 
+                        "dt_source": "",
+
+                        "use_feat_dynamic_real":true, 
+                        "use_feat_static_cat": true, 
+                        "use_feat_static_real":false,
+                        
+                        "data_type": "gluonts",
+                       
+                        "submission": false , 
+                        
+                        "data_path":  "dataset/timeseries/covid19_gluonts/" , 
+                       
+                        "single_pred_length":28,
+                        "freq": "1D",
+                        "start" : "2015-02-26 21:42:53",        
+                        "startdate" : "2011-01-29",  
+                        "col_date"   : "timestamp",                
+                        "col_ytarget" : ["value"],  "num_series" : 1,
+
+                        "cols_cat": [],   "cols_num" : []
+                    }
+                    }
+                }
+            ]
+        },
+
+
+    """
+    from mlmodels.dataloader import DataLoader
+    loader = DataLoader(data_pars)
+    loader.compute()
+    return loader.get_data()
+
+
+
+
 def get_dataset(data_pars):    
     """
       Return   train, test 
@@ -140,9 +192,8 @@ def get_dataset(data_pars):
     if d ==  "multi_dataframe"  : uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_pandas_multi"
     else :  raise Exception("No loader") 
 
-
     # uri = "mlmodels.model_gluonts.gluonts_model:get_dataset_gluonts" 
-    loader = load_function_uri(uri)
+    # loader = load_function_uri(uri)
     # train, test = loader(data_pars)
 
 
@@ -155,6 +206,7 @@ def get_dataset(data_pars):
     if d ==  "single_dataframe" :
         # Mutiple dataframe
         train, test = get_dataset_pandas_multi(data_pars)
+
     else :
          raise Exception("No loader") 
 

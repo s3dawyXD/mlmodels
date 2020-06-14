@@ -26,6 +26,7 @@ from collections import OrderedDict
 
 from mlmodels.util import path_norm, log
 
+from mlmodels.util import path_norm, log
 
 
 
