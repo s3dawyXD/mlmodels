@@ -29,6 +29,7 @@ versioneer==0.18   ## Auto Versionning
 jsoncomment==0.4.2
 filelock
 gdown
+PySocks
 
 
 
