@@ -4,8 +4,9 @@ name: test_fast_linux
 
 on:
   push:
-    branches: 
-      - dev
+    branches:
+      - adata2
+#      - dev
 
 
 jobs:
