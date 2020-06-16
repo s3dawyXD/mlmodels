@@ -2,7 +2,8 @@
 import os
 import sys
 import numpy as np, pandas as pd
-
+import gdown
+from tempfile import gettempdir
 
 from mlmodels.util import os_package_root_path, path_norm
 
@@ -182,28 +183,35 @@ if __name__ == "__main__":
 """
 
 
-def download_googledrive(data_pars):
+def download_googledrive(**kw):
+    """
+    Use in dataloader with
+        "uri": mlmodels.data:donwload_googledrive
+        "args" : {
+            "fileid" :
+            "path_target":
+        }
 
-  https://drive.google.com/drive/folders/1zzeCO5YgKXscP3BuKq11zA_lXYHkqAlB
+    """
 
-   """
-    googledrive::fileid::filename
+    fileid = kw.get("fileid")
 
+    if not fileid:
+       raise Exception(f"Missing file id in parameters {kw}")
 
-   """
+    target = kw.get("path_target")
+    if not target:
+       tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
+       os.makedirs(tmp)
+       target = tmp
 
-   cmd =""" wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=FILEID' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id={FILEID}" -O {FILENAME} && rm -rf /tmp/cookies.txt
-   """
+    if not os.path.exists(os.path.dirname(target)):
+        os.makedirs(os.path.dirname(target), exist_ok=True)
 
-   fileid = path_split[1]
+    url = f'https://drive.google.com/uc?id={fileid}'
+    gdown.download(url, target, quiet=False)
 
-
-   cmd= cmd.format(FILEID=fileid, FILENAME=filename)
-   os.system(cmd)
-
-
-
-
+    return target
 
 
 def download_data(data_pars):
