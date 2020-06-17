@@ -17,7 +17,9 @@
 
 
  ,{ "uri"     : "mlmodels.data:download_googledrive", "args" : [],   
-     "kw_args" : [{ "fileid": "1-K72L8aQPsl2qt_uBF-kzbai3TYG6Qg4",  "path_target":  "ztest/covid19/test.json"}]  
+     "kw_args" : { "file_list" : [{ "fileid": "1-K72L8aQPsl2qt_uBF-kzbai3TYG6Qg4",  
+                                     "path_target":  "ztest/covid19/test.json"}] 
+                 }  
     }
 
 
