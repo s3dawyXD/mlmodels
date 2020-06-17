@@ -183,33 +183,37 @@ if __name__ == "__main__":
 """
 
 
-def download_googledrive(**kw):
+def download_googledrive(download_files, **kw):
     """
     Use in dataloader with
         "uri": mlmodels.data:donwload_googledrive
-        "args" : {
+        "args" : [[{
             "fileid" :
             "path_target":
-        }
+        }]]
 
     """
+    if not download_files or not isinstance(download_files, (list, tuple)):
+        return
 
-    fileid = kw.get("fileid")
+    for download_file in download_files:
 
-    if not fileid:
-       raise Exception(f"Missing file id in parameters {kw}")
+        fileid = download_file.get("fileid")
 
-    target = kw.get("path_target")
-    if not target:
-       tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
-       os.makedirs(tmp)
-       target = tmp
+        if not fileid:
+           raise Exception(f"Missing file id in parameters {kw}")
 
-    if not os.path.exists(os.path.dirname(target)):
-        os.makedirs(os.path.dirname(target), exist_ok=True)
+        target = download_file.get("path_target")
+        if not target:
+           tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
+           os.makedirs(tmp)
+           target = tmp
 
-    url = f'https://drive.google.com/uc?id={fileid}'
-    gdown.download(url, target, quiet=False)
+        if not os.path.exists(os.path.dirname(target)):
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+
+        url = f'https://drive.google.com/uc?id={fileid}'
+        gdown.download(url, target, quiet=False)
 
     return target
 
