@@ -182,7 +182,7 @@ if __name__ == "__main__":
 """
 
 
-def download_googledrive(**kw):
+def download_googledrive(download_files, **kw):
     """
       Use in dataloader with
          "uri": mlmodels.data:donwload_googledrive
