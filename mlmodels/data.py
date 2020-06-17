@@ -178,43 +178,45 @@ class CustomDatasetFromCSV(Dataset):
 if __name__ == "__main__":
     transformations = transforms.Compose([transforms.ToTensor()])
     custom_mnist_from_csv = \
-        CustomDatasetFromCSV('../data/mnist_in_csv.csv', 28, 28, transformations)
-        
+        CustomDatasetFromCSV('../data/mnist_in_csv.csv', 28, 28, transformations)        
 """
 
 
 def download_googledrive(**kw):
     """
-    Use in dataloader with
-        "uri": mlmodels.data:donwload_googledrive
-        "args" : {
-            "fileid" :
-            "path_target":
-        }
+      Use in dataloader with
+         "uri": mlmodels.data:donwload_googledrive
+         "args" :{ "file_list" : [ {  "fileid": "1-K72L8aQPsl2qt_uBF-kzbai3TYG6Qg4",  "path_target":  "ztest/covid19/test.json"},
+                                   {  "fileid" :  "GOOGLE URL ID"   , "path_target":  "dataset/test.json"},
+                 ]}
 
     """
+    import random
+    file_list   = kw.get("file_list")
+    target_list = []
+    
+    for d in file_list :
+      fileid = d["fileid"]
+      target = path_norm( d.get("path_target", "ztest/googlefile_" + str(random.randrange(1000) )  )
+      
+      """   
+      if not target:
+         tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
+         os.makedirs(tmp)
+         target = tmp
+      """                                
+      if not os.path.exists(os.path.dirname(target)):
+         os.makedirs(os.path.dirname(target), exist_ok=True)
 
-    fileid = kw.get("fileid")
-
-    if not fileid:
-       raise Exception(f"Missing file id in parameters {kw}")
-
-    target = kw.get("path_target")
-    if not target:
-       tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
-       os.makedirs(tmp)
-       target = tmp
-
-    if not os.path.exists(os.path.dirname(target)):
-        os.makedirs(os.path.dirname(target), exist_ok=True)
-
-    url = f'https://drive.google.com/uc?id={fileid}'
-    gdown.download(url, target, quiet=False)
-
-    return target
+      url = f'https://drive.google.com/uc?id={fileid}'
+      gdown.download(url, target, quiet=False)
+      target_list.append( target  )
+                         
+    return target_list
 
 
-def download_data(data_pars):
+                         
+def download_dtopbox(data_pars):
   """
 
    dataset/
