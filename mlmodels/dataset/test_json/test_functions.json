@@ -1,11 +1,10 @@
 { "test": [
-
-  { "uri" : "mlmodels.util.log", "args" : [ "x1" , "passed"] ,     "kw_args" : { }  }
+ { "uri" : "mlmodels.util.log", "args" : [ "x1" , "passed"] ,     "kw_args" : { }  }
 
 
  ,{ "uri" : "mlmodels.util:log", "args" : [ "x1" , "passed"] ,      "kw_args" : { }   }
 
-   
+
  ,{ "uri" : "mlmodels.util:load_function_uri",  "args" : [ ],  "kw_args" : {  "uri_name":  "mlmodels.util:log" } }
 
 
@@ -25,7 +24,64 @@
                            }
     }
 
+  ,{ "uri" : "mlmodels.model_tch.textcnn:analyze_datainfo_paths", "args" : [ {
+                    "data_path"  : "dataset/recommender/",
+                    "dataset"    : "IMDB_sample.txt",
+                    "data_type"  : "csv_dataset",
+                    "batch_size" : 64,
+                    "train"      : true
+                }] ,     "kw_args" : { }
+  }
+ ,{ "uri" : "mlmodels.models:module_load", "args" : ["model_tch.torchhub.py"] ,     "kw_args" : { }  }
 
+ ,{ "uri" : "mlmodels.models:module_load_full",
+    "args" : [
+      "model_tch.textcnn.py",
+      {
+			"model_uri": "model_keras.textcnn.py",
+			"maxlen":40,
+			"max_features": 5,
+			"embedding_dims":50
+		},
+      {
+			"data_info": {
+				"dataset" : "mlmodels/dataset/text/imdb",
+				"pass_data_pars": false,
+				"train": true,
+				"maxlen":40,
+				"max_features": 5
+			},
+
+			"preprocessors": [
+				{
+					"name": "loader",
+					"uri": "mlmodels.preprocess.generic:NumpyDataset",
+					"args": {
+                        "numpy_loader_args":{
+                            "allow_pickle":true
+                        },
+						"encoding": "'ISO-8859-1'"
+					}
+				},
+				{
+					"name": "imdb_process",
+					"uri": "mlmodels.preprocess.text_keras:IMDBDataset",
+					"args": {
+						"num_words": 5
+					}
+				}
+			]
+		},
+      {
+			"engine": "adam",
+			"loss": "binary_crossentropy",
+			"metrics": ["accuracy"] ,
+			"batch_size": 1000,
+			"epochs":1
+		}
+    ] ,
+    "kw_args" : { }
+  }
 ]
 }
 
