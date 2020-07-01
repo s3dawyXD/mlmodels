@@ -82,6 +82,14 @@
     ] ,
     "kw_args" : { }
   }
+ ,{ "uri" : "mlmodels.util:path_norm", "args" : [ "model_keras.charcnn.py"] ,     "kw_args" : { }  }
+ ,{ "uri" : "mlmodels.util:path_norm_dict",
+    "args" : [ {"out_pars":{
+          "checkpointdir":"ztest/model_tch/MATCHZOO/BERT/checkpoints/",
+          "path":"ztest/model_tch/MATCHZOO/BERT/"
+       }}] ,
+    "kw_args" : { }
+  }
 ]
 }
 
