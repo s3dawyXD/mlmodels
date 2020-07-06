@@ -1,7 +1,10 @@
-torch==1.2.0
+torch==1.2.0  ## Needed for other models
 #torch==1.0.1
 tensorflow==1.15.2
+# tensorflow==2.1.0
 keras<2.4.0
+#keras
+# autokeras
 numpy
 optuna<1.2.0
 
@@ -21,10 +24,12 @@ python-dateutil==2.8.0
 
 
 #### Utils
-cli_code
-
-
-
+cli_code    ### Utilities
+versioneer==0.18   ## Auto Versionning
+jsoncomment==0.4.2
+filelock
+gdown
+PySocks
 
 
 

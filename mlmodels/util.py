@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+import fnmatch
 
 # import toml
 from pathlib import Path
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
-
-"""
-from mlmodels.util import (os_package_root_path, log, path_norm
-    config_load_root, config_path_pretrained, config_path_dataset, config_set
-    )
-"""
+import importlib
+from inspect import getmembers
 
 
 ####################################################################################################
@@ -23,13 +20,47 @@ class to_namespace(object):
         return self.__dict__.get(key)
 
 
-def log(*s, n=0, m=1):
+def log(*s, n=0, m=0):
     sspace = "#" * n
     sjump = "\n" * m
-    print(sjump, sspace, s, sspace, flush=True)
+    print("")
+    print(sjump, sspace, *s, sspace, flush=True)
+
 
 
 ####################################################################################################
+def os_package_root_path(filepath="", sublevel=0, path_add=""):
+    """
+       get the module package root folder
+    """
+    from pathlib import Path
+    import mlmodels, os, inspect 
+
+    path = Path(inspect.getfile(mlmodels)).parent
+    # print( path )
+
+    # path = Path(os.path.realpath(filepath)).parent
+    for i in range(1, sublevel + 1):
+        path = path.parent
+
+    path = os.path.join(path.absolute(), path_add)
+    return path
+
+
+def os_file_current_path():
+    import inspect
+    val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    # return current_dir + "/"
+    # Path of current file
+    # from pathlib import Path
+
+    # val = Path().absolute()
+    val = str(os.path.join(val, ""))
+    # print(val)
+    return val
+
+
+
 def os_folder_copy(src, dst):
     """Copy a directory structure overwriting existing files"""
     import shutil
@@ -53,7 +84,7 @@ def os_get_file(folder=None, block_list=[], pattern=r'*.py'):
     folder = os_package_root_path() if folder is None else folder
     # print(folder)
     module_names = get_recursive_files3(folder, pattern)
-    print(module_names)
+    # print(module_names)
 
 
     NO_LIST = []
@@ -61,7 +92,7 @@ def os_get_file(folder=None, block_list=[], pattern=r'*.py'):
 
     list_select = []
     for t in module_names:
-        t = t.replace(folder, "").replace("\\", ".").replace(".py", "")
+        t = t.replace(folder, "").replace("\\", ".").replace(".py", "").replace("/", ".")
 
         flag = False
         for x in NO_LIST:
@@ -84,7 +115,7 @@ def model_get_list(folder=None, block_list=[]):
 
     list_select = []
     for t in module_names:
-        t = t.replace(folder, "").replace("\\", ".")
+        t = t.replace(folder, "").replace("\\", ".").replace(".py", "").replace("/", ".")
 
         flag = False
         for x in NO_LIST:
@@ -96,13 +127,27 @@ def model_get_list(folder=None, block_list=[]):
     return list_select
 
 
+
+def get_recursive_files(folderPath, ext='/*model*/*.py'):
+    import glob
+    files = glob.glob(folderPath + ext, recursive=True)
+    return files
+
+
+
 def get_recursive_files2(folderPath, ext):
+    import fnmatch  #Unix type match
     results = os.listdir(folderPath)
     outFiles = []
+    # print(results)
+
+
     for file in results:
+        # print(file)
         if os.path.isdir(os.path.join(folderPath, file)):
             outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
-        elif re.match(ext, file):
+
+        elif fnmatch.fnmatch(file, ext):
             outFiles.append( folderPath + "/" + file)
 
     return outFiles
@@ -114,7 +159,8 @@ def get_recursive_files3(folderPath, ext):
     for file in results:
         if os.path.isdir(os.path.join(folderPath, file)):
             outFiles += get_recursive_files(os.path.join(folderPath, file), ext)
-        elif re.match(ext, file):
+        # elif re.match(ext, file): 
+        elif fnmatch.fnmatch(file, ext):
             outFiles.append(file)
     return outFiles
 
@@ -125,21 +171,23 @@ def get_model_uri(file):
 
 
 
-def get_recursive_files(folderPath, ext='/*model*/*.py'):
-    import glob
-    files = glob.glob(folderPath + ext, recursive=True)
-    return files
 
-
+def json_norm(ddict):  
+  for k,t in ddict.items(): 
+     if t == "None" :
+         ddict[k] = None
+  return ddict    
+         
 
 
 def path_norm(path=""):
     root = os_package_root_path(__file__, 0)
 
+    path = path.strip()
     if len(path) == 0 or path is None:
         path = root
 
-    tag_list = [ "model_", "//model_",  "dataset", "template", "ztest"  ]
+    tag_list = [ "model_", "//model_",  "dataset", "template", "ztest", "example", "config"  ]
 
 
     for t in tag_list :
@@ -155,45 +203,6 @@ def path_norm_dict(ddict):
             ddict[k] = path_norm(v)
     return ddict
 
-
-"""
-def os_module_path():
-    import inspect
-    current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    parent_dir = os.path.dirname(current_dir)
-    # sys.path.insert(0, parent_dir)
-    return parent_dir
-"""
-
-def os_package_root_path(filepath="", sublevel=0, path_add=""):
-    """
-       get the module package root folder
-    """
-    from pathlib import Path
-    import mlmodels, os, inspect 
-
-    path = Path(inspect.getfile(mlmodels)).parent
-    print( path )
-
-    # path = Path(os.path.realpath(filepath)).parent
-    for i in range(1, sublevel + 1):
-        path = path.parent
-
-    path = os.path.join(path.absolute(), path_add)
-    return path
-
-
-def os_file_current_path():
-    import inspect
-    val = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    # return current_dir + "/"
-    # Path of current file
-    # from pathlib import Path
-
-    # val = Path().absolute()
-    val = str(os.path.join(val, ""))
-    # print(val)
-    return val
 
 
 ####################################################################################################
@@ -215,9 +224,12 @@ def test_module(model_uri="model_tf/1_lstm.py", data_path="dataset/", pars_choic
     test_module_global(model_uri, model_pars, data_pars, compute_pars, out_pars)
 
 
+
+
+
 ####################################################################################################
 def config_load_root():
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     path_user = os.path.expanduser('~')
     path_config = path_user + "/.mlmodels/config.json"
 
@@ -244,16 +256,15 @@ def config_set(ddict2):
     json.dump(ddict, open(ddict, mode='w'))
    
 
-
-
-def params_json_load(path, config_mode="test"):
-    import json
+def params_json_load(path, config_mode="test", 
+                     tlist= [ "model_pars", "data_pars", "compute_pars", "out_pars"] ):
+    from jsoncomment import JsonComment ; json = JsonComment()
     pars = json.load(open(path, mode="r"))
     pars = pars[config_mode]
 
     ### HyperParam, model_pars, data_pars,
     list_pars = []
-    for t in ["hypermodel_pars", "model_pars", "data_pars", "compute_pars", "out_pars"]:
+    for t in tlist :
         pdict = pars.get(t)
         if pdict:
             list_pars.append(pdict)
@@ -266,7 +277,7 @@ def params_json_load(path, config_mode="test"):
 
 def load_config(args, config_file, config_mode, verbose=0):
     ##### Load file dict_pars as dict namespace #############################
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     print(config_file) if verbose else None
 
     try:
@@ -360,7 +371,7 @@ def env_build(model_uri, env_pars):
 
 
 ####################################################################################################
-########## TF specific #############################################################################
+########## Specific ################################################################################
 def tf_deprecation():
     try:
         from tensorflow.python.util import deprecation
@@ -368,6 +379,20 @@ def tf_deprecation():
         print("Deprecaton set to False")
     except:
         pass
+
+
+def get_device_torch():
+    import torch, numpy as np
+    if torch.cuda.is_available():
+        device = "cuda:{}".format(np.random.randint(torch.cuda.device_count()))
+    else:
+        device = "cpu"
+    print("use device", device)
+    return device
+
+
+
+
 
 
 
@@ -384,7 +409,7 @@ class Model_empty(object):
 
 
 def os_path_split(path) :
-  return str(Path( path ).parent), str(Path( path ).name)
+  return str(Path( path ).parent), str(Path( path ).name) # + str(Path( path ).suffix) 
 
 
 
@@ -407,46 +432,111 @@ def save(model=None, session=None, save_pars=None):
 
 
 
-
 def load_tf(load_pars=""):
-  """
-  https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
+    """
+    https://www.mlflow.org/docs/latest/python_api/mlflow.tensorflow.html#
+    https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/Saver#restore
 
- """
-  import tensorflow as tf
-  tf_graph = tf.Graph()
-  tf_sess = tf.Session(graph=tf_graph)
-  model_path = os.path.join(load_pars['path'], "model")
-  with tf_graph.as_default():
-    new_saver = tf.train.import_meta_graph(f"{model_path}.meta")
-    new_saver.restore(tf_sess, tf.train.latest_checkpoint(str(Path(model_path).parent)))
+           import tensorflow as tf
 
-  return tf_sess
+        import main
+        import Process
+        import Input
+
+        eval_dir = "/Users/Zanhuang/Desktop/NNP/model.ckpt-30"
+        checkpoint_dir = "/Users/Zanhuang/Desktop/NNP/checkpoint"
+
+        init_op = tf.initialize_all_variables()
+
+        ### Here Comes the fake variable that makes defining a saver object possible.
+        _ = tf.Variable(initial_value='fake_variable')
+
+        ###
+        saver = tf.train.Saver()
+
+        with tf.Session() as sess:
+          ckpt = tf.train.get_checkpoint_state('./'):
+          if ckpt: # checkpointがある場合
+        last_model = ckpt.model_checkpoint_path # 最後に保存したmodelへのパス
+        print "load " + last_model
+        saver.restore(sess, last_model) # 変数データの読み込み
+        ...
+
+
+    """
+    import tensorflow as tf
+    sess =  tf.compat.v1.Session() # tf.Session()
+    model_path = os.path.join(load_pars['path'], "model")
+    
+    full_name  = model_path + "/model.ckpt"
+    # saver = tf.train.import_meta_graph(model_path + '/model.ckpt.meta')
+
+
+    ## Need Fake
+    #_ = tf.Variable(initial_value='xxxxxx_fake')
+    #saver      = tf.compat.v1.train.Saver()  
+
+    # with  tf.compat.v1.Session() as sess:
+    saver = tf.train.Saver()
+    # saver = tf.train.import_meta_graph(model_path + '/model.ckpt.meta')
+    saver.restore(sess,  full_name)
+    #saver.restore(sess, tf.train.latest_checkpoint(model_path+'/'))
+    print(f"Loaded saved model from {model_path}")
+    return sess
+
+
 
 
 def save_tf(model=None, sess=None, save_pars= None):
-  import tensorflow as tf
-  saver = tf.compat.v1.train.Saver()
-  if not os.path.exists(save_pars['path']):
-      os.makedirs(save_pars['path'], exist_ok=True)
-  return saver.save(sess, os.path.join(save_pars['path'], "model"))
+    """
+        # Add ops to save and restore all the variables.
+        saver = tf.train.Saver()
+
+        # Later, launch the model, initialize the variables, do some work, and save the
+        # variables to disk.
+    with tf.Session() as sess:
+    sess.run(init_op)
+    # Do some work with the model.
+    inc_v1.op.run()
+    dec_v2.op.run()
+    # Save the variables to disk.
+    save_path = saver.save(sess, "/tmp/model.ckpt")
+    print("Model saved in path: %s" % save_path)
+    
+    
+    """
+    # https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/Saver#restore  
+    import tensorflow as tf
+    saver = tf.compat.v1.train.Saver()
+    model_path = save_pars['path']  + "/model/"
+    os.makedirs(model_path, exist_ok=True)
+    save_path = saver.save(sess, model_path + "/model.ckpt")
+    print("Model saved in path: %s" % save_path)
+  
+
 
 
 
 def load_tch(load_pars):
     import torch
-    path, filename = load_pars['path'], load_pars['filename']
-
-    path = path + "/" + filename if "." not in path else path
+    #path, filename = load_pars['path'], load_pars.get('filename', "model.pkl")
+    #path = path + "/" + filename if "." not in path else path
+    if os.path.isdir(load_pars['path']):
+        path, filename = load_pars['path'], "model.pb"
+    else:
+        path, filename = os_path_split(load_pars['path'])
     model = Model_empty()
-    model.model = torch.load(path)
+    model.model = torch.load(Path(path) / filename)
     return model
 
 
 def save_tch(model=None, optimizer=None, save_pars=None):
     import torch
-    path, filename = os_path_split(save_pars['path'])
-    os.makedirs(path, exist_ok=True)
+    if os.path.isdir(save_pars['path']):
+        path, filename = save_pars['path'], "model.pb"
+    else:
+        path, filename = os_path_split(save_pars['path'])
+    if not os.path.exists(path): os.makedirs(path, exist_ok=True)
 
     if save_pars.get('save_state') is not None:
         torch.save({
@@ -490,37 +580,51 @@ def load_pkl(load_pars):
     return pickle.load(open( load_pars['path'], mode='rb') )
 
 
-def save_pkl(model=None, save_pars=None):
-  import cloudpickle as pickle
-  path, filename = os_path_split(save_pars['path'])
-  os.makedirs(path, exist_ok=True)
-  return pickle.dump(model, open( f"{path}/{filename}" , mode='wb') )
-
+def save_pkl(model=None, session=None, save_pars=None):
+    import cloudpickle as pickle
+    if os.path.isdir(save_pars['path']):
+        path, filename = save_pars['path'], "model.pkl"
+    else:
+        path, filename = os_path_split(save_pars['path'])
+    if not os.path.exists(path): os.makedirs(path, exist_ok=True)
+    return pickle.dump(model, open( f"{path}/{filename}" , mode='wb') )
 
 
 def load_keras(load_pars, custom_pars=None):
-    from keras.models import load_model
-    path, filename = os_path_split(load_pars['path']  )
+    from tensorflow.keras.models import load_model
+    if os.path.isfile(load_pars['path']):
+        path, filename = os_path_split(load_pars['path']  )
+    else:
+        path = load_pars['path']
+        filename = "model.h5"
+
     path_file = path + "/" + filename if ".h5" not in path else path
     model = Model_empty()
     if custom_pars:
-        model.model = load_model(path_file, 
-                             custom_objects={"MDN": custom_pars["MDN"],
-                                             "loss_func": custom_pars["loss"]})
+        if custom_pars.get("custom_objects"):
+            model.model = load_model(path_file, custom_objects=custom_pars["custom_objects"])
+        else:
+            model.model = load_model(path_file,
+                                     custom_objects={"MDN": custom_pars["MDN"],
+                                                     "mdn_loss_func": custom_pars["loss"]})
     else:
         model.model = load_model(path_file)
     return model
 
 
 def save_keras(model=None, session=None, save_pars=None, ):
-    path, filename = os_path_split(save_pars['path']  )
-    os.makedirs(path, exist_ok=True)
-    model.model.save(str(Path(path) / filename))
+    if os.path.isdir(save_pars['path']):
+        path = save_pars['path']
+        filename = "model.h5"
 
+    else:
+        path, filename = os_path_split(save_pars['path'])
+    if not os.path.exists(path): os.makedirs(path, exist_ok=True)
+    model.model.save(str(Path(path) / filename))
 
 def save_gluonts(model=None, session=None, save_pars=None):
     path = save_pars['path']
-    os.makedirs(path, exist_ok=True)
+    if not os.path.exists(path): os.makedirs(path, exist_ok=True)
     model.model.serialize(Path(path))
 
 
@@ -532,6 +636,93 @@ def load_gluonts(load_pars=None):
     model = Model_empty()
     model.model = predictor_deserialized
     return model
+
+
+
+#########################################################################################
+#########################################################################################
+def load_function(package="mlmodels.util", name="path_norm"):
+  import importlib
+  return  getattr(importlib.import_module(package), name)
+
+
+
+def load_function_uri(uri_name="path_norm"):
+    """
+    #load dynamically function from URI
+
+    ###### Pandas CSV case : Custom MLMODELS One
+    #"dataset"        : "mlmodels.preprocess.generic:pandasDataset"
+
+    ###### External File processor :
+    #"dataset"        : "MyFolder/preprocess/myfile.py:pandasDataset"
+
+
+    """
+    
+    import importlib, sys
+    from pathlib import Path
+    pkg = uri_name.split(":")
+
+    assert len(pkg) > 1, "  Missing :   in  uri_name module_name:function_or_class "
+    package, name = pkg[0], pkg[1]
+    
+    try:
+        #### Import from package mlmodels sub-folder
+        return  getattr(importlib.import_module(package), name)
+
+    except Exception as e1:
+        try:
+            ### Add Folder to Path and Load absoluate path module
+            path_parent = str(Path(package).parent.parent.absolute())
+            sys.path.append(path_parent)
+            #log(path_parent)
+
+            #### import Absolute Path model_tf.1_lstm
+            model_name   = Path(package).stem  # remove .py
+            package_name = str(Path(package).parts[-2]) + "." + str(model_name)
+            #log(package_name, model_name)
+            return  getattr(importlib.import_module(package_name), name)
+
+        except Exception as e2:
+            raise NameError(f"Module {pkg} notfound, {e1}, {e2}")
+
+
+
+
+def load_callable_from_uri(uri):
+    assert(len(uri)>0 and ('::' in uri or '.' in uri))
+    if '::' in uri:
+        module_path, callable_name = uri.split('::')
+    else:
+        module_path, callable_name = uri.rsplit('.',1)
+    if os.path.isfile(module_path):
+        module_name = '.'.join(module_path.split('.')[:-1])
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    else:
+        module = importlib.import_module(module_path)
+    return dict(getmembers(module))[callable_name]
+        
+
+def load_callable_from_dict(function_dict, return_other_keys=False):
+    function_dict = function_dict.copy()
+    uri = function_dict.pop('uri')
+    func = load_callable_from_uri(uri)
+    try:
+        assert(callable(func))
+    except:
+        raise TypeError(f'{func} is not callable')
+    arg = function_dict.pop('arg', {})
+    if not return_other_keys:
+        return func, arg
+    else:
+        return func, arg, function_dict
+    
+
+
+
 
 
 

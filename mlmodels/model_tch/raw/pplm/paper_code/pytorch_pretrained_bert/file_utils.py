@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import fnmatch
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import logging
 import os
 import shutil

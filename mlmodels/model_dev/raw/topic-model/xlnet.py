@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 
 import tensorflow as tf

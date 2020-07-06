@@ -1,92 +1,141 @@
 
 import os
 import sys
-
+import numpy as np, pandas as pd
+import gdown
+from tempfile import gettempdir
 
 from mlmodels.util import os_package_root_path, path_norm
 
 
-"""
-
-Dataset from pytorch Vision
-https://pytorch.org/docs/master/torchvision/datasets.html#fashion-mnist
-
-
-
-Dataset from Torch Text
-https://pytorch.org/text/datasets.html
-
-
-
-All dataset
-https://en.wikipedia.org/wiki/List_of_datasets_for_machine-learning_research
-
-
-
-
-Time series
-https://gluon-ts.mxnet.io/api/gluonts/gluonts.dataset.repository.datasets.html
-
-
-https://github.com/zalandoresearch/fashion-mnist
-
-
-
-
-
-####LudWig
-
-https://blog.dominodatalab.com/a-practitioners-guide-to-deep-learning-with-ludwig/
-
-
-
-
-
-
-class CustomDatasetFromCSV(Dataset):
-    def __init__(self, csv_path, height, width, transforms=None):
+def tf_dataset(dataset_pars):
+    """
+        dataset_pars ={ "dataset_id" : "mnist", "batch_size" : 5000, "n_train": 500, "n_test": 500, 
+                            "out_path" : "dataset/vision/mnist2/" }
+        tf_dataset(dataset_pars)
         
-        Args:
-            csv_path (string): path to csv file
-            height (int): image height
-            width (int): image width
-            transform: pytorch transforms for transforms and tensor conversion
         
-        self.data = pd.read_csv(csv_path)
-        self.labels = np.asarray(self.data.iloc[:, 0])
-        self.height = height
-        self.width = width
-        self.transforms = transform
+        https://www.tensorflow.org/datasets/api_docs/python/tfds
+        import tensorflow_datasets as tfds
+        import tensorflow as tf
+        
+        # Here we assume Eager mode is enabled (TF2), but tfds also works in Graph mode.
+        print(tfds.list_builders())
+        
+        # Construct a tf.data.Dataset
+        ds_train = tfds.load(name="mnist", split="train", shuffle_files=True)
+        
+        # Build your input pipeline
+        ds_train = ds_train.shuffle(1000).batch(128).prefetch(10)
+        for features in ds_train.take(1):
+          image, label = features["image"], features["label"]
+          
+          
+        NumPy Usage with tfds.as_numpy
+        train_ds = tfds.load("mnist", split="train")
+        train_ds = train_ds.shuffle(1024).batch(128).repeat(5).prefetch(10)
+        
+        for example in tfds.as_numpy(train_ds):
+          numpy_images, numpy_labels = example["image"], example["label"]
+        You can also use tfds.as_numpy in conjunction with batch_size=-1 to get the full dataset in NumPy arrays from the returned tf.Tensor object:
+        
+        train_ds = tfds.load("mnist", split=tfds.Split.TRAIN, batch_size=-1)
+        numpy_ds = tfds.as_numpy(train_ds)
+        numpy_images, numpy_labels = numpy_ds["image"], numpy_ds["label"]
+        
+        
+        FeaturesDict({
+    'identity_attack': tf.float32,
+    'insult': tf.float32,
+    'obscene': tf.float32,
+    'severe_toxicity': tf.float32,
+    'sexual_explicit': tf.float32,
+    'text': Text(shape=(), dtype=tf.string),
+    'threat': tf.float32,
+    'toxicity': tf.float32,
+})
+            
+            
+    
+    """
+    import tensorflow_datasets as tfds
 
-    def __getitem__(self, index):
-        single_image_label = self.labels[index]
-        # Read each 784 pixels and reshape the 1D array ([784]) to 2D array ([28,28]) 
-        img_as_np = np.asarray(self.data.iloc[index][1:]).reshape(28,28).astype('uint8')
-  # Convert image from numpy array to PIL image, mode 'L' is for grayscale
-        img_as_img = Image.fromarray(img_as_np)
-        img_as_img = img_as_img.convert('L')
-        # Transform image to tensor
-        if self.transforms is not None:
-            img_as_tensor = self.transforms(img_as_img)
-        # Return image and the label
-        return (img_as_tensor, single_image_label)
+    d          = dataset_pars
+    dataset_id = d['dataset_id']
+    batch_size = d.get('batch_size', -1)  # -1 neans all the dataset
+    n_train    = d.get("n_train", 500)
+    n_test     = d.get("n_test", 500)
+    out_path   = path_norm(d['out_path'] )
+    name       = dataset_id.replace(".","-")    
+    os.makedirs(out_path, exist_ok=True) 
 
-    def __len__(self):
-        return len(self.data.index)
+
+    train_ds =  tfds.as_numpy( tfds.load(dataset_id, split= f"train[0:{n_train}]", batch_size=batch_size) )
+    test_ds  = tfds.as_numpy( tfds.load(dataset_id, split= f"test[0:{n_test}]", batch_size=batch_size) )
+
+    # test_ds  = tfds.as_numpy( tfds.load(dataset_id, split= f"test[0:{n_test}]", batch_size=batch_size) )
+
+
+    
+    print("train", train_ds.shape )
+    print("test",  test_ds.shape )
+
+    
+    def get_keys(x):
+       if "image" in x.keys() : xkey = "image"
+       if "text" in x.keys() : xkey = "text"    
+       return xkey
+    
+    
+    for x in train_ds:
+       #print(x)
+       xkey =  get_keys(x)
+       np.savez_compressed(out_path + f"{name}_train" , X = x[xkey] , y = x.get('label') )
         
 
-if __name__ == "__main__":
-    transformations = transforms.Compose([transforms.ToTensor()])
-    custom_mnist_from_csv = \
-        CustomDatasetFromCSV('../data/mnist_in_csv.csv', 28, 28, transformations)
+    for x in test_ds:
+       #print(x)
+       np.savez_compressed(out_path + f"{name}_test", X = x[xkey] , y = x.get('label') )
         
-"""
+    print(out_path, os.listdir( out_path ))
+        
+                
+
+def download_googledrive(file_list, **kw):
+    """
+      Use in dataloader with
+         "uri": mlmodels.data:donwload_googledrive
+         file_list = [ {  "fileid": "1-K72L8aQPsl2qt_uBF-kzbai3TYG6Qg4",  "path_target":  "ztest/covid19/test.json"},
+                        {  "fileid" :  "GOOGLE URL ID"   , "path_target":  "dataset/test.json"},
+                 ]
+
+    """
+    import random
+    # file_list   = kw.get("file_list")
+    target_list = []
+    
+    for d in file_list :
+      fileid = d["fileid"]
+      target = path_norm( d.get("path_target", "ztest/googlefile_" + str(random.randrange(1000) )  )
+      
+      """   
+      if not target:
+         tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
+         os.makedirs(tmp)
+         target = tmp
+      """                                
+      if not os.path.exists(os.path.dirname(target)):
+         os.makedirs(os.path.dirname(target), exist_ok=True)
+
+      url = f'https://drive.google.com/uc?id={fileid}'
+      gdown.download(url, target, quiet=False)
+      target_list.append( target  )
+                         
+    return target_list
 
 
-
-
-
-def download_data(data_pars):
+                         
+def download_dtopbox(data_pars):
   """
 
    dataset/
@@ -211,7 +260,7 @@ def import_data_dask(**kw):
     elif extension in [".pkl"]: 
        df = dd.read_pickle(kw["data_path"])
     elif extension in [".npz"]: 
-       df = dd.read_pickle(m["data_path"])
+       df = dd.read_pickle(kw["data_path"])
     else: raise Exception(f"Not support extension {extension}")
   return df
 
@@ -278,3 +327,79 @@ def get_dataset(data_pars) :
      ### Get from external tool
 
 
+
+    
+"""
+
+Dataset from pytorch Vision
+https://pytorch.org/docs/master/torchvision/datasets.html#fashion-mnist
+
+
+
+Dataset from Torch Text
+https://pytorch.org/text/datasets.html
+
+
+
+All dataset
+https://en.wikipedia.org/wiki/List_of_datasets_for_machine-learning_research
+
+
+
+
+Time series
+https://gluon-ts.mxnet.io/api/gluonts/gluonts.dataset.repository.datasets.html
+
+
+https://github.com/zalandoresearch/fashion-mnist
+
+
+
+
+
+####LudWig
+
+https://blog.dominodatalab.com/a-practitioners-guide-to-deep-learning-with-ludwig/
+
+
+
+
+
+
+class CustomDatasetFromCSV(Dataset):
+    def __init__(self, csv_path, height, width, transforms=None):
+        
+        Args:
+            csv_path (string): path to csv file
+            height (int): image height
+            width (int): image width
+            transform: pytorch transforms for transforms and tensor conversion
+        
+        self.data = pd.read_csv(csv_path)
+        self.labels = np.asarray(self.data.iloc[:, 0])
+        self.height = height
+        self.width = width
+        self.transforms = transform
+
+    def __getitem__(self, index):
+        single_image_label = self.labels[index]
+        # Read each 784 pixels and reshape the 1D array ([784]) to 2D array ([28,28]) 
+        img_as_np = np.asarray(self.data.iloc[index][1:]).reshape(28,28).astype('uint8')
+  # Convert image from numpy array to PIL image, mode 'L' is for grayscale
+        img_as_img = Image.fromarray(img_as_np)
+        img_as_img = img_as_img.convert('L')
+        # Transform image to tensor
+        if self.transforms is not None:
+            img_as_tensor = self.transforms(img_as_img)
+        # Return image and the label
+        return (img_as_tensor, single_image_label)
+
+    def __len__(self):
+        return len(self.data.index)
+        
+
+if __name__ == "__main__":
+    transformations = transforms.Compose([transforms.ToTensor()])
+    custom_mnist_from_csv = \
+        CustomDatasetFromCSV('../data/mnist_in_csv.csv', 28, 28, transformations)        
+"""

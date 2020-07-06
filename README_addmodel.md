@@ -1,114 +1,158 @@
+# Contributing Guidelines
+### Pull Requests, Fixes, New Models
+Read following instructions before adding a new model.
+- [Code Style](#code-style)
+- [Read The Examples](#read-the-examples)
+- [Fork](#fork)
+- [MANDATORY For TESTS](#configure-for-tests)
+- [Create python code](#create-python-script-for-new-model)
+- [Create JSON for parameters](#create-json-for-parameters)
+- [Keep Your Branch Updated](#keep-your-branch-updated)
+- [Run/test your Model](#run-model)
+- [Check Your Test Runs](#check-your-test-runs)
+- [Issue A Pull Request](#issue-a-pull-request)
+- [Source Code Structure As Below](#source-code-structure-as-below)
+- [How to define a custom model](#how-to-define-a-custom-model)
 
-# Steps to add a new Colab notebook /Jupyter notbbok :
+
+## Get started quickly
+```
+#### Easy path finding
+from mlmodels.util import path_norm 
+  path_withPrefix = path_norm("dataset/timseries/myfile.csv")   ##   site-package/mlmodels/dataset/timseries/myfile.csv
+
+
+
+### Run some model on Command Line for debugging
+cd mlmodels
+python optim.py
+
+python model_tch/textcnn.py
+
+python model_keras/textcnn.py
+
+
 
 ```
 
-0) Read the readme.md and Install mlmodels on Linux
-    https://github.com/arita37/mlmodels/blob/dev/README_usage.md
-    https://github.com/arita37/mlmodels/tree/dev/mlmodels/example
+
+## List of TODO / ISSUES List
+https://github.com/arita37/mlmodels/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 
 
-1) Create a branch from DEV branch called : notebook_
-   https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches
-
-
-2) Create Jupyter Notebook in  mlmodels/example/           
-            
-
-3) Create mymodel.json in  mlmodels/example/
-
- 
-4)  Do Pull Request to dev Branch !
+## Index of Functions/Methods
+[Index](https://github.com/arita37/mlmodels/blob/dev/README_index_doc.py)
 
 
 
+## Using Online Editor (pre-installed mlmodels)
+[Gitpod](https://github.com/arita37/mlmodels/issues/101)
 
-```
-
-
-
-___________________________________________________________________________________________
-# Steps  to add a new model :
-
-
-### 0) Read the examples :
-
-
-  https://github.com/arita37/mlmodels/issues/102
-
-  https://github.com/arita37/mlmodels/pull/100
+[Colab](https://github.com/arita37/mlmodels/issues/102)
 
 
 
-    
-### 1) Create a branch from DEV branch called : keras_modelXXX
+## Code Style: 
+   - You can use to 120 characters per line : Better code readability
+   - Do Not FOLLOW strict PEP8, make your code EASY TO READ : Align  "=" together, .... 
+   - Do NOT reformat existing files.
+
+
+## Read The Examples
+  - [Issue#102](https://github.com/arita37/mlmodels/issues/102)
+  - [Issue#100](https://github.com/arita37/mlmodels/pull/100)
+
+<br>  
   
-
-
-### 2) Change this file with your MODEL_NAME AND BRANCH NAME:
-  GITHUB URL/ .github/workflows/test_specific_model.yml
-
-   Change only with your MODEL_NAME
-  GITHUB URL/ .github/workflows/test_pullrequest.yml#L61
-
-
-     Test will run on GITHUB server for your model AFTER each commit.
-  
-  https://github.com/arita37/mlmodels/actions
+## 1) Fork 
+Fork from arita37/mlmodels. 
+Please use same branch for your developpements: dev branch
 
 
 
-### 3) Create  mlmodels/model_XXXX/yyyyy.py   
-  https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_keras/textcnn.py
-  
-  https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_tch/transformer_sentence.py
-  https://github.com/arita37/mlmodels/blob/dev/README_index_doc.txt
+## 2) Configure for Tests  (No Tests Success, No PR Accepted)
+Change in these files where needed with your MODEL_NAME and BRANCH NAME :
+- [`Test on YOUR_Branch, at each Commit`](https://github.com/arita37/mlmodels/blob/dev/.github/workflows/a_PLEASE_CHANGE_test_yourmodel.yml)  : At each commit
 
-  Template
-  https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/model_xxx.py
+- [`Test at by using pullrequest/ youtest.py`](https://github.com/arita37/mlmodels/tree/dev/pullrequest)  : Used at PR Merge
 
-  Please re-use existing functions
-  https://github.com/arita37/mlmodels/blob/dev/mlmodels/util.py
-  
+
+
+
+## 3) Create Python Script For New Model
+Create  `mlmodels/model_XXXX/yyyyy.py`. Check [template](https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/model_xxx.py).  
+See examples: [model_keras/textcnn.py](https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_keras/textcnn.py), [transformer_sentence.py](https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_tch/transformer_sentence.py)
+
+Please re-use existing functions in [util.py](https://github.com/arita37/mlmodels/blob/dev/mlmodels/util.py)  
+
      from mlmodels.util import os_package_root_path, log, 
                             path_norm, get_model_uri, path_norm_dict
 
      ### Use path_norm to normalize your path.
-     data_path = path_norm("dataset/text/myfile.txt") -->   PATH.../mlmodels/dataset/text/myfile.txt
+     data_path = path_norm("dataset/text/myfile.txt")
+        --> FULL_ PATH   /home/ubuntu/mlmodels/dataset/text/myfile.txt
 
 
+     ### Use path_norm to normalize your path.
+     data_path = path_norm("ztest/text/myfile.txt")
+        --> FULL_ PATH   /home/ubuntu/mlmodels/ztest/text/myfile.txt
 
 
+     data_path = path_norm("ztest/text/myfile.txt")
+        --> FULL_ PATH   /home/ubuntu/mlmodels/ztest/text/myfile.txt
 
-### 4) Create  mlmodels/model_XXXX/yyyy.json , following this template :
+
+## 4) Create JSON For Parameters
+Create  mlmodels/model_XXXX/yyyy.json file following this [template](https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/models_config.json
+).
   
-  https://github.com/arita37/mlmodels/blob/dev/mlmodels/template/models_config.json
+
+## 5) Keep Your Branch Updated 
+Sync your branch with arita37/mlmodels:dev  to reduce conflicts at final steps.
+
+   Pull Request : arita37/dev --> your Branch
 
 
 
-### 5) Run/Test on your local machine
+## Run Model
+Run/Test newly added model on your local machine or on [Gitpod](https://gitpod.io/) or COLAB
+
+    source activate py36
     cd mlmodels
     python model_XXXX/yyyy.py  
 
 
-### 6) Add Basic example of code here  :
-
- https://github.com/arita37/mlmodels/blob/dev/README_usage.md
-
+## Check Your Test Runs
+https://github.com/arita37/mlmodels/actions?query=workflow%3Atest_custom_model
 
 
-### 7)  Do Pull Request to dev Branch !
+
+## Issue A Pull Request
+Once you have made the changes issue a PR.
+
+
 
 
 
 
 ___________________________________________________________________________________________
+# Manual Installation
+    ### On Linux/MacOS
+    pip install numpy<=1.17.0
+    pip install -e .  -r requirements.txt
+    pip install   -r requirements_fake.txt
 
 
+    ### On Windows
+    Use WSL + Linux Installed.
+    pip install numpy<=1.17.0
+    pip install torch==1..1 -f https://download.pytorch.org/whl/torch_stable.html
+    pip install -e .  -r requirements_wi.txt
+    pip install   -r requirements_fake.txt
 
 
-# How to add a new model
-### Source code structure as below
+___________________________________________________________________________________________
+## Source Code Structure As Below
 - `docs`: documentation
 - `mlmodels`: interface wrapper for pytorch, keras, gluon, tf, transformer NLP for train, hyper-params searchi.
     + `model_xxx`: folders for each platform with same interface defined in template folder
@@ -117,8 +161,8 @@ ________________________________________________________________________________
     + `ztest`: testing output for each sample testing in `model_xxx`
 - `ztest`: testing output for each sample testing in `model_xxx`
 
-###  How to define a custom model
-#### 1. Create a file `mlmodels\model_XXXX\mymodel.py` , XXX: tch: pytorch, tf:tensorflow, keras:keras, .... 
+##  How to define a custom model
+### 1. Create a file `mlmodels\model_XXXX\mymodel.py` , XXX: tch: pytorch, tf:tensorflow, keras:keras, .... 
 - Declare below classes/functions in the created file:
 
       Class Model()                                                  :   Model definition
@@ -138,7 +182,7 @@ ________________________________________________________________________________
       def load(load_pars)                                            : load the trained model
 
 
-- *Infos* 
+- **Infos** 
      ```
      model :         Model(model_pars), instance of Model() object
      sess  :         Session for TF model  or optimizer in PyTorch
@@ -149,7 +193,7 @@ ________________________________________________________________________________
      save_pars/load_pars : dict for saving or loading a model
      ```
 
-#### 2. Write your code and create test() to test your code.  **
+### 2. Write your code and create test() to test your code.
 - Declare model definition in Class Model()
 ```python
     self.model = DeepFM(linear_cols, dnn_cols, task=compute_pars['task']) # mlmodels/model_kera/01_deectr.py
@@ -180,16 +224,17 @@ Depend on type of dataset, we could separate function with datatype as below exa
     # input of metrics is predicted output and ground truth data
     def metrics(ypred, ytrue, data_pars, compute_pars=None, out_pars=None, **kwargs):
 ```
-- *Example* 
-    https://github.com/arita37/mlmodels/tree/dev/mlmodels/template
-    https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluon_deepar.py
-    https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluon_deepar.json
+- **Examples** 
+    - https://github.com/arita37/mlmodels/tree/dev/mlmodels/template
+    - https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluon_deepar.py
+    - https://github.com/arita37/mlmodels/blob/dev/mlmodels/model_gluon/gluon_deepar.json
 
 
-#### 3. Create JSON config file inside  /model_XXX/mymodel.json  **
+### 3. Create JSON config file 
+Create a JSON file inside  /model_XXX/mymodel.json
 - Separate configure for staging development environment such as testing and production phase
 then for each staging, declare some specific parameters for model, dataset and also output
-- *Example*
+- **Examples**
 ```json
     {
         "test": {
@@ -249,21 +294,8 @@ then for each staging, declare some specific parameters for model, dataset and a
  
 #######################################################################################
 
-## ③ CLI tools: package provide below tools
-https://github.com/arita37/mlmodels/blob/dev/README_usage.md
-
-```
-- ml_models    :  mlmodels/models.py
-- ml_optim     :  mlmodels/optim.py
-- ml_test      :  mlmodels/ztest.py
-
-
-
-```
-   
-
-
-
+## ③ Command Line Input  tools: package provide below tools
+https://github.com/arita37/mlmodels/blob/dev/docs/README_docs/README_usage_CLI.md
 
 
 #######################################################################################
@@ -300,14 +332,9 @@ optim.py
    Sometimes, data_pars is required to setup the model (ie CNN with image size...)
    
 
-
-
-
-
-
    #######################################################################################
    ### ⑥ Naming convention
-
+   
    ### Function naming
    ```
    pd_   :  input is pandas dataframe
@@ -318,12 +345,3 @@ optim.py
 
    col_ :  function name for column list related.
    ```
-
-
-   #####################################################################################
-
-
-
-
-
-

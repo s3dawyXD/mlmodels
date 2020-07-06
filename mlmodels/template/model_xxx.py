@@ -14,7 +14,7 @@ Check parameters template in models_config.json
 import inspect
 import os
 import sys
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -25,7 +25,6 @@ import pandas as pd
 
 from mlmodels.util import (os_package_root_path, log, path_norm, get_model_uri,
                            config_path_pretrained, config_path_dataset, os_path_split  )
-
 
 
 from mlmodels.data import (download_data, import_data  )
@@ -230,11 +229,12 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     log("#### Plot   ########################################################")
 
 
-    log("#### Save/Load   ###################################################")
+    log("#### Save   ########################################################")
     save(model, session, out_pars)
+
+    log("#### Load   ########################################################")
     model2 = load( out_pars )
-    #     ypred = predict(model2, data_pars, compute_pars, out_pars)
-    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
+    ypred = predict(model2, data_pars, compute_pars, out_pars)
     print(model2)
 
 

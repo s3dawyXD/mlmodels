@@ -24,7 +24,7 @@ python examples/run_pplm.py -D sentiment --class_label 3 --cond_text "The lake" 
 """
 
 import argparse
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 from operator import add
 from typing import List, Optional, Tuple, Union
 

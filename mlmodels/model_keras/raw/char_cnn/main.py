@@ -1,5 +1,5 @@
 import tensorflow as tf
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 
 from data_utils import Data
 from models.char_cnn_zhang import CharCNNZhang

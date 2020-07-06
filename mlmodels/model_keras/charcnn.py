@@ -1,39 +1,98 @@
 # coding: utf-8
 """
-Generic template for new model.
-Check parameters template in models_config.json
 
-"model_pars":   { "learning_rate": 0.001, "num_layers": 1, "size": 6, "size_layer": 128, "output_size": 6, "timestep": 4, "epoch": 2 },
-"data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas", "size": [0, 0, 6], "output_size": [0, 6] },
-"compute_pars": { "distributed": "mpi", "epoch": 10 },
-"out_pars":     { "out_path": "dataset/", "data_type": "pandas", "size": [0, 0, 6], "output_size": [0, 6] }
+
+%tensorflow_version 2.x
+import tensorflow as tf
+print("Tensorflow version " + tf.__version__)
+
+try:
+  tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  # TPU detection
+  print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
+except ValueError:
+  raise BaseException('ERROR: Not connected to a TPU runtime; please see the previous cell in this notebook for instructions!')
+
+tf.config.experimental_connect_to_cluster(tpu)
+tf.tpu.experimental.initialize_tpu_system(tpu)
+tpu_strategy = tf.distribute.experimental.TPUStrategy(tpu)
+
+
+def create_model():
+  pretrained_model = tf.keras.applications.Xception(input_shape=[*IMAGE_SIZE, 3], include_top=False)
+  pretrained_model.trainable = True
+  model = tf.keras.Sequential([
+    pretrained_model,
+    tf.keras.layers.GlobalAveragePooling2D(),
+    tf.keras.layers.Dense(5, activation='softmax')
+  ])
+  model.compile(
+    optimizer='adam',
+    loss = 'categorical_crossentropy',
+    metrics=['accuracy']
+  )
+  return model
+
+with tpu_strategy.scope(): # creating the model in the TPUStrategy scope means we will train the model on the TPU
+  model = create_model()
+model.summary()
+
+
+with tpu_strategy.scope(): # creating the model in the TPUStrategy scope means we will train the model on the TPU
+   model = Model()
+
+
+
+
+###########
+    batch_size = compute_pars['batch_size']
+    epochs = compute_pars['epochs']
+
+    sess = None  #
+    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
+
+    # This address identifies the TPU we'll use when configuring TensorFlow.
+    TPU_WORKER = 'grpc://' + os.environ['COLAB_TPU_ADDR']
+
+
+    keras.backend.clear_session()
+
+    resolver = tf.contrib.cluster_resolver.TPUClusterResolver(TPU_WORKER)
+    tf.contrib.distribute.initialize_tpu_system(resolver)
+    strategy = tf.contrib.distribute.TPUStrategy(resolver)
+
+    with strategy.scope():
+    
+      model0.compile(
+          optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.01),
+          loss='sparse_categorical_crossentropy',
+          metrics=['sparse_categorical_accuracy'])
+
+    model.model.fit(Xtrain, ytrain,
+                                  batch_size=batch_size,
+                                  epochs=epochs,
+                                  callbacks=[early_stopping],
+                                  validation_data=(Xtest, ytest))
+
 
 
 
 """
 import os
+import numpy as np
 from keras.callbacks import EarlyStopping
-from mlmodels.util import os_package_root_path, log, path_norm
-
-
-
 
 
 #### Import EXISTING model and re-map to mlmodels
-from mlmodels.model_keras.raw.char_cnn.data_utils import Data
 from mlmodels.model_keras.raw.char_cnn.models.char_cnn_kim import CharCNNKim
 
 
-from mlmodels.util import path_norm
-print( path_norm("dataset") )
-
 
 ####################################################################################################
+from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri
 
 VERBOSE = False
+MODEL_URI = get_model_uri(__file__)
 
-MODEL_URI = os.path.dirname(os.path.abspath(__file__)).split("\\")[-1] + "." + os.path.basename(__file__).replace(".py",
-                                                                                                                  "")
 
 
 ####################################################################################################
@@ -43,17 +102,19 @@ class Model:
         ### Model Structure        ################################
         if model_pars is None :
             self.model = None
+            return None
 
-        else :
-            self.model = CharCNNKim(input_size=data_pars["input_size"],
-                                alphabet_size          = data_pars["alphabet_size"],
+        self.model = CharCNNKim(input_size=data_pars["data_info"]["input_size"],
+                                alphabet_size          = data_pars["data_info"]["alphabet_size"],
                                 embedding_size         = model_pars["embedding_size"],
                                 conv_layers            = model_pars["conv_layers"],
                                 fully_connected_layers = model_pars["fully_connected_layers"],
-                                num_of_classes         = data_pars["num_of_classes"],
+                                num_of_classes         = data_pars["data_info"]["num_of_classes"],
                                 dropout_p              = model_pars["dropout_p"],
                                 optimizer              = model_pars["optimizer"],
                                 loss                   = model_pars["loss"]).model
+
+
 
 
 def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
@@ -64,7 +125,11 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     epochs = compute_pars['epochs']
 
     sess = None  #
-    Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
+    dataset, internal_states = get_dataset(data_pars)
+    Xtrain, ytrain = dataset
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xtest, ytest = dataset
 
     early_stopping = EarlyStopping(monitor='val_acc', patience=3, mode='max')
     model.model.fit(Xtrain, ytrain,
@@ -76,19 +141,36 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
     return model, sess
 
 
-def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None, **kw):
+
+
+
+def fit_metrics(model, session=None, data_pars=None, compute_pars=None, out_pars=None, **kw):
     """
        Return metrics ofw the model when fitted.
     """
-    ddict = {}
+    from sklearn.metrics import accuracy_score
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xval, yval = dataset
 
+    ypred = model.model.predict(Xval)
+    metric_score_name = compute_pars.get('metric_score') 
+    if metric_score_name is None :
+        return {}
+    ddict = {}
+    if metric_score_name == "accuracy_score":
+        ypred = ypred.argmax(axis=1)
+        yval = np.argmax(yval, axis=1)
+        score = accuracy_score(yval, ypred)
+        ddict[metric_score_name] = score
     return ddict
 
 
-def predict(model, sess=None, data_pars=None, out_pars=None, compute_pars=None, **kw):
+def predict(model, session=None, data_pars=None, out_pars=None, compute_pars=None, **kw):
     ##### Get Data ###############################################
-    data_pars['train'] = False
-    Xpred, ypred = get_dataset(data_pars)
+    data_pars["data_info"]["train"] = False
+    dataset, internal_states = get_dataset(data_pars)
+    Xpred, ypred = dataset
 
     #### Do prediction
     ypred = model.model.predict(Xpred)
@@ -104,66 +186,75 @@ def reset_model():
     pass
 
 
-def save(model=None, session=None, save_pars={}):
+def save(model=None,  save_pars=None, session=None):
     from mlmodels.util import save_keras
     print(save_pars)
     save_keras(model, session, save_pars=save_pars)
 
 
-def load(load_pars={}):
+def load(load_pars=None):
     from mlmodels.util import load_keras
-    print(load_pars)
     model0 = load_keras(load_pars)
 
     model = Model()
-    model.model = model0
+    model.model = model0.model
     session = None
     return model, session
 
 
 ####################################################################################################
+def str_to_indexes(s):
+    """
+    Convert a string to character indexes based on character dictionary.
+
+    Args:
+        s (str): String to be converted to indexes
+
+    Returns:
+        str2idx (np.ndarray): Indexes of characters in s
+
+    """
+    s = s.lower()
+    max_length = min(len(s), length)
+    str2idx = np.zeros(length, dtype='int64')
+    for i in range(1, max_length + 1):
+        c = s[-i]
+        if c in dict:
+            str2idx[i - 1] = dict[c]
+    return str2idx
+
+def tokenize(data, num_of_classes=4):
+    print("data: ", data.to_numpy())
+    data = data.to_numpy()
+    data_size = len(data)
+    start_index = 0
+    end_index = data_size
+    batch_texts = data[start_index:end_index]
+    batch_indices = []
+    one_hot = np.eye(num_of_classes, dtype='int64')
+    classes = []
+    for c, s in batch_texts:
+        batch_indices.append(str_to_indexes(s))
+        c = int(c) - 1
+        classes.append(one_hot[c])
+
+    return np.asarray(batch_indices, dtype='int64'), np.asarray(classes)
+
+
 def get_dataset(data_pars=None, **kw):
     """
       JSON data_pars to get dataset
       "data_pars":    { "data_path": "dataset/GOOG-year.csv", "data_type": "pandas",
       "size": [0, 0, 6], "output_size": [0, 6] },
     """
-    from mlmodels.util import path_norm
-    
-    if data_pars['train']:
-
-        print('Loading data...')
-        train_data = Data(data_source= path_norm( data_pars["train_data_source"]) ,
-                             alphabet       = data_pars["alphabet"],
-                             input_size     = data_pars["input_size"],
-                             num_of_classes = data_pars["num_of_classes"])
-        train_data.load_data()
-        train_inputs, train_labels = train_data.get_all_data()
-
-
-        # Load val data
-        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
-                               alphabet=data_pars["alphabet"],
-                               input_size=data_pars["input_size"],
-                               num_of_classes=data_pars["num_of_classes"])
-        val_data.load_data()
-        val_inputs, val_labels = val_data.get_all_data()
-
-        return train_inputs, val_inputs, train_labels, val_labels
-
-
-    else:
-        val_data = Data(data_source = path_norm( data_pars["val_data_source"]) ,
-                               alphabet=data_pars["alphabet"],
-                               input_size=data_pars["input_size"],
-                               num_of_classes=data_pars["num_of_classes"])
-        val_data.load_data()
-        Xtest, ytest = val_data.get_all_data()
-        return Xtest, ytest
+    from mlmodels.dataloader import DataLoader
+    loader = DataLoader(data_pars)
+    loader.compute()
+    return loader.get_data()
 
 
 def get_params(param_pars={}, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']
@@ -217,15 +308,8 @@ def get_params(param_pars={}, **kw):
         out_pars = {
             "path":  path_norm( "ztest/ml_keras/charcnn/charcnn.h5"),
             "data_type": "pandas",
-            "size": [
-                0,
-                0,
-                6
-            ],
-            "output_size": [
-                0,
-                6
-            ]
+            "size": [0, 0, 6],
+            "output_size": [0, 6]
         }
 
         return model_pars, data_pars, compute_pars, out_pars
@@ -235,7 +319,7 @@ def get_params(param_pars={}, **kw):
 
 
 ################################################################################################
-########## Tests are  ##########################################################################
+########## Tests ###############################################################################
 def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ### Local test
     from mlmodels.util import path_norm
@@ -245,8 +329,9 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     param_pars = {"choice": pars_choice, "data_path": data_path, "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
 
-    log("#### Loading daaset   #############################################")
+    log("#### Loading dataset   #############################################")
     Xtuple = get_dataset(data_pars)
+    print(len(Xtuple))
 
     log("#### Model init, fit   #############################################")
     session = None
@@ -259,31 +344,35 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     ypred = predict(model, session, data_pars, compute_pars, out_pars)
 
     log("#### metrics   #####################################################")
-    metrics_val = fit_metrics(model, data_pars, compute_pars, out_pars)
+    metrics_val = fit_metrics(model, session, data_pars, compute_pars, out_pars)
     print(metrics_val)
 
     log("#### Plot   ########################################################")
 
+
     log("#### Save/Load   ###################################################")
-    save(model, session, save_pars=out_pars)
-    model2 = load(out_pars)
-    #     ypred = predict(model2, data_pars, compute_pars, out_pars)
-    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
-    print(model2)
+    save_pars = {"path": out_pars['path']}
+    save(model, session=session, save_pars=save_pars)
+    model2, session2 = load(save_pars)
+
+    log("#### Save/Load - Predict   #########################################")
+    print(model2, session2)
+    ypred = predict(model2, session2, data_pars, compute_pars, out_pars)
 
 
 
 if __name__ == '__main__':
     VERBOSE = True
     test_path = os.getcwd() + "/mytest/"
-    root_path = os_package_root_path(__file__,1)
+    root_path = os_package_root_path()
 
     ### Local fixed params
-    test(pars_choice="test01")
+    # test(pars_choice="test01")
 
-    # ### Local json file
-    # test(pars_choice="json", data_path= f"{root_path}/model_keras/charcnn.json")
-    #
+    #### Local json file
+    test(pars_choice="json", data_path= f"dataset/json/refactor/charcnn.json")
+
+
     # ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
     # from mlmodels.models import test_module
     #

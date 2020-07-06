@@ -15,22 +15,14 @@ Check parameters template in models_config.json
 
 
 """
-import inspect
 import os
-import sys
-from datetime import datetime, timedelta
-from pathlib import Path
 
-import numpy as np
 import pandas as pd
-
-VERBOSE = False
-MODEL_URI =  Path(os.path.abspath(__file__)).parent.name + "." + os.path.basename(__file__).replace(".py", "")
 
 
 ####################################################################################################
 ######## Logs, root path
-from mlmodels.util import os_package_root_path, log, path_norm
+from mlmodels.util import log, path_norm, get_model_uri
 
 
 import sklearn
@@ -48,6 +40,8 @@ from sklearn.tree import *
 
 
 
+VERBOSE = False
+MODEL_URI = get_model_uri(__file__)
 
 ####################################################################################################
 class Model(object):
@@ -116,7 +110,7 @@ def reset_model():
 def save(model=None, session=None, save_pars={}):
     from mlmodels.util import save_pkl
     print(save_pars)
-    save_pkl(model, session, save_pars)
+    save_pkl(model.model, session, save_pars)
 
 
 def load(load_pars={}):
@@ -169,7 +163,7 @@ def get_dataset(data_pars=None, **kw):
 
 
 def get_params(param_pars={}, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp = param_pars
     choice = pp['choice']
     config_mode = pp['config_mode']
@@ -230,9 +224,10 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     save_pars = {"path" : out_pars['model_path'] }
     save(model, session, save_pars)
     model2, session = load( save_pars)
-    #     ypred = predict(model2, data_pars, compute_pars, out_pars)
-    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
     print(model2.model)
+    # ypred = predict(model2, data_pars, compute_pars, out_pars)
+    metrics_val = fit_metrics(model2, data_pars, compute_pars, out_pars)
+    print(metrics_val)
 
 
 if __name__ == '__main__':
@@ -249,8 +244,8 @@ if __name__ == '__main__':
     ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
     from mlmodels.models import test_module
 
-    #param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
-    #test_module(module_uri=MODEL_URI, param_pars=param_pars)
+    param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
+    test_module(model_uri=MODEL_URI, param_pars=param_pars)
 
     ##### get of get_params
     # choice      = pp['choice']
@@ -261,7 +256,7 @@ if __name__ == '__main__':
     from mlmodels.models import test_api
 
     param_pars = {'choice': "test01", 'config_mode': 'test', 'data_path': '/dataset/'}
-    #test_api(module_uri=MODEL_URI, param_pars=param_pars)
+    test_api(model_uri=MODEL_URI, param_pars=param_pars)
 
 
 

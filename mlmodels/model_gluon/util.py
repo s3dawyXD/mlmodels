@@ -1,4 +1,4 @@
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 from pathlib import Path
 
@@ -167,6 +167,7 @@ def plot_predict(item_metrics, out_pars=None):
     item_metrics.plot(x='MSIS', y='MASE', kind='scatter')
     plt.grid(which="both")
     outpath = out_pars['outpath']
+    if not os.path.exists(outpath): os.makedirs(outpath, exist_ok=True)
     plt.savefig(outpath)
     plt.clf()
     print('Saved image to {}.'.format(outpath))

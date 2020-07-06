@@ -21,7 +21,7 @@
 
 		"data_pars": {
             "mode": "train", 
-            "path": "../mlmodels/dataset/tabular/titanic_train_preprocessed.csv", 
+            "path": "dataset/tabular/titanic_train_preprocessed.csv", 
             "data_type" : "pandas", 
             "train":"True" ,
             "colX":["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked_Q", "Embarked_S", "Title"],

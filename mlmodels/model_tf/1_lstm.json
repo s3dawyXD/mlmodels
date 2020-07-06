@@ -2,6 +2,10 @@
 	"test": {
 
 		"model_pars": {
+
+			"model_uri" : "model_tf.1_lstm",
+
+			
 			"learning_rate": 0.001,
 			"num_layers": 1,
 			"size_layer": 128,
@@ -13,7 +17,7 @@
 		},
 
 		"data_pars": {
-			"data_path": "dataset/timseries/GOOG-year.csv",
+			"data_path": "dataset/timeseries/GOOG-year.csv",
 			"data_type": "pandas",
 			"size": [0, 0, 6],
 			"output_size": [0, 6]
@@ -39,3 +43,4 @@
 
 
 }
+

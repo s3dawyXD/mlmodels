@@ -3,9 +3,20 @@ git+https://www.github.com/keras-team/keras-contrib.git
 mlflow==1.7.1
 
 
-## Required for gluon_FB prophet
-fbprophet==0.6
-convertdate>=2.1.2
+
+### JSON with Cmment embedded
+jsoncomment==0.4.2
+
+
+
+### TF
+tensorflow-datasets==3.0
+
+
+### Lightning for GPU/TPu training
+pytorch-lightning==0.7.3
+
+
 
 
 ### Computer Vision
@@ -13,7 +24,8 @@ torchvision==0.4.0
 Pillow<7.0   ##Issue
 
 
-### transformers
+
+### transformers with 7.0
 pytorch-transformers
 ###transformers==2.4.1 #### fix issue #23 could not run on macos
 transformers==2.3.0 #### due to sentence transformers
@@ -21,10 +33,20 @@ sentence-transformers==0.2.4
 tensorboardX
 
 
-############################
+### autokeras
+# autokeras==1.0.2
+# packaging==20.3
+# tensorflow==2.0  ### Conflict
+
+
+
+#####Gluon#######################
 mxnet==1.6.0
 gluonts==0.4.2
+pydantic<=1.4  ### issue with DeepAR
 autogluon==0.0.5
+
+
 lightgbm==2.3.0
 
 
@@ -54,6 +76,7 @@ torchtext
 nltk
 spacy
 gensim 
+matchzoo-py==1.1.1   #  pytorch-transformers >= 1.1.0, pytorch > 1.2.0
 
 
 #### Distributed training
@@ -66,7 +89,9 @@ keras-mdn-layer<=0.2.1
 
 
 
-
+## Required for gluon_FB prophet
+fbprophet==0.6
+convertdate>=2.1.2
 
 
 

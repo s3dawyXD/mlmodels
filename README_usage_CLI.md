@@ -1,74 +1,94 @@
+# Comand Line tools :
+```bash
+- ml_models    :  Running model training
+- ml_optim     :  Hyper-parameter search
+- ml_benchmark :  Benchmark
+- ml_test      :  Testing for developpers.
 
 
-###### Using Generic API : Common to all models
-```python
-
-from mlmodels.models import module_load, create_model, fit, predict, stats
-from mlmodels.models import load #Load model weights
-
-module        =  module_load( model_uri= model_uri )                           # Load file definition
-model         =  model_create(module, model_pars, data_pars, compute_pars)     # Create Model instance
-model, sess   =  fit(model, data_pars, compute_pars, out_pars)                 # fit the model
-metrics_val   =  fit_metrics( model, sess, data_pars, compute_pars, out_pars)  # get stats
-
-save(save_pars)
-
-
-
-#### Inference
-load_pars = { "path" : "ztest_1lstm/model/" }
-
-module      = module_load( model_uri= model_uri )     # Load file definition
-model,sess  = load(folder, model_type="model_tf")      # Create Model instance
-ypred       = predict(model, module, sess,  data_pars, compute_pars, out_pars)     
-
-
-
-
-
-
+path are relative the the install folder of mlmodels:
+     dataset/timeseries/myfile.csv mean  <Install Folder mlmodels>/dataset/timeseries/myfile.csv
 
 ```
+<br><br>
+
+# How to use Command Line
 
 
-## CLI tools: package provide below tools 
+### ml_models
+setup, fit, predict, save, load a model
+
+
 ```bash
-- ml_models
-- ml_optim    
-- ml_test
 
-
-```
-
-
-### How to use tools
-```bash
 ml_models --do  
-    model_list  :  list all models in the repo                            
-    testall     :  test all modules inside model_tf
-    test        :  test a certain module inside model_tf
-    fit         :  wrap fit generic m    ethod
-    predict     :  predict  using a pre-trained model and some data
-    generate_config  :  generate config file from code source
+    init            : copy to path  --path "myPath"
+    generate_config : generate config file from code source
+    model_list      : list all models in the repo
+    fit             : wrap fit generic method
+    predict         : predict  using a pre-trained model and some data
+    test            : Test a model
+
     
-  ## --do fit  
-  --model_uri     model_tf.1_lstm
-  --save_folder   myfolder/
-  --config_file   myfile.json
-  --config_mode   "test"
+#### Examples
+
+### Copy Notebooks to path
+ml_models --do init  --path ztest/
+
+### list all models available in the repo
+ml_models --do model_list  
 
 
-  ## --do predict  
-  --load_folder   mymodel_folder/
-    "testall"     :  test all modules inside model_tf
-    "test"        :  test a certain module inside model_tf
+#### generate JSON config file for one model
+ml_models  --do generate_config  --model_uri model_tf.1_lstm  --save_folder "ztest/"
 
 
-    "model_list"  :  #list all models in the repo          
-    "fit"         :  wrap fit generic m    ethod
-    "predict"     :  predict  using a pre-trained model and some data
-    "generate_config"  :  generate config file from code source
+#### Fit model and Save
+ml_models --do fit     --config_file model_tf/1_lstm.json --config_mode "test"
 
+
+#### Load model and Save results
+ml_models --do predict --config_file model_tf/1_lstm.json --config_mode "test"
+
+
+
+####  Internal model
+ml_models  --do test  --model_uri model_tf.1_lstm
+
+
+#### Other examples
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m4.json --config_mode "deepar"
+
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m5.json --config_mode "deepar"
+
+
+
+
+
+#### External  Models by Absolute path URI
+ml_models --do test  --model_uri "example/custom_model/1_lstm.py"
+
+
+
+
+
+
+
+
+
+
+
+
+```
+<br><br>
+
+
+
+### ml_optim
+
+Hyper-parameter search
+
+```bash
 
 ml_optim --do
     test      :  Test the hyperparameter optimization for a specific model
@@ -76,48 +96,70 @@ ml_optim --do
     search    :  search for the best hyperparameters of a specific model
 
 
-ml_test
-  "search"    :  search for the best hyperparameters of a specific model
-
-
-
-
-### Command line tool sample
-
-#### generate config file
-    ml_models  --do generate_config  --model_uri model_tf.1_lstm.py  --save_folder "c:\myconfig"
-
-#### TensorFlow LSTM model
-    ml_models  --model_uri model_tf/1_lstm.py  --do test
-
-#### PyTorch models
-    ml_models  --model_uri model_tch/mlp.py  --do test
-    
-    
-#### Custom  Models
-    ml_models --do test  --model_uri "D:\_devs\Python01\gitdev\mlmodels\mlmodels\model_tf_lstm.py"
-
-
-
-#### Model param search test
-    ml_optim --do test
-
-
 #### For normal optimization search method
-    ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method normal
-    ml_optim --do search --ntrials 1  --config_file optim_config.json --optim_method prune  ###### for pruning method
+    ml_optim --do search  --config_file template/optim_config.json  --config_mode "test"
 
-    ml_optim --modelname model_tf.1_lstm.py  --do test
-    ml_optim --modelname model_tf.1_lstm.py  --do search
+
+###### for pruning method
+    ml_optim --do search  --config_file template/optim_config_prune.json   --config_mode "test"
+
+
+###### Using Model default params
+    ml_optim --do test   --model_uri model_tf.1_lstm   --ntrials 2
 
 
 ```
+<br><br>
 
 
-#### Distributed training on Pytorch Horovod
+### ml_benchmark
+```bash
+## Benchmark model
+
+#### One Single file for all models
+ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/benchmark_timeseries/test02/model_list.json
+     
+
+#### Many json                            
+ml_benchmark  --do  dataset/json/benchmark.json  --path_json  dataset/json/benchmark_timeseries/test01/
+
+    
 ```
+<br><br>
+
+
+
+
+### ml_distributed : Distributed training on Pytorch Horovod
+```bash
+### Work in Progress
+
 #### Distributed Pytorch on CPU (using Horovod and MPI on Linux, 4 processes)  in model_tch/mlp.py
     mlmodels/distri_torch_mpirun.sh   4    model_tch.mlp    mymodel.json
 
+    ml_distributed  --do fit   --n_node 4    --model_uri model_tch.mlp    --model_json mymodel.json
+
 
 ```
+<br><br>
+
+
+
+
+### ml_test
+```bash
+
+
+
+
+
+```
+<br><br>
+
+
+
+# Example of CLI in Colab :
+
+https://colab.research.google.com/drive/1u6ZUrBExDY9Jr6HA7kKutVKoP5RQfvRi#scrollTo=4qtLQiaCaDaU
+
+

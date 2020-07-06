@@ -8,6 +8,7 @@ from warnings import simplefilter
 
 import numpy as np
 import pandas as pd
+import pickle
 import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 
@@ -16,9 +17,15 @@ from mlmodels.util import os_package_root_path, log, params_json_load, path_norm
 
 
 
+### Tf 2.0
+tf.compat.v1.disable_v2_behavior()
+
+
+
+
 simplefilter(action='ignore', category=FutureWarning)
 simplefilter(action='ignore', category=DeprecationWarning)
-tf.get_logger().setLevel('ERROR')
+tf.compat.v1.get_logger().setLevel('ERROR')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # **** change the warning level ****
 
 
@@ -30,7 +37,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # **** change the warning level ****
 ####################################################################################################
 class Model:
     def __init__(self, model_pars=None, data_pars=None, compute_pars=None, **kwargs):
-        tf.reset_default_graph()
+        reset_model()
+        
+        self.model_pars = model_pars
+        self.compute_pars = compute_pars
+        self.data_pars = data_pars
 
         epoch         = model_pars.get('epoch', 5)
         learning_rate = model_pars.get('learning_rate', 0.001)
@@ -48,30 +59,31 @@ class Model:
         self.stats = {"loss": 0.0,
                       "loss_history": []}
 
-        self.X = tf.placeholder(tf.float32, (None, None, size))
-        self.Y = tf.placeholder(tf.float32, (None, output_size))
+        self.X = tf.compat.v1.placeholder(tf.compat.v1.float32, (None, None, size))
+        self.Y = tf.compat.v1.placeholder(tf.compat.v1.float32, (None, output_size))
 
         ### Model Structure        ################################
         self.timestep = timestep
         self.hidden_layer_size = num_layers * 2 * size_layer
 
         def lstm_cell(size_layer):
-            return tf.nn.rnn_cell.LSTMCell(size_layer, state_is_tuple=False)
+            return tf.compat.v1.nn.rnn_cell.LSTMCell(size_layer, state_is_tuple=False)
 
-        rnn_cells = tf.nn.rnn_cell.MultiRNNCell(
+        rnn_cells = tf.compat.v1.nn.rnn_cell.MultiRNNCell(
             [lstm_cell(size_layer) for _ in range(num_layers)], state_is_tuple=False
         )
 
-        drop = tf.contrib.rnn.DropoutWrapper(rnn_cells, output_keep_prob=forget_bias)
+        ## drop = tf.compat.v1.contrib.rnn.DropoutWrapper(rnn_cells, output_keep_prob=forget_bias)
+        drop = tf.compat.v1.nn.rnn_cell.DropoutWrapper(rnn_cells, output_keep_prob=forget_bias)
 
-        self.hidden_layer = tf.placeholder(tf.float32, (None, self.hidden_layer_size))
-        self.outputs, self.last_state = tf.nn.dynamic_rnn(
-            drop, self.X, initial_state=self.hidden_layer, dtype=tf.float32
+        self.hidden_layer = tf.compat.v1.placeholder(tf.compat.v1.float32, (None, self.hidden_layer_size))
+        self.outputs, self.last_state = tf.compat.v1.nn.dynamic_rnn(
+            drop, self.X, initial_state=self.hidden_layer, dtype=tf.compat.v1.float32
         )
-        self.logits = tf.layers.dense(self.outputs[-1], output_size)
+        self.logits = tf.compat.v1.layers.dense(self.outputs[-1], output_size)
 
         ### Loss    ##############################################
-        self.cost = tf.reduce_mean(tf.square(self.Y - self.logits))
+        self.cost = tf.compat.v1.reduce_mean(tf.compat.v1.square(self.Y - self.logits))
         self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate).minimize(self.cost)
 
 
@@ -82,7 +94,7 @@ def fit(model, data_pars=None, compute_pars=None,  out_pars=None, **kwarg):
     nlog_freq = compute_pars.get("nlog_freq", 100)
 
     ######################################################################
-    # sess = tf.compat.v1.InteractiveSession()
+    # sess = tf.compat.v1.compat.v1.InteractiveSession()
     sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
     for i in range(model.epoch):
@@ -170,6 +182,7 @@ def predict(model, sess=None, data_pars=None,  compute_pars=None, out_pars=None,
 
     if get_hidden_state:
         return output_predict, init_value
+    # print("Predictions: ", output_predict)
     return output_predict
 
 
@@ -183,13 +196,42 @@ def save(model, session=None, save_pars=None):
     from mlmodels.util import save_tf
     print(save_pars)
     save_tf(model, session, save_pars)
+    d = {"model_pars"  :  model.model_pars, 
+     "compute_pars":  model.compute_pars,
+     "data_pars"   :  model.data_pars
+    }
+    path = save_pars['path']  + "/model/"
+    pickle.dump(d, open(path + "/model_pars.pkl", mode="wb"))
+    log(os.listdir(path))
      
 
 
 def load(load_pars=None):
     from mlmodels.util import load_tf
     print(load_pars)
-    return load_tf(load_pars)
+    path = load_pars['path'] + "/model/model_pars.pkl"
+    d = pickle.load( open(path, mode="rb")  )
+
+    ### Setup Model
+    
+    # reset_model()
+    model = Model(model_pars= d['model_pars'], compute_pars= d['compute_pars'],
+                data_pars= d['data_pars']) 
+    model_path = os.path.join(load_pars['path'], "model")
+    
+    full_name  = model_path + "/model.ckpt"
+    # 
+    # saver.restore(sess,  full_name)
+    # sess = tf.compat.v1.Session()
+    # saver = tf.train.Saver()
+    # saver = tf.train.import_meta_graph(model_path + '/model.ckpt.meta')
+    # saver.restore(sess,  full_name)
+    # saver.restore(sess, tf.train.latest_checkpoint(model_path+'/'))
+    
+    sess = load_tf(load_pars) 
+    print(f"Loaded saved model from {model_path}")
+    
+    return model, sess
 
 
 
@@ -236,7 +278,7 @@ def get_dataset(data_pars=None):
 
 
 def get_params(param_pars={}, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     pp          = param_pars
     choice      = pp['choice']
     config_mode = pp['config_mode']
@@ -303,8 +345,13 @@ def test(data_path="dataset/", pars_choice="test01", config_mode="test"):
     log("#### Plot   ########################################################")
 
 
-    log("#### Save/Load   ###################################################")
-    save(model, session, out_pars)
+    log("#### Save   ########################################################")
+    save_pars ={ 'path' : out_pars['path']  }
+    save(model, session, save_pars)
+    
+    
+    log("#### Load   ########################################################")
+    load_pars ={ 'path' : out_pars['path']  }
     session = load(out_pars)
     #     ypred = predict(model2, data_pars, compute_pars, out_pars)
     #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)

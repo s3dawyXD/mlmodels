@@ -1,5 +1,5 @@
 from keras.models import Model
-from keras.layers import Input, Dense, Concatenate
+from keras.layers import Input, Dense, Concatenate, Flatten
 from keras.layers import Convolution1D
 from keras.layers import GlobalMaxPooling1D
 from keras.layers import Embedding
@@ -57,14 +57,17 @@ class CharCNNKim(object):
         x = Embedding(self.alphabet_size + 1, self.embedding_size, input_length=self.input_size)(inputs)
         # Convolution layers
         convolution_output = []
-        for num_filters, filter_width in self.conv_layers:
-            conv = Convolution1D(filters=num_filters,
-                                 kernel_size=filter_width,
-                                 activation='tanh',
-                                 name='Conv1D_{}_{}'.format(num_filters, filter_width))(x)
-            pool = GlobalMaxPooling1D(name='MaxPoolingOverTime_{}_{}'.format(num_filters, filter_width))(conv)
-            convolution_output.append(pool)
-        x = Concatenate()(convolution_output)
+        if len(self.conv_layers) > 0:
+            for num_filters, filter_width in self.conv_layers:
+                conv = Convolution1D(filters=num_filters,
+                                     kernel_size=filter_width,
+                                     activation='tanh',
+                                     name='Conv1D_{}_{}'.format(num_filters, filter_width))(x)
+                pool = GlobalMaxPooling1D(name='MaxPoolingOverTime_{}_{}'.format(num_filters, filter_width))(conv)
+                convolution_output.append(pool)
+            x = Concatenate()(convolution_output)
+        else :
+            x = Flatten()(x)
         # Fully connected layers
         for fl in self.fully_connected_layers:
             x = Dense(fl, activation='selu', kernel_initializer='lecun_normal')(x)

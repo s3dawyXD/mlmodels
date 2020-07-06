@@ -7,7 +7,7 @@ https://autogluon.mxnet.io/tutorials/tabular_prediction/tabular-quickstart.html
 
 
 """
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import os
 from pathlib import Path
 

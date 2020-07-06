@@ -2,10 +2,19 @@
 __pycache__/
 *.py[cod]
 *$py.class
-zsublime*
+*sublime*
 ztest/
 mlmodels/ztest/*
 .idea/*
+zwork/*
+!zwork/*.ipny
+!zwork/*.py
+*ipynb_check*
+*zarchive.txt*
+*untitled*
+*README_index_doc.txt*
+*README_index_doc.md*
+
 
 
 # C extensions
@@ -134,3 +143,13 @@ example/exp
 /functions.json
 .idea
 /classes.json
+/untitled.txt
+/README_index_doc
+/mlmodels/dataset/vision/FashionMNIST/processed
+/mlmodels/datas
+/mlmodels/mlmodels/dataset/vision/MNIST/MNIST/processed
+/mlmodels/mlmodels/dataset/vision/MNIST/MNIST/raw
+/.vscode
+/zvscode.code-workspace
+/mlmodels/dataset/vision/MNIST/MNIST/processed
+/mlmodels/dataset/vision/MNIST/MNIST/raw

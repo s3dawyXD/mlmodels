@@ -5,7 +5,7 @@
 
 import argparse
 import csv
-import json
+from jsoncomment import JsonComment ; json = JsonComment()
 import math
 import time
 

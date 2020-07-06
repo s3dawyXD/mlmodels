@@ -16,11 +16,11 @@ import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-
+import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-
+import keras.backend as K
 from keras.callbacks import EarlyStopping
 from keras.preprocessing import sequence
 from keras.datasets import imdb
@@ -28,7 +28,7 @@ from keras.datasets import imdb
 
 ######## Logs
 from mlmodels.util import os_package_root_path, log, path_norm, get_model_uri
-
+from mlmodels.dataloader import DataLoader
 
 
 #### Import EXISTING model and re-map to mlmodels
@@ -54,6 +54,7 @@ class Model:
     self.model.compile(compute_pars['engine'],  # adam 
     	               compute_pars['loss'], 
     	               metrics= compute_pars['metrics'])
+    self.model.summary()
     
 
 
@@ -68,7 +69,7 @@ def fit(model, data_pars=None, compute_pars=None, out_pars=None,   **kw):
   Xtrain, Xtest, ytrain, ytest = get_dataset(data_pars)
 
 
-  early_stopping = EarlyStopping(monitor='val_acc', patience=3, mode='max')
+  early_stopping = EarlyStopping(monitor='val_accuracy', patience=3, mode='max')
   model.model.fit(Xtrain, ytrain,
           batch_size=batch_size,
           epochs=epochs,
@@ -92,18 +93,16 @@ def fit_metrics(model, data_pars=None, compute_pars=None, out_pars=None,  **kw):
 def predict(model, sess=None, data_pars=None, out_pars=None, compute_pars=None, **kw):
   ##### Get Data ###############################################
   data_pars['train'] = False
-  Xpred, ypred = get_dataset(data_pars)
+  X, ytrue, _, _ = get_dataset(data_pars)
 
   #### Do prediction
-  ypred = model.model.predict(Xpred)
+  ypred = model.model.predict(X)
 
-
-  ### Save Results
-  
-  
   ### Return val
-  if compute_pars.get("return_pred_not") is not None :
-    return ypred
+  if kw.get("return_ytrue"):
+    return ypred, ytrue
+  else:
+      return ypred, None
 
 
   
@@ -141,39 +140,28 @@ def get_dataset(data_pars=None, **kw):
 
 
   print('Loading data...')
-  max_features = data_pars['max_features']
-  maxlen       = data_pars['maxlen']
+  maxlen       = data_pars['data_info']['maxlen']
 
-  if data_pars['train'] :
+  loader = DataLoader(data_pars)
+  loader.compute()
+  dataset, internal_states = loader.get_data()
 
-    ### Remove Keras download --> csv on disk
-    (Xtrain, ytrain), (Xtest, ytest) = imdb.load_data(num_words=max_features)
-
-    print('Pad sequences (samples x time)...')
-    Xtrain = sequence.pad_sequences(Xtrain, maxlen=maxlen)
-    Xtest  = sequence.pad_sequences(Xtest, maxlen=maxlen)
-
-
-    return Xtrain, Xtest, ytrain, ytest 
-
-
-  else :
-     (Xtrain, ytrain), (Xtest, ytest) = imdb.load_data(num_words=max_features)
-     Xtest = sequence.pad_sequences(Xtest, maxlen=maxlen)
-     return Xtest, ytest 
-
-
+  # return dataset
+  Xtrain, ytrain, Xtest, ytest = dataset
+  Xtrain = sequence.pad_sequences(Xtrain, maxlen=maxlen)
+  Xtest = sequence.pad_sequences(Xtest, maxlen=maxlen)
+  return Xtrain, Xtest, ytrain, ytest
 
 
 def get_params(param_pars={}, **kw):
-    import json
+    from jsoncomment import JsonComment ; json = JsonComment()
     choice      = param_pars['choice']
     config_mode = param_pars['config_mode']
     data_path   = param_pars['data_path']
 
 
     if choice == "json":
-       data_path = path_normalize(data_path)
+       data_path = path_norm(data_path)
        cf = json.load(open(data_path, mode='r'))
        cf = cf[config_mode]
        return cf['model_pars'], cf['data_pars'], cf['compute_pars'], cf['out_pars']
@@ -182,8 +170,8 @@ def get_params(param_pars={}, **kw):
     if choice == "test01":
         log("#### Path params   ##########################################")
         data_path  = path_norm( "dataset/text/imdb.csv"  )   
-        out_path   = path_norm( "ztest/model_keras/textcnn/" )   
-        model_path = os.path.join(out_path , "model")
+        out_path   = path_norm( "ztest/model_keras/textcnn/model.h5" )
+        model_path = out_path
 
 
         data_pars    = {"path" : data_path, "train": 1, "maxlen":40, "max_features": 5, }
@@ -214,40 +202,41 @@ def test(data_path="dataset/", pars_choice="json", config_mode="test"):
     log("#### Loading params   ##############################################")
     param_pars = {"choice":pars_choice,  "data_path":data_path,  "config_mode": config_mode}
     model_pars, data_pars, compute_pars, out_pars = get_params(param_pars)
-
+    print(">>>>>> model_pars, data_pars, compute_pars, out_pars: ", model_pars, data_pars, compute_pars, out_pars)
     log("#### Loading dataset   #############################################")
     Xtuple = get_dataset(data_pars)
+    print(">>>> Xtuple: ", Xtuple)
 
 
-    log("#### Model init, fit   #############################################")
-    session = None
-    model = Model(model_pars, data_pars, compute_pars)
-    model, session = fit(model, data_pars, compute_pars, out_pars)
-
-
-    log("#### save the trained model  #######################################")
-    save(model, session,  save_pars= out_pars)
-
-
-    log("#### Predict   #####################################################")
-    data_pars["train"] = 0
-    ypred = predict(model, session, data_pars, compute_pars, out_pars)
-
-
-    log("#### metrics   #####################################################")
-    metrics_val = fit_metrics(model, data_pars, compute_pars, out_pars)
-    print(metrics_val)
-
-
-    log("#### Plot   ########################################################")
-
-
-    log("#### Save/Load   ###################################################")
-    save(model, None, out_pars)
-    model2 = load(out_pars)
-    #     ypred = predict(model2, data_pars, compute_pars, out_pars)
-    #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
-    print(model2)
+    # log("#### Model init, fit   #############################################")
+    # session = None
+    # model = Model(model_pars, data_pars, compute_pars)
+    # model, session = fit(model, data_pars, compute_pars, out_pars)
+    #
+    #
+    # log("#### save the trained model  #######################################")
+    # save(model, session,  save_pars= out_pars)
+    #
+    #
+    # log("#### Predict   #####################################################")
+    # data_pars["train"] = 0
+    # ypred, _ = predict(model, session, data_pars, compute_pars, out_pars)
+    #
+    #
+    # log("#### metrics   #####################################################")
+    # metrics_val = fit_metrics(model, data_pars, compute_pars, out_pars)
+    # print(metrics_val)
+    #
+    #
+    # log("#### Plot   ########################################################")
+    #
+    #
+    # log("#### Save/Load   ###################################################")
+    # save(model, None, out_pars)
+    # model2 = load(out_pars)
+    # #     ypred = predict(model2, data_pars, compute_pars, out_pars)
+    # #     metrics_val = metrics(model2, ypred, data_pars, compute_pars, out_pars)
+    # print(model2)
 
 
 
@@ -256,7 +245,7 @@ if __name__ == '__main__':
     test_path = os.getcwd() + "/mytest/"
     
     ### Local fixed params
-    test(pars_choice="test01")
+    # test(pars_choice="test01")
 
 
     ### Local json file
@@ -265,19 +254,19 @@ if __name__ == '__main__':
 
     ####    test_module(model_uri="model_xxxx/yyyy.py", param_pars=None)
     from mlmodels.models import test_module
-    param_pars = {'choice': "test01", 'config_mode' : 'test', 'data_path' : '/dataset/' }
+    param_pars = {'choice': "json", 'config_mode' : 'test', 'data_path' : 'dataset/json/refactor/textcnn_keras.json' }
     test_module(model_uri = MODEL_URI, param_pars= param_pars)
 
-    ##### get of get_params
-    # choice      = pp['choice']
-    # config_mode = pp['config_mode']
-    # data_path   = pp['data_path']
-
-
-    ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
-    from mlmodels.models import test_api
-    param_pars = {'choice': "test01", 'config_mode' : 'test', 'data_path' : '/dataset/' }
-    test_api(model_uri = MODEL_URI, param_pars= param_pars)
+    # ##### get of get_params
+    # # choice      = pp['choice']
+    # # config_mode = pp['config_mode']
+    # # data_path   = pp['data_path']
+    #
+    #
+    # ####    test_api(model_uri="model_xxxx/yyyy.py", param_pars=None)
+    # from mlmodels.models import test_api
+    # param_pars = {'choice': "test01", 'config_mode' : 'test', 'data_path' : '/dataset/' }
+    # test_api(model_uri = MODEL_URI, param_pars= param_pars)
 
 
 
