@@ -1,15 +1,73 @@
 
+```bash
+
+Ressources to find information
+
+
+
+https://github.com/arita37/mlmodels/blob/adata2/README_testing.md
+
+https://github.com/arita37/mlmodels/blob/adata2/README_usage_CLI.md
+
+
+https://github.com/arita37/mlmodels/blob/adata2/README_addmodel.md
+
+
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation
+
+
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation
+
+
+
+
+
+
+```
+
+
+
+
+## How to install mlmodels ?
+<details>
+
+
+</details>
+
+
+## How to check if mlmodels works ?
+
+
+
+
+## How to check if  one model works ?
+
+
+
+
+
+## How to develop using Colab ?
+
+
+## How to develop using Gitpod ?
+
+
+
+
+
 
 
 
 
 ## How to add  a model ?
-
+<details>
 To add new model fork the repo. Inside the mlmodels directory we have multiple subdirectories named like model_keras, model_sklearn and so on the idea is to use **model_** before the type of framework you want to use. Now once you have decided the frame work create appripriately named model file and config file as described in the read me doc [README_addmodel.md](docs\README_docs\README_addmodel.md). The same model structure and config allows us to do the testing of all the models easily.
+</details>
 
 
 
 ## How to check test log after commit ?
+<details>
 Once the model is added we can do testing on it with commands like this, where model_framework is a placeholder for your selected framework and model_file.json is the config file for your model.
 
 ```
@@ -36,12 +94,57 @@ We can see that while running the test case at line 418 caused the error, and we
 ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m4.json --config_mode "deepar" 
 ```
 So we fix the erorr by launch the git pod and test the test case again and see it works correctly after that we can commit teh changes and submit the pull request.
+</details>
 
 
 ## How to debug the repo >
 
 
 ## How to find information ?
+
+
+
+
+
+
+
+
+
+
+
+
+
+## How dataloader works ?
+
+
+
+
+## How configuation JSON works ?
+
+
+
+
+
+## How to improve the test process >
+
+
+
+
+
+## How to debug the repo >
+
+
+
+
+
+## How to find information ?
+
+
+
+
+
+
+
 
 
 
