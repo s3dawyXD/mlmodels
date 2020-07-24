@@ -1,4 +1,30 @@
 
+```bash
+
+Ressources to find information
+
+
+
+https://github.com/arita37/mlmodels/blob/adata2/README_testing.md
+
+https://github.com/arita37/mlmodels/blob/adata2/README_usage_CLI.md
+
+
+https://github.com/arita37/mlmodels/blob/adata2/README_addmodel.md
+
+
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation
+
+
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation
+
+
+
+
+
+
+```
+
 
 ## How to install mlmodels ?
 
