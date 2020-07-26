@@ -115,55 +115,7 @@ So we fix the erorr by launch the git pod and test the test case again and see i
 
 
 ## How dataloader works ?
-### 1. What is dataloader?
-Dataloader is helper module which load data from configuration and prepare for training/evaluation task.
-### 2. Dataloader's configuration: store in json file with key "data_pars" have 2 main parts:
-- **data_info**: conntain common data info such as data_path, dataset_name, batch_size when processing and dataset_type like training and testing
-- **preprocessors**: list of data preprocessing which could be a function or a class object specified by "uri". Argument for those function or class object init passed by "args". These preprocessor will be processed one by one in sequence (TBD: how to process data with more dynamic ways with complicated combination like sequence and parallel)
-Example:
-```
-"data_pars": {
-    "data_info": {
-            "data_path"  : "dataset/recommender/",
-            "dataset"    : "IMDB_sample.txt",
-            "data_type"  : "csv_dataset",
-            "batch_size" : 64,
-            "train"      : true
-        },
-    "preprocessors": [
-        {"uri"  : "mlmodels.model_tch.textcnn:split_train_valid",
-         "args" : {
-                    "frac": 0.99
-                    }
-        },
-        {"uri"  : "mlmodels.model_tch.textcnn:create_tabular_dataset",
-         "args" : {
-                    "lang": "en",
-                    "pretrained_emb": "glove.6B.300d"
-                    }
-
-        }
-        ]
-},
-```
-### 3. Dataloader workflow
-- Dataload output contain 2 parts: 
-   + dataset output: memory object for next step like training/validating
-   + internal_state: which is dictionary to store extra-data if need
-- To get output, just init dataloader and invoke dataloader **compute** function which return tuple (dataset_outout, internal_state)
-During computing, dataloader init all objects in list of preprocessor and invoke function to preprocess data
-
-**Note**
-- Class object in dataloader configuration need to implement 3 interface:
-```buildoutcfg
-def __init__(self, **args):
-    # initialization
-def compute(self, input_tmp):
-    # self.data = xxx
-
-def get_data(self):
-    return self.data
-```    
+[Please refer to here](dataloader.md)
 
 ## How configuation JSON works ?
 
