@@ -196,9 +196,24 @@ So we fix the erorr by launch the git pod and test the test case again and see i
 </details>
 
 
+## How to find research papers ?
+<details>
+https://github.com/arita37/mlmodels/blob/dev/README_research_papers.md
+
+</details>
 
 
 
+## How to find sample code ?
+<details>
+    
+    Sample code is below :
+    
+https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md
+    
+    
+
+</details>
 
 
 
