@@ -41,7 +41,7 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-do
 </details>
 
 
-## How to check if mlmodels works ?
+## How to check if mlmodels repo works ?
 <details>
 
 
@@ -59,12 +59,19 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-do
 
 
 ## How to develop using Colab ?
+<details>
+
+
+</details>
 
 
 
 
 ## How to develop using Gitpod ?
+<details>
 
+
+</details>
 
 
 
@@ -87,7 +94,28 @@ To add new model fork the repo. Inside the mlmodels directory we have multiple s
 
 
 
-## How to check test log after commit ?
+## Where is the testing log  ?
+<details>
+
+We have automated testing in our repo and the results are stored in here https://github.com/arita37/mlmodels_store We havemultiple level logs and they are put under different directories as you can see here, log folders have **logs_** at the start.
+![Mlmodels Store](imgs/test_repo.PNG?raw=true "Mlmodels Store")
+We can focus on the error_list directory to debug our testing errors. Inside the error_list directory we can find the logs of all test cases in directories named at the time they are created
+![Error List](imgs/error_list.PNG?raw=true "Error List")
+Inside we can see separate files for each test cases which will have the details of the errors.
+![Error Logs](imgs/error_logs.PNG?raw=true "Error logs")
+For example we can look at the errors for test cli cases named as list_log_test_cli_20200610.md
+![Error](imgs/test_cli_error.PNG?raw=true "Error")
+We see multiple erros and we can click on the traceback for error 1 which will take us to the line 421 of the log file.
+![Error Line](imgs/error_line.PNG?raw=true "Error Line")
+We can see that while running the test case at line 418 caused the error, and we can see the error. 
+```
+ml_models --do fit  --config_file dataset/json/benchmark_timeseries/gluonts_m4.json --config_mode "deepar" 
+```
+So we fix the erorr by launch the git pod and test the test case again and see it works correctly after that we can commit teh changes and submit the pull request.
+</details>
+
+
+## How to check testlog after  commit ?
 <details>
 Once the model is added we can do testing on it with commands like this, where model_framework is a placeholder for your selected framework and model_file.json is the config file for your model.
 
@@ -128,22 +156,14 @@ So we fix the erorr by launch the git pod and test the test case again and see i
 
 
 
-## How to find information ?
-
-
-
-
-
-
-
-
-
-
 
 
 
 ## How dataloader works ?
+<details>
 [Please refer to here](dataloader.md)
+</details>
+
 
 ## How configuation JSON works ?
 
@@ -152,19 +172,28 @@ So we fix the erorr by launch the git pod and test the test case again and see i
 
 
 ## How to improve the test process >
+<details>
 
+
+</details>
 
 
 
 
 ## How to debug the repo >
+<details>
 
+
+</details>
 
 
 
 
 ## How to find information ?
+<details>
 
+
+</details>
 
 
 
