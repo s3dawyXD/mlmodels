@@ -4,6 +4,12 @@
 Ressources to find information
 
 
+Index of functions :
+https://sourcegraph.com/github.com/arita37/mlmodels/-/blob/README_index_doc.py#L138:10
+
+
+
+
 
 https://github.com/arita37/mlmodels/blob/adata2/README_testing.md
 
@@ -36,17 +42,25 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-do
 
 
 ## How to check if mlmodels works ?
+<details>
 
+
+</details>
 
 
 
 ## How to check if  one model works ?
+<details>
 
+
+</details>
 
 
 
 
 ## How to develop using Colab ?
+
+
 
 
 ## How to develop using Gitpod ?
@@ -55,13 +69,20 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-do
 
 
 
+## How to run  a model using Command Line Input CLI ?
+<details>
+    https://github.com/arita37/mlmodels/blob/dev/README_usage_CLI.md
 
+</details>
 
 
 
 ## How to add  a model ?
 <details>
 To add new model fork the repo. Inside the mlmodels directory we have multiple subdirectories named like model_keras, model_sklearn and so on the idea is to use **model_** before the type of framework you want to use. Now once you have decided the frame work create appripriately named model file and config file as described in the read me doc [README_addmodel.md](docs\README_docs\README_addmodel.md). The same model structure and config allows us to do the testing of all the models easily.
+  
+  
+  
 </details>
 
 
@@ -97,7 +118,14 @@ So we fix the erorr by launch the git pod and test the test case again and see i
 </details>
 
 
+
 ## How to debug the repo >
+<details>
+  Current testing is located here:
+     https://github.com/arita37/mlmodels/blob/dev/README_testing.md
+     
+</details>     
+
 
 
 ## How to find information ?
