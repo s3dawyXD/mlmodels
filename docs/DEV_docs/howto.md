@@ -27,9 +27,11 @@ https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-do
 
 
 
-
-
 ```
+QA docs
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation
+
+https://github.com/arita37/mlmodels/issues?q=is%3Aopen+is%3Aissue+label%3Adev-documentation+label%3Adocumentation
 
 
 
